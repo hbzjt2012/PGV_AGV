@@ -239,6 +239,63 @@
     <ClCompile Include="..\HALayer\DMA.cpp">
       <Filter>HALayer\Src</Filter>
     </ClCompile>
+    <ClCompile Include="..\Driver\C50XB.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\EEPROM.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Encoder.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\FM24CL64B.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Gyro.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Key_Scan.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Mecanum.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Motor.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\PGV100.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Serial.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\TL740D.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\Wireless_Serial.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Driver\AS62.cpp">
+      <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Gcode.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Interpolation.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Position.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Queue.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Trigonometric.c">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\MyMath.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -440,6 +497,66 @@
     </ClInclude>
     <ClInclude Include="..\HALayer\DMA.h">
       <Filter>HALayer\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\AGV_Control.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\C50XB.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\EEPROM.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Encoder.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\FM24CL64B.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Gyro.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Key_Scan.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Mecanum.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Motor.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\PGV100.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Serial.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\TL740D.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Wireless_Serial.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\AS62.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Gcode.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Interpolation.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Position.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Queue.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\MyMath.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Trigonometric.h">
+      <Filter>Math\Inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

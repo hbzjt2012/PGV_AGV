@@ -63,7 +63,24 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\App\Gcode.cpp" />
+    <ClCompile Include="..\App\Interpolation.cpp" />
+    <ClCompile Include="..\App\Position.cpp" />
+    <ClCompile Include="..\App\Queue.cpp" />
     <ClCompile Include="..\delay.c" />
+    <ClCompile Include="..\Driver\AS62.cpp" />
+    <ClCompile Include="..\Driver\C50XB.cpp" />
+    <ClCompile Include="..\Driver\EEPROM.cpp" />
+    <ClCompile Include="..\Driver\Encoder.cpp" />
+    <ClCompile Include="..\Driver\FM24CL64B.cpp" />
+    <ClCompile Include="..\Driver\Gyro.cpp" />
+    <ClCompile Include="..\Driver\Key_Scan.cpp" />
+    <ClCompile Include="..\Driver\Mecanum.cpp" />
+    <ClCompile Include="..\Driver\Motor.cpp" />
+    <ClCompile Include="..\Driver\PGV100.cpp" />
+    <ClCompile Include="..\Driver\Serial.cpp" />
+    <ClCompile Include="..\Driver\TL740D.cpp" />
+    <ClCompile Include="..\Driver\Wireless_Serial.cpp" />
     <ClCompile Include="..\HALayer\DMA.cpp" />
     <ClCompile Include="..\HALayer\IIC.cpp" />
     <ClCompile Include="..\HALayer\IO.cpp" />
@@ -71,6 +88,8 @@
     <ClCompile Include="..\HALayer\Tim.cpp" />
     <ClCompile Include="..\HALayer\Uart.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\Math\MyMath.cpp" />
+    <ClCompile Include="..\Math\Trigonometric.c" />
     <ClCompile Include="..\StartupFiles\startup_stm32f407xx.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_adc.c" />
@@ -130,6 +149,10 @@
     <Xml Include="stm32.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\App\Gcode.h" />
+    <ClInclude Include="..\App\Interpolation.h" />
+    <ClInclude Include="..\App\Position.h" />
+    <ClInclude Include="..\App\Queue.h" />
     <ClInclude Include="..\CMSIS_StdPeriph\core_cm4.h" />
     <ClInclude Include="..\CMSIS_StdPeriph\core_cmFunc.h" />
     <ClInclude Include="..\CMSIS_StdPeriph\core_cmInstr.h" />
@@ -138,6 +161,20 @@
     <ClInclude Include="..\CMSIS_StdPeriph\system_stm32f4xx.h" />
     <ClInclude Include="..\Configure.h" />
     <ClInclude Include="..\delay.h" />
+    <ClInclude Include="..\Driver\AGV_Control.h" />
+    <ClInclude Include="..\Driver\AS62.h" />
+    <ClInclude Include="..\Driver\C50XB.h" />
+    <ClInclude Include="..\Driver\EEPROM.h" />
+    <ClInclude Include="..\Driver\Encoder.h" />
+    <ClInclude Include="..\Driver\FM24CL64B.h" />
+    <ClInclude Include="..\Driver\Gyro.h" />
+    <ClInclude Include="..\Driver\Key_Scan.h" />
+    <ClInclude Include="..\Driver\Mecanum.h" />
+    <ClInclude Include="..\Driver\Motor.h" />
+    <ClInclude Include="..\Driver\PGV100.h" />
+    <ClInclude Include="..\Driver\Serial.h" />
+    <ClInclude Include="..\Driver\TL740D.h" />
+    <ClInclude Include="..\Driver\Wireless_Serial.h" />
     <ClInclude Include="..\DSP_Lib\arm_common_tables.h" />
     <ClInclude Include="..\DSP_Lib\arm_const_structs.h" />
     <ClInclude Include="..\DSP_Lib\arm_math.h" />
@@ -149,6 +186,8 @@
     <ClInclude Include="..\HALayer\Uart.h" />
     <ClInclude Include="..\macros.h" />
     <ClInclude Include="..\main.h" />
+    <ClInclude Include="..\Math\MyMath.h" />
+    <ClInclude Include="..\Math\Trigonometric.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\misc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_adc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can.h" />

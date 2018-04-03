@@ -38,7 +38,7 @@ public:
 	{
 		for (auto i : s)
 		{
-			write(i);
+			write((char)i);
 		}
 	}
 
@@ -56,7 +56,7 @@ protected:
 	USART_TypeDef *Uart;
 
 private:
-	virtual void write(const uint8_t c) = 0; //写一个字符
+	virtual void write(const char c) = 0; //写一个字符
 	void printNumber(unsigned long n, const uint8_t base);
 	void printFloat(float number, uint8_t digits);
 };
