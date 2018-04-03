@@ -35,7 +35,7 @@ error:
 	$(error Invalid configuration, please check your inputs)
 endif
 
-SOURCEFILES := ../delay.c ../main.cpp ../StartupFiles/startup_stm32f407xx.c ../STM32F4xx_StdPeriph_Driver/src/misc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cec.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_crc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_aes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_des.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_tdes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dac.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dcmi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dfsdm.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma2d.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dsi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash_ramfunc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fmpi2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fsmc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_md5.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_sha1.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_lptim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_ltdc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_qspi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rtc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sai.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sdio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spdifrx.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_wwdg.c ../system_stm32f4xx.c
+SOURCEFILES := ../App/Gcode.cpp ../App/Interpolation.cpp ../App/Position.cpp ../App/Queue.cpp ../delay.c ../Driver/C50XB.cpp ../Driver/EEPROM.cpp ../Driver/Encoder.cpp ../Driver/FM24CL64B.cpp ../Driver/Gyro.cpp ../Driver/Key_Scan.cpp ../Driver/Mecanum.cpp ../Driver/Motor.cpp ../Driver/PGV100.cpp ../Driver/Serial.cpp ../Driver/TL740D.cpp ../Driver/Wireless_Serial.cpp ../HALayer/DMA.cpp ../HALayer/IIC.cpp ../HALayer/IO.cpp ../HALayer/PWM.cpp ../HALayer/Tim.cpp ../HALayer/Uart.cpp ../main.cpp ../Math/MyMath.cpp ../Math/Trigonometric.c ../StartupFiles/startup_stm32f407xx.c ../STM32F4xx_StdPeriph_Driver/src/misc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cec.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_crc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_aes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_des.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_tdes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dac.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dcmi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dfsdm.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma2d.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dsi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash_ramfunc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fmpi2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fsmc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_md5.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_sha1.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_lptim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_ltdc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_qspi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rtc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sai.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sdio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spdifrx.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_wwdg.c ../system_stm32f4xx.c
 EXTERNAL_LIBS := ../DSP_Lib/libarm_cortexM4lf_math.a
 EXTERNAL_LIBS_COPIED := $(foreach lib, $(EXTERNAL_LIBS),$(BINARYDIR)/$(notdir $(lib)))
 
@@ -181,12 +181,108 @@ $(BINARYDIR)/%.o : %.cxx $(all_make_files) |$(BINARYDIR)
 #VisualGDB: GeneratedRules				#<--- All lines below are auto-generated
 
 
+$(BINARYDIR)/Gcode.o : ../App/Gcode.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Interpolation.o : ../App/Interpolation.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Position.o : ../App/Position.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Queue.o : ../App/Queue.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
 $(BINARYDIR)/delay.o : ../delay.c $(all_make_files) |$(BINARYDIR)
 	$(CC) $(CFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
+$(BINARYDIR)/C50XB.o : ../Driver/C50XB.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/EEPROM.o : ../Driver/EEPROM.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Encoder.o : ../Driver/Encoder.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/FM24CL64B.o : ../Driver/FM24CL64B.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Gyro.o : ../Driver/Gyro.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Key_Scan.o : ../Driver/Key_Scan.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Mecanum.o : ../Driver/Mecanum.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Motor.o : ../Driver/Motor.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/PGV100.o : ../Driver/PGV100.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Serial.o : ../Driver/Serial.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/TL740D.o : ../Driver/TL740D.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Wireless_Serial.o : ../Driver/Wireless_Serial.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/DMA.o : ../HALayer/DMA.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/IIC.o : ../HALayer/IIC.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/IO.o : ../HALayer/IO.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/PWM.o : ../HALayer/PWM.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Tim.o : ../HALayer/Tim.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Uart.o : ../HALayer/Uart.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
 $(BINARYDIR)/main.o : ../main.cpp $(all_make_files) |$(BINARYDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/MyMath.o : ../Math/MyMath.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Trigonometric.o : ../Math/Trigonometric.c $(all_make_files) |$(BINARYDIR)
+	$(CC) $(CFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
 $(BINARYDIR)/startup_stm32f407xx.o : ../StartupFiles/startup_stm32f407xx.c $(all_make_files) |$(BINARYDIR)

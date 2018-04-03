@@ -64,6 +64,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\delay.c" />
+    <ClCompile Include="..\HALayer\DMA.cpp" />
+    <ClCompile Include="..\HALayer\IIC.cpp" />
+    <ClCompile Include="..\HALayer\IO.cpp" />
+    <ClCompile Include="..\HALayer\PWM.cpp" />
+    <ClCompile Include="..\HALayer\Tim.cpp" />
+    <ClCompile Include="..\HALayer\Uart.cpp" />
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\StartupFiles\startup_stm32f407xx.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c" />
@@ -130,10 +136,19 @@
     <ClInclude Include="..\CMSIS_StdPeriph\core_cmSimd.h" />
     <ClInclude Include="..\CMSIS_StdPeriph\stm32f4xx.h" />
     <ClInclude Include="..\CMSIS_StdPeriph\system_stm32f4xx.h" />
+    <ClInclude Include="..\Configure.h" />
     <ClInclude Include="..\delay.h" />
     <ClInclude Include="..\DSP_Lib\arm_common_tables.h" />
     <ClInclude Include="..\DSP_Lib\arm_const_structs.h" />
     <ClInclude Include="..\DSP_Lib\arm_math.h" />
+    <ClInclude Include="..\HALayer\DMA.h" />
+    <ClInclude Include="..\HALayer\IIC.h" />
+    <ClInclude Include="..\HALayer\IO.h" />
+    <ClInclude Include="..\HALayer\PWM.h" />
+    <ClInclude Include="..\HALayer\Tim.h" />
+    <ClInclude Include="..\HALayer\Uart.h" />
+    <ClInclude Include="..\macros.h" />
+    <ClInclude Include="..\main.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\misc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_adc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can.h" />

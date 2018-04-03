@@ -45,6 +45,42 @@
     <Filter Include="Header files\Device-specific files">
       <UniqueIdentifier>{7317e1cd-ca1d-4486-b1e7-35640cf8bbd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="App">
+      <UniqueIdentifier>{e4421d3f-aeef-4161-bfaa-ee41d2a4591e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="App\Inc">
+      <UniqueIdentifier>{1f612932-377a-4730-9b8e-e9c4d99415b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="App\Src">
+      <UniqueIdentifier>{e689f43e-f37b-4123-9dc5-8ffd8bf57c7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Driver">
+      <UniqueIdentifier>{d2a13377-fc0f-46a0-aa28-b9f6b07ed040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Driver\Inc">
+      <UniqueIdentifier>{b8b60762-35d9-4998-b83f-aba96925d8a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Driver\Src">
+      <UniqueIdentifier>{be6bd2c1-31d7-4be3-b58a-e365437bd0ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HALayer">
+      <UniqueIdentifier>{b34efe56-9bd8-4c58-a8bd-a95b5da7df6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HALayer\Inc">
+      <UniqueIdentifier>{4c2bbc39-1cd4-45cc-8e26-ceb9938b4a95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HALayer\Src">
+      <UniqueIdentifier>{28eea5e1-9b1a-4143-9ded-84a8bf44a797}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{4d788c64-aa75-4038-a64d-a310325bb9b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Inc">
+      <UniqueIdentifier>{04819b59-61ab-4a06-b55a-7a969a9a6d48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math\Src">
+      <UniqueIdentifier>{5273b809-8d97-429e-9023-d0724eca18be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c">
@@ -184,6 +220,24 @@
     </ClCompile>
     <ClCompile Include="..\delay.c">
       <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HALayer\Uart.cpp">
+      <Filter>HALayer\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HALayer\Tim.cpp">
+      <Filter>HALayer\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HALayer\PWM.cpp">
+      <Filter>HALayer\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HALayer\IO.cpp">
+      <Filter>HALayer\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HALayer\IIC.cpp">
+      <Filter>HALayer\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HALayer\DMA.cpp">
+      <Filter>HALayer\Src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -359,6 +413,33 @@
     </ClInclude>
     <ClInclude Include="..\delay.h">
       <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Configure.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\macros.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\main.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HALayer\Uart.h">
+      <Filter>HALayer\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HALayer\Tim.h">
+      <Filter>HALayer\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HALayer\PWM.h">
+      <Filter>HALayer\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HALayer\IO.h">
+      <Filter>HALayer\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HALayer\IIC.h">
+      <Filter>HALayer\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HALayer\DMA.h">
+      <Filter>HALayer\Inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
