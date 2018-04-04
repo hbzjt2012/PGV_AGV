@@ -15,7 +15,7 @@ class AGV_Control_Class
 	virtual void Run(bool value) = 0;
 
 	virtual void Write_Velocity(Position_Class::Velocity_Class &velocity_InAGV) = 0;												  //根据输入速度控制小车
-	virtual Position_Class &Update_Post(Position_Class &Current_Position, const Position_Class::Velocity_Class &Target_velocity) = 0; //更新当前坐标和速度
+	virtual Position_Class &Update_Post(Position_Class &Current_Position, const Position_Class::Velocity_Class &Target_velocity) = 0; //根据编码器更新当前坐标和速度
 
 	Position_Class::Coordinate_Class &Absolute_To_Relative(Position_Class::Coordinate_Class &Absolute_Coor, Position_Class::Coordinate_Class &Relative_Coor)
 	{
