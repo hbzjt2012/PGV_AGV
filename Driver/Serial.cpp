@@ -35,7 +35,7 @@ void Serial_Class::Init(uint32_t baudrate)
 	//配置TIM6中断时间
 	//定时器6的时钟频率为系统时钟的一半（APB1分配系数2，定时器频率*2）
 	TIM6_Arr = (uint16_t)(SystemCoreClock / 2 / (baudrate / 22) / 10 + 1); //设置静默时间为22个位(定时器分频系数10)
-	TIM_Base_Class::Init(TIM6, TIM6_Arr, 10);	//设置定时器6的中断频率，用于设置串口接收超时检测		   
+	TIM_Base_Class::Init(TIM6, TIM6_Arr, 10,true);	//设置定时器6的中断频率，用于设置串口接收超时检测		   
 
 	NVIC_InitStructure.NVIC_IRQChannel = TIM6_DAC_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

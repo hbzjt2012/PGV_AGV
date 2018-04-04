@@ -294,8 +294,7 @@ Position_Class &Mecanum_Wheel_Class::Update_Post(Position_Class &Current_Positio
 			Current_Position.Velocity.x_velocity = (-angular_velocity_FR + angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * M_PI * WHEEL_DIAMETER / 1440;
 			Current_Position.Velocity.y_velocity = (angular_velocity_FR + angular_velocity_FL + angular_velocity_BL + angular_velocity_BR) * M_PI * WHEEL_DIAMETER / 1440;
 			Current_Position.Velocity.yaw_velocity = (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * M_PI * WHEEL_DIAMETER / 1440 / (DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES);
-
-			//测试用，验证上面部分是否计算正确，因此注释
+					
 			Current_Position.Coordinate.x_coor += Current_Position.Velocity.x_velocity * time_ms / 1000.0f;
 			Current_Position.Coordinate.y_coor += Current_Position.Velocity.y_velocity * time_ms / 1000.0f;
 			Current_Position.Coordinate.angle_coor += Current_Position.Velocity.yaw_velocity * time_ms / 1000.0f;
