@@ -3,21 +3,23 @@
 
 class Position_Class
 {
-  public:
+public:
 	class Velocity_Class
 	{
-	  public:
+	public:
+		Velocity_Class(void) :x_velocity(0.0f), y_velocity(0.0f), angle_velocity(0.0f) {}
 		float x_velocity;   //x轴速度,mm/s
 		float y_velocity;   //y轴速度,mm/s
-		float yaw_velocity; //旋转角速度,°/s
-		//Velocity_StructTypedef() :x_velocity(0.0f), y_velocity(0.0f), yaw_velocity(0.0f) {};
+		float angle_velocity; //旋转角速度,°/s
+		//Velocity_StructTypedef() :x_velocity(0.0f), y_velocity(0.0f), angle_velocity(0.0f) {};
 		Velocity_Class &operator+=(const Velocity_Class &addend);
 		Velocity_Class &operator-=(const Velocity_Class &subtrahend);
 	}; //速度
 
 	class Coordinate_Class
 	{
-	  public:
+	public:
+		Coordinate_Class(void) :x_coor(0.0f), y_coor(0.0f), angle_coor(0.0f) {}
 		float x_coor;	 //x轴坐标(mm)，精确到0.1mm
 		float y_coor;	 //y轴坐标(mm)，精确到0.1mm
 		float angle_coor; //角度坐标(°),精确到0.1°
@@ -32,12 +34,17 @@ class Position_Class
 	Position_Class &operator+=(const Position_Class &addend);
 	Position_Class &operator-=(const Position_Class &subtrahend);
 
+	static Velocity_Class &Absolute_To_Relative(const Velocity_Class &Absolute_Velocity, Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
 	static Coordinate_Class &Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
+	static Position_Class &Absolute_To_Relative(const Position_Class &Absolute_Position, Position_Class &Relative_Position, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
+	
+	static Velocity_Class &Relative_To_Absolute(Velocity_Class &Absolute_Velocity, const Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
+	static Position_Class &Relative_To_Absolute(Position_Class &Absolute_Position, const Position_Class &Relative_Position, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 
 	static Coordinate_Class &Truncation_Coor(Coordinate_Class &Source_Coor);
 
-  private:
+private:
 };
 
 static Position_Class::Velocity_Class operator+(const Position_Class::Velocity_Class &summand, const Position_Class::Velocity_Class &addend);

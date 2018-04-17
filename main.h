@@ -22,10 +22,10 @@
 * TIM8 编码器FR
 * TIM9 用于编码器的频率计算
 * TIM10 用于执行机构的PWM波
-* TIM11
+* TIM11 用于看门狗喂狗（50ms）
 * TIM12 BR、BL轮子转速
 * TIM13
-* TIM14
+* TIM14 
 */
 
 /*
@@ -60,23 +60,25 @@ AGV_State::Command_State::Get_Command_State command_buf_state; //指令缓存区
 Gcode_Class Gcode_Buf[4], Gcode_Inject;						   //指令暂存区，插入指令暂存区
 Gcode_Class *Gcode_Index_w = 0, *Gcode_Index_r = 0;			   //指令暂存区读写下标
 
-Position_Class AGV_Target_V_InAGV_Coor_InWorld;										 //AGV的预期速度和坐标
-Position_Class &AGV_Current_V_InAGV_Coor_InWorld = Mecanum_AGV.V_InAGV_Coor_InWorld; //AGV当前的速度和坐标
-
-int command_line = 0;		  //表示当前已经接收到的指令行数
-int agv_add = 1;			  //AGV地址号
-bool Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
+Position_Class AGV_Target_Position_InWorld, AGV_Current_Position_InWorld;	//AGV在世界坐标系下的目标位姿和速度，在AGV坐标系下的当前位姿和速度
+Position_Class AGV_Target_Position_InAGV, AGV_Current_Position_InAGV;	//AGV在AGV坐标系下的目标位姿和速度,在AGV坐标系下的当前位姿和速度
+Position_Class AGV_Current_Position_InWorld_By_Encoder;	//世界坐标系下AGV的坐标和位置
+//Position_Class &AGV_Current_Encoder_Position_InWorld = Mecanum_AGV.Position_InWorld_By_Encoder; //世界坐标系下由编码器获取的AGV的当前速度和坐标
 
 void Init_System(void);
 void Init_System_RCC(void);														//初始化系统所需时钟
 void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); //获取指令
 void Process_Command(Gcode_Class *command, bool &IS_Parsing);					//处理指令
 void Update_Print_MSG(void);													//更新状态，打印信息
+void Update_Position_InWorld(Position_Class&Position_By_Encoder);	//由编码器获取的坐标和速度更新全局坐标和速度，待更新
 
-void Get_Command_Coor(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Coordinate_Class &Target_Coor_InWorld);
+Position_Class::Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Coordinate_Class &Target_Coor_InWorld, bool Is_Absolute_Coor = true);
 
-void Gcode_G0(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class &Target_V_InAGV_Coor_InWorld);
-void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class &Target_V_InAGV_Coor_InWorld);
+void Gcode_G0(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class &Target_Position_InWorld);
+void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class &Target_Position_InWorld);
+
+void Gcode_G90(void);	//设定为绝对坐标
+void Gcode_G91(void);	//设定为相对坐标
 
 void Gcode_M17(void);
 void Gcode_M18(void);

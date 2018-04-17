@@ -18,6 +18,7 @@
         <string>STM32F407VE</string>
         <string>flash_layout</string>
         <string>STM32F40_41xxx</string>
+        <string>DEBUG_DEFAULT_INTERRUPT_HANDLERS</string>
       </PreprocessorMacros>
       <IncludeDirectories>
         <string>.</string>
@@ -25,6 +26,7 @@
         <string>../CMSIS_StdPeriph</string>
         <string>../DSP_Lib</string>
         <string>../STM32F4xx_StdPeriph_Driver/inc</string>
+        <string>../Eigen</string>
       </IncludeDirectories>
       <CFLAGS />
       <CXXFLAGS />

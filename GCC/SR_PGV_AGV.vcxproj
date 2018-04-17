@@ -68,6 +68,7 @@
     <ClCompile Include="..\App\Position.cpp" />
     <ClCompile Include="..\App\Queue.cpp" />
     <ClCompile Include="..\delay.c" />
+    <ClCompile Include="..\Driver\AGV_Control.cpp" />
     <ClCompile Include="..\Driver\AS62.cpp" />
     <ClCompile Include="..\Driver\C50XB.cpp" />
     <ClCompile Include="..\Driver\EEPROM.cpp" />

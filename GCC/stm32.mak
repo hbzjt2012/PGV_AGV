@@ -16,8 +16,8 @@ AR := $(TOOLCHAIN_ROOT)/bin/arm-eabi-ar.exe
 OBJCOPY := $(TOOLCHAIN_ROOT)/bin/arm-eabi-objcopy.exe
 
 #Additional flags
-PREPROCESSOR_MACROS += ARM_MATH_CM4 STM32F407VE flash_layout STM32F40_41xxx
-INCLUDE_DIRS += . .. ../CMSIS_StdPeriph ../DSP_Lib ../STM32F4xx_StdPeriph_Driver/inc
+PREPROCESSOR_MACROS += ARM_MATH_CM4 STM32F407VE flash_layout STM32F40_41xxx DEBUG_DEFAULT_INTERRUPT_HANDLERS
+INCLUDE_DIRS += . .. ../CMSIS_StdPeriph ../DSP_Lib ../STM32F4xx_StdPeriph_Driver/inc ../Eigen
 LIBRARY_DIRS += 
 LIBRARY_NAMES += 
 ADDITIONAL_LINKER_INPUTS += 

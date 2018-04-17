@@ -22,5 +22,5 @@ namespace Interpolation
 	} Actual_INPUT_TypedefStructure;
 
 	void Init(Actual_INPUT_TypedefStructure &Input);
-	bool Get_Expectation(float &output_velocity, float current_coor);
+	bool Get_Expectation(float &output_velocity, float current_coor,float &target_coor);
 }

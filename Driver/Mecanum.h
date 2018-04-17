@@ -14,7 +14,7 @@
 
 class Mecanum_Wheel_Class final : public AGV_Control_Class
 {
-  public:
+public:
 	Mecanum_Wheel_Class() = default;
 	~Mecanum_Wheel_Class() = default;
 
@@ -22,14 +22,15 @@ class Mecanum_Wheel_Class final : public AGV_Control_Class
 	void Brake(bool value) override;
 	void Run(bool value) override;
 
-	bool demo(const Position_Class::Velocity_Class &Target_velocity, float &pulse, float &time);
+	void Write_Velocity(Position_Class::Velocity_Class &AGV_Velocity_InAGV) override;	//将AGV速度转换为车轮速度，更新velocity
+	Position_Class &Update_Post_By_Encoder(Position_Class &Current_InWorld) override; //根据编码器更新世界坐标系下的坐标和速度
+	
 
-	void Write_Velocity(Position_Class::Velocity_Class &velocity_InAGV) override;												   //根据输入速度控制小车
-	Position_Class &Update_Post(Position_Class &Current_Position, const Position_Class::Velocity_Class &Target_velocity) override; //更新坐标和速度
-
-  private:
+private:
 	static Motor_Class Front_Left_Wheel, Front_Right_Wheel;			//左、右前轮
 	static Motor_Class Behind_Left_Wheel, Behind_Right_Wheel;		//左、右后轮
 	static Encoder_Class Front_Left_Encoder, Front_Right_Encoder;   //左、右前轮编码器
 	static Encoder_Class Behind_Left_Encoder, Behind_Right_Encoder; //左、右后轮编码器
+
+	
 };

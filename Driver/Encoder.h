@@ -24,6 +24,8 @@ class Encoder_Class : protected TIM_Base_Class
 	float Get_Palstance(float time_ms); //根据采样时间计算角速度（单位为°/ms）
 	int16_t Get_Pulse(void);			//读取编码器旋转的角度
 
+	void Set_Pulse(int16_t);	//测试用
+
 	static unsigned long Update_Period(void); //更新
 	static void Clear_Time_US(void)
 	{

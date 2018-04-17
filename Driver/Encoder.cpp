@@ -22,11 +22,11 @@ void Encoder_Class::Init_Fre_TIM(void)
 	Encoder_Fre_Tim.Init((uint16_t)65530, 1680); //TIM9的时钟为168Mhz，1680分频，最大计数时间为655.3ms
 	//Encoder_Fre_Tim.Init_No_Interrupt((uint16_t)65530, 1680);	//TIM9的时钟为168Mhz，1680分频，最大计数时间为655.3ms
 
-	NVIC_InitStructure.NVIC_IRQChannel = TIM1_BRK_TIM9_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		  //响应优先级
-	NVIC_Init(&NVIC_InitStructure);
+	//NVIC_InitStructure.NVIC_IRQChannel = TIM1_BRK_TIM9_IRQn;
+	//NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	//NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
+	//NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		  //响应优先级
+	//NVIC_Init(&NVIC_InitStructure);
 
 	Encoder_Fre_Tim.Begin(); //开始计数
 }
@@ -36,6 +36,11 @@ int16_t Encoder_Class::Get_Pulse(void)
 	pulse_cnt = ((TIM_Base_Class::Read()) - 0x7FFF); //在TI1、TI2边沿采样，4倍频
 	TIM_Base_Class::Write(0x7FFF);					 //将初值计数设定为溢出计数的一半
 	return pulse_cnt;								 //4倍频
+}
+
+void Encoder_Class::Set_Pulse(int16_t)
+{
+	pulse_cnt = 20;	//测试用
 }
 
 //************************************
