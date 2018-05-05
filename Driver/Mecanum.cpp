@@ -1,8 +1,12 @@
 #include "Mecanum.h"
+#include "../Math/Trigonometric.h"
 #include <cmath>
 
 #define Velocity_RES 1000 //速度分辨率
-
+//使用Lyapunov方法根据误差更新速度
+#define C1 0.0f
+#define C2 C1
+#define C3 0.0f
 
 Motor_Class Mecanum_Wheel_Class::Front_Left_Wheel = Motor_Class FRONT_LEFT_MOTOR;	 //前左轮
 Motor_Class Mecanum_Wheel_Class::Front_Right_Wheel = Motor_Class FRONT_RIGHT_MOTOR;   //前右轮
@@ -39,10 +43,16 @@ void Mecanum_Wheel_Class::Init(void)
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource14, GPIO_AF_TIM12);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource15, GPIO_AF_TIM12);
 
-	Front_Left_Wheel.Init(84000, Velocity_RES, FRONT_LEFT_MOTOR_TIM_CHANNEL);
-	Front_Right_Wheel.Init(84000, Velocity_RES, FRONT_RIGHT_MOTOR_TIM_CHANNEL);
-	Behind_Left_Wheel.Init(84000, Velocity_RES, BEHIND_LEFT_MOTOR_TIM_CHANNEL);
-	Behind_Right_Wheel.Init(84000, Velocity_RES, BEHIND_RIGHT_MOTOR_TIM_CHANNEL);
+	//Front_Left_Wheel.Init(84000, Velocity_RES, FRONT_LEFT_MOTOR_TIM_CHANNEL);
+	//Front_Right_Wheel.Init(84000, Velocity_RES, FRONT_RIGHT_MOTOR_TIM_CHANNEL);
+	//Behind_Left_Wheel.Init(84000, Velocity_RES, BEHIND_LEFT_MOTOR_TIM_CHANNEL);
+	//Behind_Right_Wheel.Init(84000, Velocity_RES, BEHIND_RIGHT_MOTOR_TIM_CHANNEL);
+
+	//测试用，PWM频率2K
+	Front_Left_Wheel.Init(2000, Velocity_RES, FRONT_LEFT_MOTOR_TIM_CHANNEL);
+	Front_Right_Wheel.Init(2000, Velocity_RES, FRONT_RIGHT_MOTOR_TIM_CHANNEL);
+	Behind_Left_Wheel.Init(2000, Velocity_RES, BEHIND_LEFT_MOTOR_TIM_CHANNEL);
+	Behind_Right_Wheel.Init(2000, Velocity_RES, BEHIND_RIGHT_MOTOR_TIM_CHANNEL);
 
 	GPIO_InitStructure.GPIO_Pin = _BV(8) | _BV(9);
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
@@ -90,6 +100,32 @@ void Mecanum_Wheel_Class::Run(bool value)
 	Front_Right_Wheel.Run_Enable(value);
 	Behind_Left_Wheel.Run_Enable(value);
 	Behind_Right_Wheel.Run_Enable(value);
+}
+
+Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Position_Class::Coordinate_Class & Error_Coor_InAGV, Position_Class::Velocity_Class & AGV_Velocity_InAGV)
+{
+	//此处算法应改进
+	AGV_Velocity_InAGV.x_velocity += C1*Error_Coor_InAGV.x_coor;
+	AGV_Velocity_InAGV.y_velocity += C2*Error_Coor_InAGV.y_coor;
+	AGV_Velocity_InAGV.angle_velocity += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+	return AGV_Velocity_InAGV;
+}
+
+//依照麦克纳姆轮的物理限制，更新速度
+Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(Position_Class::Velocity_Class & Velocity)
+{
+	//根据麦克纳姆轮的运动学关系式以及不打滑的约束方程
+	//Vx，Vy，(Lx+Ly)W(弧度)的约束面为正八面体的表面,即|Vx|+|Vy|+|(Lx+Ly)W(弧度)|<=V_wheel
+
+	//|Velocity.x_velocity|+|Velocity.y_velocity|+|angular_velocity|<=WHEEL_MAX_LINE_VELOCITY
+	float angular_velocity = Velocity.angle_velocity*M_PI / 180.0f*(DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2.0f;
+	float abs_temp = ABS(Velocity.x_velocity) + ABS(Velocity.y_velocity) + ABS(angular_velocity);
+	if (abs_temp > WHEEL_MAX_LINE_VELOCITY)
+	{
+		float k = WHEEL_MAX_LINE_VELOCITY / abs_temp;
+		Velocity *= k;
+	}
+	return Velocity;
 }
 
 //************************************

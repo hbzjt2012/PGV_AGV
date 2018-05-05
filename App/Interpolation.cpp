@@ -105,52 +105,87 @@ void Interpolation::Init(Actual_INPUT_TypedefStructure &Input)
 //************************************
 bool Interpolation::Get_Expectation(float &output_velocity, float current_coor, float &target_coor)
 {
+	target_coor = current_coor;
 	current_coor *= Distance_Symbols;
+
+	if (current_coor < 0.0f)	//在反方向
+	{
+		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
+		target_coor = 0.0f;
+	}
+	else if (current_coor < acc_distance)//在加速区内
+	{
+		output_velocity = sqrtf(2 * ABS(current_coor) * Input_Para.acceleration_abs + Input_Para.min_velocity_abs * Input_Para.min_velocity_abs) * Distance_Symbols;
+		//target_coor = (current_coor)* Distance_Symbols;
+	}
+	else if (current_coor < (acc_distance + const_distance))//在匀速区
+	{
+		output_velocity = Input_Para.max_velocity_abs * Distance_Symbols;
+		//target_coor = (current_coor )* Distance_Symbols;
+	}
+	else if (current_coor < (acc_distance + const_distance + dec_distance))//在减速区
+	{
+		output_velocity = sqrtf(Input_Para.max_velocity_abs * Input_Para.max_velocity_abs - 2 * ABS(current_coor - acc_distance - const_distance) * Input_Para.acceleration_abs) * Distance_Symbols;
+		//target_coor = (current_coor )* Distance_Symbols;
+	}
+	else if (current_coor < (acc_distance + const_distance + dec_distance + slowly_distance - DISATNCE_DELTA))//在慢速区
+	{
+		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
+		//target_coor = (current_coor)* Distance_Symbols;
+	}
+	else
+	{
+		output_velocity = 0.0f;
+		//target_coor = (current_coor)* Distance_Symbols;
+		return false;
+	}
+	return true;
+
+
 	//if (current_coor < 0.0f)	//在反方向
 	//{
 	//	output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
 	//	target_coor = 0.0f;
 	//	return true;
 	//}
-	
 
-	if (current_coor < acc_distance) //在加速区内
-	{
-		output_velocity = sqrtf(2*ABS(current_coor) * Input_Para.acceleration_abs + Input_Para.min_velocity_abs * Input_Para.min_velocity_abs) * Distance_Symbols;
-		target_coor = (current_coor + 1.0f)* Distance_Symbols;
-		return true;
-	}
-	else
-		current_coor -= acc_distance;
+	//if (current_coor < acc_distance) //在加速区内
+	//{
+	//	output_velocity = sqrtf(2 * ABS(current_coor) * Input_Para.acceleration_abs + Input_Para.min_velocity_abs * Input_Para.min_velocity_abs) * Distance_Symbols;
+	//	target_coor = (current_coor)* Distance_Symbols;
+	//	return true;
+	//}
+	//else
+	//	current_coor -= acc_distance;
 
-	if (current_coor < const_distance) //在匀速区
-	{
-		output_velocity = Input_Para.max_velocity_abs * Distance_Symbols;
-		target_coor = (current_coor + 5.0f)* Distance_Symbols;
-		return true;
-	}
-	else
-		current_coor -= const_distance;
+	//if (current_coor < const_distance) //在匀速区
+	//{
+	//	output_velocity = Input_Para.max_velocity_abs * Distance_Symbols;
+	//	target_coor = (current_coor)* Distance_Symbols;
+	//	return true;
+	//}
+	//else
+	//	current_coor -= const_distance;
 
-	if (current_coor < dec_distance) //在减速区
-	{
-		output_velocity = sqrtf(Input_Para.max_velocity_abs * Input_Para.max_velocity_abs - 2*ABS(current_coor) * Input_Para.acceleration_abs) * Distance_Symbols;
-		target_coor = (current_coor + 1.0f)* Distance_Symbols;
-		return true;
-	}
-	else
-		current_coor -= dec_distance;
+	//if (current_coor < dec_distance) //在减速区
+	//{
+	//	output_velocity = sqrtf(Input_Para.max_velocity_abs * Input_Para.max_velocity_abs - 2 * ABS(current_coor) * Input_Para.acceleration_abs) * Distance_Symbols;
+	//	target_coor = (current_coor)* Distance_Symbols;
+	//	return true;
+	//}
+	//else
+	//	current_coor -= dec_distance;
 
-	if (current_coor < (slowly_distance - DISATNCE_DELTA)) //在慢速区
-	{
-		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
-		target_coor = current_coor;
-		return true;
-	}
-	else
-	{
-		output_velocity = 0.0f;
-		target_coor = current_coor;
-		return false; //插补完成
-	}
+	//if (current_coor < (slowly_distance - DISATNCE_DELTA)) //在慢速区
+	//{
+	//	output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
+	//	target_coor = current_coor* Distance_Symbols;
+	//	return true;
+	//}
+	//else
+	//{
+	//	output_velocity = 0.0f;
+	//	target_coor = current_coor* Distance_Symbols;
+	//	return false; //插补完成
+	//}
 }

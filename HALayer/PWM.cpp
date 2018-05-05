@@ -27,6 +27,15 @@ void PWM_Class::Init(uint32_t fre, uint16_t res, uint8_t channel)
 	Begin();
 }
 
+//测试电机用代码
+void PWM_Class::Set_duty_Demo(float duty)
+{
+	uint16_t duty_cycle = 0;
+	duty_cycle = duty * (resolution >> 1);
+	duty_cycle = RANGE(duty_cycle, 0, resolution >> 1);
+	Set_duty(duty_cycle);
+}
+
 //************************************
 // Method:    Set_duty
 // FullName:  PWM_Class::Set_duty

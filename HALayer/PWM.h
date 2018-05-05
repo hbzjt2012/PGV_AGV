@@ -16,6 +16,7 @@ class PWM_Class : protected TIM_Base_Class
 	virtual ~PWM_Class() = default;
 
 	void Init(uint32_t fre, uint16_t res, uint8_t channel); //初始化用于产生PWM波的定时器通道，不打开中断
+	void Set_duty_Demo(float duty);
 	void Set_duty(float duty);								//设置占空比
 	void Set_duty(uint16_t duty);							//设置占空比
 	void Set_duty(int duty) { Set_duty((uint16_t)duty); }   //设置占空比

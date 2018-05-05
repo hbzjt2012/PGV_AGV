@@ -14,6 +14,7 @@ public:
 		//Velocity_StructTypedef() :x_velocity(0.0f), y_velocity(0.0f), angle_velocity(0.0f) {};
 		Velocity_Class &operator+=(const Velocity_Class &addend);
 		Velocity_Class &operator-=(const Velocity_Class &subtrahend);
+		Velocity_Class operator*=(float factor);
 	}; //速度
 
 	class Coordinate_Class
@@ -37,7 +38,7 @@ public:
 	static Velocity_Class &Absolute_To_Relative(const Velocity_Class &Absolute_Velocity, Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
 	static Coordinate_Class &Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
 	static Position_Class &Absolute_To_Relative(const Position_Class &Absolute_Position, Position_Class &Relative_Position, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
-	
+
 	static Velocity_Class &Relative_To_Absolute(Velocity_Class &Absolute_Velocity, const Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 	static Position_Class &Relative_To_Absolute(Position_Class &Absolute_Position, const Position_Class &Relative_Position, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
@@ -47,9 +48,9 @@ public:
 private:
 };
 
-static Position_Class::Velocity_Class operator+(const Position_Class::Velocity_Class &summand, const Position_Class::Velocity_Class &addend);
-static Position_Class::Velocity_Class operator-(const Position_Class::Velocity_Class &minuend, const Position_Class::Velocity_Class &subtrahend);
-static Position_Class::Coordinate_Class operator+(const Position_Class::Coordinate_Class &summand, const Position_Class::Coordinate_Class &addend);
-static Position_Class::Coordinate_Class operator-(const Position_Class::Coordinate_Class &minuend, const Position_Class::Coordinate_Class &subtrahend);
-static Position_Class operator+(const Position_Class &summand, const Position_Class &addend);
-static Position_Class operator-(const Position_Class &minuend, const Position_Class &subtrahend);
+Position_Class::Velocity_Class operator+(const Position_Class::Velocity_Class &summand, const Position_Class::Velocity_Class &addend);
+Position_Class::Velocity_Class operator-(const Position_Class::Velocity_Class &minuend, const Position_Class::Velocity_Class &subtrahend);
+Position_Class::Coordinate_Class operator+(const Position_Class::Coordinate_Class &summand, const Position_Class::Coordinate_Class &addend);
+Position_Class::Coordinate_Class operator-(const Position_Class::Coordinate_Class &minuend, const Position_Class::Coordinate_Class &subtrahend);
+Position_Class operator+(const Position_Class &summand, const Position_Class &addend);
+Position_Class operator-(const Position_Class &minuend, const Position_Class &subtrahend);

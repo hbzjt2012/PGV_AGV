@@ -14,6 +14,7 @@ class Motor_Class
 	~Motor_Class() = default;
 
 	void Init(uint32_t fre, uint16_t res, uint8_t channel); //初始化电机，电机准备开始，刹车状态
+	void Set_Speed_Demo(float speed);
 	void Set_Speed(float speed);							//设置电机速度(设置占空比)
 	void Run_Enable(bool value);							//设置电机是否运行
 	void Brake_Enable(bool value);							//设置电机是否刹车

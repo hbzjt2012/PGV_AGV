@@ -3,6 +3,7 @@
 #include "../HALayer/DMA.h"
 #include "../HALayer/IO.h"
 #include "../macros.h"
+#include "./App/Position.h"
 
 /*
 * PGV传感器地址为0
@@ -62,12 +63,17 @@ class PGV_Class : private Uart_Base_Class
 	bool Analyze_Data(void);						   //解析数据
 	inline PGV_CMD_Mode cmd(void) { return cmd_mode; } //返回上一次发送的指令
 
+
+	Position_Class::Coordinate_Class&Cal_Coor(void);	//该函数需修改，当前为测试用
+
 	//从读取的数据中获得的x,y,z偏差数值
 	float x_deviation;		  //x偏差
 	float y_deviation;		  //y偏差
 	float angle_deviation;	//角度偏差,取值为0~360
 	uint32_t tag_control_num; //存放Tag标签号或者控制码
 	PGV_TARGET target;		  //指示当前读头读取到的目标种类
+
+	
 
 	bool warn_flag; //警告标志
 	uint16_t warn;
@@ -104,6 +110,8 @@ class PGV_Class : private Uart_Base_Class
 	int32_t angle_temp;
 	bool rx_xor_flag;	  //校验标志
 	PGV_CMD_Mode cmd_mode; //发送的指令
+
+	Position_Class::Coordinate_Class coor;	//实际坐标
 
 	static void TX_Dir(void); //设置485方向为发送
 	static void RX_Dir(void); //设置485方向为接收

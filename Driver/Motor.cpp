@@ -22,6 +22,22 @@ void Motor_Class::Init(uint32_t fre, uint16_t res, uint8_t channel)
 	_speed.Set_duty(0);
 }
 
+
+void Motor_Class::Set_Speed_Demo(float speed)
+{
+
+	if (speed < 0.0f)
+	{
+		_dir.Write(!dir_init);
+		speed = -speed;
+	}
+	else
+	{
+		_dir.Write(dir_init);
+	}
+	_speed.Set_duty_Demo(speed);
+}
+
 void Motor_Class::Set_Speed(float speed)
 {
 

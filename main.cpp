@@ -1,11 +1,29 @@
 #include "main.h"
 #include <cstring>
 
+Mecanum_Wheel_Class Mecanum_AGV;							   //麦克纳姆轮
+IO_Class Led = IO_Class(GPIOA, GPIO_Pin_15);				   //LED指示灯
+C50XB_Class My_Serial;										   //无线串口
+PGV_Class PGV100;												//PGV传感器
+Queue_Class Gcode_Queue = Queue_Class(4);					   //存放Gcode指令用的队列
+AGV_State::Command_State::Get_Command_State command_buf_state; //指令缓存区的状态
+Gcode_Class Gcode_Buf[4], Gcode_Inject;						   //指令暂存区，插入指令暂存区
+Gcode_Class *Gcode_Index_w = 0, *Gcode_Index_r = 0;			   //指令暂存区读写下标
+
+Position_Class AGV_Target_Position_InWorld, AGV_Current_Position_InWorld;	//AGV在世界坐标系下的目标位姿和速度，在AGV坐标系下的当前位姿和速度
+Position_Class AGV_Target_Position_InAGV, AGV_Current_Position_InAGV;	//AGV在AGV坐标系下的目标位姿和速度,在AGV坐标系下的当前位姿和速度
+Position_Class AGV_Current_Position_InWorld_By_Encoder;	//世界坐标系下由编码器获取的AGV的坐标和位置
+Position_Class AGV_Current_Position_InWorld_By_PGV;	//世界坐标系下由PGV获取的AGV的坐标和位置
+
 int command_line = 0;		  //表示当前已经接收到的指令行数
 int agv_add = 1;			  //AGV地址号
 bool Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
 
-bool demo_flag=false;
+bool demo_flag = false;
+
+float target_speed_demo = 10.0f;
+float angular_velocity_temp = 0.0f;
+int cnt = 0;
 
 extern "C" {
 	void TIM1_TRG_COM_TIM11_IRQHandler()
@@ -23,41 +41,85 @@ int main(void)
 	Init_System();
 
 	My_Serial.enable();
-	//AGV_Current_V_InAGV_Coor_InWorld.Coordinate.angle_coor = 90.0f;
 	Gcode_M17();
 
-	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = TIM1_TRG_COM_TIM11_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
-	NVIC_Init(&NVIC_InitStructure);
+	//NVIC_InitTypeDef NVIC_InitStructure;
+	//NVIC_InitStructure.NVIC_IRQChannel = TIM1_TRG_COM_TIM11_IRQn;
+	//NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	//NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
+	//NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
+	//NVIC_Init(&NVIC_InitStructure);
 
-	TIM_Base_Class::Init(TIM11, 10000, 840, true);	//设置定时器11的中断频率，用于设置串口接收超时检测	
-	TIM_Base_Class::Begin(TIM11);
+	//TIM_Base_Class::Init(TIM11, 10000, 84, true);	//设置定时器11的中断频率，时基	
+	//TIM_Base_Class::Begin(TIM11);
+
+	//Mecanum_Wheel_Class::Front_Right_Wheel.Set_Speed_Demo(target_speed_demo / MOTOR_MAX_ROTATIONL_VELOCITY);
+
+	/*for (int i = 0; i < 20; i++)
+	{
+		delay_ms(500);
+	}*/
 
 	while (1)
 	{
+
+		//if (demo_flag)
+		//{
+		//	cnt++;
+		//	if (cnt%2000==0)
+		//	{
+		//		cnt = 0;
+		//		target_speed_demo += 10.0f;
+		//		Mecanum_Wheel_Class::Front_Right_Wheel.Set_Speed_Demo(target_speed_demo / MOTOR_MAX_ROTATIONL_VELOCITY);
+		//	}
+		//	if (target_speed_demo>3000.0f)
+		//	{
+		//		target_speed_demo = 10.0f;
+		//	}
+		//	demo_flag = false;
+		//	int16_t pulse = Mecanum_Wheel_Class::Front_Right_Encoder.Get_Pulse();	//获取脉冲数
+		//	angular_velocity_temp = Mecanum_Wheel_Class::Front_Right_Encoder.Get_Palstance(5) * 1000.0f;	//获取角速度(°/s)
+		//	angular_velocity_temp = angular_velocity_temp / 6;	//转换为转速(rpm)
+		//	My_Serial.print(target_speed_demo);	//输出目标速度
+		//	My_Serial.print(",");
+		//	My_Serial.print(angular_velocity_temp);	//输出当前转速
+		//	My_Serial.print("\r\n");
+		//	My_Serial.flush();
+		//}
 		//计算当前位姿
 
 		AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
 		//融合陀螺仪得到的速度和坐标
 		//融合PGV传感器得到的速度和坐标
-		if (demo_flag)
-		{
-			demo_flag = false;
-			Gcode_I114();
-			//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
+		//if (PGV100.Return_rx_flag())
+		//{
+		//	PGV100.Clear_rx_flag();
+		//	if (PGV100.Analyze_Data()&&(PGV100.target==PGV_Class::Data_Matrix_Tag))
+		//	{
+		//		AGV_Current_Position_InWorld_By_PGV.Coordinate = PGV100.Cal_Coor();
+		//	}
+		//}
+		//if (demo_flag)
+		//{
+		//	demo_flag = false;
+		//	//Gcode_I116();
+		//	PGV100.Send(PGV_Class::Read_PGV_Data);
+		//	//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
 
-		}
-		Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度
+		//}
+
+		Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度(此处需要处理与G92指令的关系)
 
 		//AGV_Current_Position_InWorld_By_Encoder.Coordinate.angle_coor=0.0f;
 
+		//C0运动到C8有问题
 		Get_Available_Command(command_buf_state); //获取处理当前指令(已完成)
 		//检查避障
 		//计算实际所需速度(需要当前坐标、当前速度，预期坐标，预期速度)
-		Mecanum_AGV.Write_Velocity(AGV_Target_Position_InAGV.Velocity); //运动控制
+
+		Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Position_InWorld.Coordinate, AGV_Target_Position_InWorld.Coordinate, AGV_Target_Position_InAGV.Velocity);
+		//Mecanum_AGV.Write_Velocity(AGV_Target_Position_InAGV.Velocity); //运动控制
+
 
 		//if (encoder_flag)
 		//{
@@ -75,10 +137,16 @@ void Init_System(void)
 	delay_init();
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); //设置系统中断优先级分组 2
 	Init_System_RCC();
+
 	Led.Init(GPIO_Mode_OUT);
+	//for (int i = 0; i < 20; i++)
+	//{
+	//	delay_ms(500);
+	//}
 	Mecanum_AGV.Init();
 	My_Serial.Init(115200);
 	Gcode_Queue.Init();
+	PGV100.Init(115200);
 }
 
 void Init_System_RCC(void)
@@ -192,7 +260,12 @@ void Process_Command(Gcode_Class *command, bool &IS_Parsing)
 			//Gcode_G0(command, AGV_Current_Position_InWorld.Coordinate, AGV_Target_Position_InAGV);
 			//break;
 		case 1:
-			Gcode_G1(command, AGV_Current_Position_InWorld.Coordinate, AGV_Target_Position_InAGV);
+			Gcode_G1(command, AGV_Current_Position_InWorld.Coordinate, AGV_Target_Position_InAGV.Velocity, AGV_Target_Position_InWorld.Coordinate);
+			if (command->Parse_State == Gcode_Class::IS_PARSED)
+			{
+				AGV_Current_Position_InWorld_By_Encoder.Coordinate = Position_Class::Truncation_Coor(AGV_Current_Position_InWorld_By_Encoder.Coordinate);
+				AGV_Current_Position_InWorld.Coordinate = Position_Class::Truncation_Coor(AGV_Current_Position_InWorld.Coordinate); //圆整坐标
+			}
 			break;
 		case 90:
 			Gcode_G90();
@@ -200,6 +273,10 @@ void Process_Command(Gcode_Class *command, bool &IS_Parsing)
 			break;
 		case 91:
 			Gcode_G91();
+			command->Parse_State = Gcode_Class::IS_PARSED;
+			break;
+		case 92:
+			AGV_Current_Position_InWorld.Coordinate = Gcode_G92(command, AGV_Current_Position_InWorld.Coordinate);
 			command->Parse_State = Gcode_Class::IS_PARSED;
 			break;
 		default:
@@ -224,22 +301,27 @@ void Process_Command(Gcode_Class *command, bool &IS_Parsing)
 			break;
 		}
 		IS_Parsing = (command->Parse_State == Gcode_Class::IS_PARSED) ? false : true;										//更新指令处理状态
-		AGV_Current_Position_InWorld.Coordinate = Position_Class::Truncation_Coor(AGV_Current_Position_InWorld.Coordinate); //对当前坐标保留1位小数
+		//AGV_Current_Position_InWorld.Coordinate = Position_Class::Truncation_Coor(AGV_Current_Position_InWorld.Coordinate); //对当前坐标保留1位小数
 		break;
 	case 'I':
 		switch (codenum)
 		{
 		case 0:
 			Gcode_I0();
-			command->Parse_State = Gcode_Class::IS_PARSED;
 			break;
 		case 114:
 			Gcode_I114();
-			command->Parse_State = Gcode_Class::IS_PARSED;
+			break;
+		case 115:
+			Gcode_I115();
+			break;
+		case 116:
+			Gcode_I116();
 			break;
 		default:
 			break;
 		}
+		command->Parse_State = Gcode_Class::IS_PARSED;
 		break;
 	default:
 		command->Parse_State = Gcode_Class::IS_PARSED; //无法识别的指令
@@ -315,36 +397,49 @@ Position_Class::Coordinate_Class &Get_Command_Coor(Gcode_Class *command, const P
 	add = strchr(command_add, 'C');
 	Coor_temp.angle_coor = add ? (atof(add + 1)) : k * Current_Coor_InWorld.angle_coor; //获取angle轴坐标
 
+	//if (Coor_temp.angle_coor-Current_Coor_InWorld.angle_coor>180.0f)
+	//{
+	//	Coor_temp.angle_coor -= 360.0f;
+	//}
 	if (!Is_Absolute_Coor) //当前是相对坐标
 	{
 		Target_Coor_InWorld = Position_Class::Relative_To_Absolute(Target_Coor_InWorld, Coor_temp, Current_Coor_InWorld); //坐标变换
 	}
 	else
 	{
+		if (Coor_temp.angle_coor - Current_Coor_InWorld.angle_coor > 180.0f)
+		{
+			Coor_temp.angle_coor -= 360.0f;
+		}
+		else if (Coor_temp.angle_coor - Current_Coor_InWorld.angle_coor < -180.0f)
+		{
+			Coor_temp.angle_coor += 360.0f;
+		}
 		Target_Coor_InWorld = Coor_temp;
 	}
 
-	Target_Coor_InWorld = Position_Class::Truncation_Coor(Target_Coor_InWorld); //圆整
+	//Target_Coor_InWorld = Position_Class::Truncation_Coor(Target_Coor_InWorld); //圆整
 	return Target_Coor_InWorld;
 }
 
 //同G1
-inline void Gcode_G0(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class &Target_Position_InAGV)
+inline void Gcode_G0(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Velocity_Class &Target_Velocity_InAGV, Position_Class::Coordinate_Class &Target_Coor_InWorld)
 {
-	Gcode_G1(command, Current_Coor_InWorld, Target_Position_InAGV);
+	Gcode_G1(command, Current_Coor_InWorld, Target_Velocity_InAGV, Target_Coor_InWorld);
 }
 
 //************************************
 // Method:    Gcode_G1
 // FullName:  Gcode_G1
-// Access:    public
+// Access:    public 
 // Returns:   void
-// Parameter: Gcode_Class * command
-// Parameter: const Position_Class::Coordinate_Class & Current_Coor_InWorld 当前坐标
-// Parameter: Position_Class& Target_Position_InAGV 预期坐标(AGV坐标系),预期速度(AGV坐标系)
-// Description: 直线插补目标点，获取下一时刻的预期坐标(世界坐标系),预期速度(AGV坐标系)
+// Parameter: Gcode_Class * command 指令
+// Parameter: const Position_Class::Coordinate_Class & Current_Coor_InWorld 当前坐标(世界坐标系)
+// Parameter: Position_Class::Velocity_Class & Target_Velocity_InAGV 期望速度(AGV坐标系)
+// Parameter: Position_Class::Coordinate_Class & Target_Coor_InWorld 期望坐标(世界坐标系)
+// Description: 直线插补目标点，获取下一时刻的期望坐标(世界坐标系),期望速度(AGV坐标系)
 //************************************
-void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class &Target_Position_InAGV)
+void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Velocity_Class &Target_Velocity_InAGV, Position_Class::Coordinate_Class &Target_Coor_InWorld)
 {
 	static Position_Class::Coordinate_Class Origin_Coor_InWorld, Destination_Coor_InWorld;	//世界坐标系下的起点坐标，终点坐标
 	static Position_Class::Coordinate_Class Current_Coor_InOrigin, Destination_Coor_InOrigin; //起点坐标系下的当前坐标，终点坐标
@@ -379,41 +474,15 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 			if (abs_x > abs_y) //对x轴插补
 			{
 				Is_X_Coor = true;
-				//if (Destination_Coor_InOrigin.x_coor > 0.0f)
-				//{
-				//	singal_Destination_Coor_InOrigin = 1;
-				//	Para_Input.displacement = Destination_Coor_InOrigin.x_coor;
-				//}
-				//else
-				//{
-				//	singal_Destination_Coor_InOrigin = -1;
-				//	Para_Input.displacement = -Destination_Coor_InOrigin.x_coor;
-				//}
 				abs_temp = abs_x;
-				//singal_Destination_Coor_InOrigin = Destination_Coor_InOrigin.x_coor > 0.0f ? 1 : -1;
 				Para_Input.displacement = Destination_Coor_InOrigin.x_coor;
-				//Para_Input.max_velocity_abs = AGV_MAX_LINE_VELOCITY * abs_x / (abs_x + abs_y) / 1000.0f;
-				//Para_Input.min_velocity_abs = AGV_MIN_LINE_VELOCITY * abs_x / (abs_x + abs_y) / 1000.0f;
 			}
 			else //对y轴插补
 			{
-				//singal_Destination_Coor_InOrigin = Destination_Coor_InOrigin.y_coor > 0.0f ? 1 : -1;
 				Is_X_Coor = false;
 
-				//if (Destination_Coor_InOrigin.y_coor > 0.0f)
-				//{
-				//	singal_Destination_Coor_InOrigin = 1;
-				//	Para_Input.displacement = Destination_Coor_InOrigin.y_coor;
-				//}
-				//else
-				//{
-				//	singal_Destination_Coor_InOrigin = -1;
-				//	Para_Input.displacement = -Destination_Coor_InOrigin.y_coor;
-				//}
 				abs_temp = abs_y;
 				Para_Input.displacement = Destination_Coor_InOrigin.y_coor;
-				//Para_Input.max_velocity_abs = AGV_MAX_LINE_VELOCITY * abs_y / (abs_x + abs_y) / 1000.0f;
-				//Para_Input.min_velocity_abs = AGV_MIN_LINE_VELOCITY * abs_y / (abs_x + abs_y) / 1000.0f;
 			}
 			Para_Input.max_velocity_abs = AGV_MAX_LINE_VELOCITY * abs_temp / (abs_x + abs_y) / 1000.0f;
 			Para_Input.min_velocity_abs = AGV_MIN_LINE_VELOCITY * abs_temp / (abs_x + abs_y) / 1000.0f;
@@ -423,18 +492,6 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 		{
 			float angle_delta = Destination_Coor_InOrigin.angle_coor - Current_Coor_InOrigin.angle_coor;
 
-			//if (angle_delta > 0.0f)
-			//{
-			//	singal_Destination_Coor_InOrigin = 1;
-			//	Para_Input.displacement = angle_delta;
-			//}
-			//else
-			//{
-			//	singal_Destination_Coor_InOrigin = -1;
-			//	Para_Input.displacement = -angle_delta;
-			//}
-
-			//singal_Destination_Coor_InOrigin = Destination_Coor_InOrigin.angle_coor > 0.0f ? 1 : -1;
 			Para_Input.displacement = angle_delta;
 			Para_Input.acceleration_abs = AGV_MAX_LINE_ACCELERATION_ACCELERATION / (1000.0f * 1000.0f); //单位转换
 			Para_Input.max_velocity_abs = AGV_MAX_ANGULAR_VELOCITY / 1000.0f;
@@ -500,8 +557,8 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//{
 					//	velocity_temp = -velocity_temp;
 					//}
-					Target_Position_InAGV.Velocity.x_velocity = velocity_temp * 1000.0f; //计算目标x轴速度
-					Target_Position_InAGV.Coordinate.x_coor = target_coor;				 //更新目标点
+					Target_Velocity_InAGV.x_velocity = velocity_temp * 1000.0f; //计算目标x轴速度
+					Target_Coor_InWorld.x_coor = target_coor;				 //更新目标点
 					//if (ABS(Destination_Coor_InOrigin.x_coor) < FLOAT_DELTA)
 					//{
 					//	Target_Position_InAGV.Velocity.y_velocity = 0.0f;
@@ -509,8 +566,8 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//}
 					//else
 					{
-						Target_Position_InAGV.Velocity.y_velocity = Destination_Coor_InOrigin.y_coor / Destination_Coor_InOrigin.x_coor * Target_Position_InAGV.Velocity.x_velocity;
-						Target_Position_InAGV.Coordinate.y_coor = coor_temp2.y;
+						Target_Velocity_InAGV.y_velocity = Destination_Coor_InOrigin.y_coor / Destination_Coor_InOrigin.x_coor * Target_Velocity_InAGV.x_velocity;
+						Target_Coor_InWorld.y_coor = coor_temp2.y;
 					}
 				}
 				else
@@ -519,8 +576,8 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//{
 					//	velocity_temp = -velocity_temp;
 					//}
-					Target_Position_InAGV.Velocity.y_velocity = velocity_temp * 1000.0f;
-					Target_Position_InAGV.Coordinate.y_coor = target_coor; //更新目标点
+					Target_Velocity_InAGV.y_velocity = velocity_temp * 1000.0f;
+					Target_Coor_InWorld.y_coor = target_coor; //更新目标点
 					//if (ABS(Destination_Coor_InOrigin.y_coor) < FLOAT_DELTA)
 					//{
 					//	Target_Position_InAGV.Velocity.x_velocity = 0.0f;
@@ -528,21 +585,21 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//}
 					//else
 					{
-						Target_Position_InAGV.Velocity.x_velocity = Destination_Coor_InOrigin.x_coor / Destination_Coor_InOrigin.y_coor * Target_Position_InAGV.Velocity.y_velocity;
-						Target_Position_InAGV.Coordinate.x_coor = coor_temp2.x;
+						Target_Velocity_InAGV.x_velocity = Destination_Coor_InOrigin.x_coor / Destination_Coor_InOrigin.y_coor * Target_Velocity_InAGV.y_velocity;
+						Target_Coor_InWorld.x_coor = coor_temp2.x;
 					}
 				}
-				Target_Position_InAGV.Velocity.angle_velocity = 0.0f;
-				Target_Position_InAGV.Coordinate.angle_coor = 0.0f;
+				Target_Velocity_InAGV.angle_velocity = 0.0f;
+				Target_Coor_InWorld.angle_coor = Origin_Coor_InWorld.angle_coor;
 			}
 			else //表示当前插补完成
 			{
-				Target_Position_InAGV.Velocity.x_velocity = 0.0f;
-				Target_Position_InAGV.Velocity.y_velocity = 0.0f;
-				Target_Position_InAGV.Velocity.angle_velocity = 0.0f;
-				Target_Position_InAGV.Coordinate.x_coor = 0.0f;
-				Target_Position_InAGV.Coordinate.y_coor = 0.0f;
-				Target_Position_InAGV.Coordinate.angle_coor = 0.0f;
+				Target_Velocity_InAGV.x_velocity = 0.0f;
+				Target_Velocity_InAGV.y_velocity = 0.0f;
+				Target_Velocity_InAGV.angle_velocity = 0.0f;
+				Target_Coor_InWorld.x_coor = Destination_Coor_InWorld.x_coor;
+				Target_Coor_InWorld.y_coor = Destination_Coor_InWorld.y_coor;
+				Target_Coor_InWorld.angle_coor = Origin_Coor_InWorld.angle_coor;
 				Is_Interpolation_Angle = true; //对角度进行插补
 				command->Parse_State = Gcode_Class::NO_PARSE;
 			}
@@ -556,20 +613,20 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 				//{
 				//	velocity_temp = -velocity_temp;
 				//}
-				Target_Position_InAGV.Velocity.angle_velocity = velocity_temp * 1000.0f;
-				Target_Position_InAGV.Coordinate.angle_coor = target_coor;
+				Target_Velocity_InAGV.angle_velocity = velocity_temp * 1000.0f;
+				Target_Coor_InWorld.angle_coor = target_coor;
 			}
 			else
 			{
-				Target_Position_InAGV.Velocity.angle_velocity = 0.0f;
-				Target_Position_InAGV.Coordinate.angle_coor = 0.0f;
+				Target_Velocity_InAGV.angle_velocity = 0.0f;
+				Target_Coor_InWorld.angle_coor = Destination_Coor_InWorld.angle_coor;
 				Is_Interpolation_Angle = false;				   //对x,y轴进行插补
 				command->Parse_State = Gcode_Class::IS_PARSED; //执行完毕
 			}
-			Target_Position_InAGV.Velocity.x_velocity = 0.0f;
-			Target_Position_InAGV.Velocity.y_velocity = 0.0f;
-			Target_Position_InAGV.Coordinate.x_coor = 0.0f;
-			Target_Position_InAGV.Coordinate.y_coor = 0.0f;
+			Target_Velocity_InAGV.x_velocity = 0.0f;
+			Target_Velocity_InAGV.y_velocity = 0.0f;
+			Target_Coor_InWorld.x_coor = Destination_Coor_InWorld.x_coor;
+			Target_Coor_InWorld.y_coor = Destination_Coor_InWorld.y_coor;
 		}
 		break;
 	case Gcode_Class::IS_PARSED: //插补完成
@@ -588,6 +645,14 @@ void Gcode_G90(void)
 void Gcode_G91(void)
 {
 	Is_Absolute_Coor = false;
+}
+
+Position_Class::Coordinate_Class & Gcode_G92(Gcode_Class * command, Position_Class::Coordinate_Class & Current_Coor_InWorld)
+{
+	Position_Class::Coordinate_Class Coor_Temp = Current_Coor_InWorld;
+	Current_Coor_InWorld = Get_Command_Coor(command, Current_Coor_InWorld, Coor_Temp);
+	Current_Coor_InWorld = Position_Class::Truncation_Coor(Current_Coor_InWorld); //圆整
+	return Current_Coor_InWorld;
 }
 
 //启动所有电机
@@ -619,11 +684,31 @@ void Gcode_I114(void)
 	My_Serial.print("  angle:");
 	My_Serial.print(AGV_Current_Position_InWorld.Coordinate.angle_coor);
 
-	My_Serial.print("  v_x:");
-	My_Serial.print(AGV_Target_Position_InAGV.Velocity.x_velocity);
-	My_Serial.print("  v_y:");
-	My_Serial.print(AGV_Target_Position_InAGV.Velocity.y_velocity);
-	My_Serial.print("  w:");
-	My_Serial.print(AGV_Target_Position_InAGV.Velocity.angle_velocity);
+	//My_Serial.print("  v_x:");
+	//My_Serial.print(AGV_Target_Position_InAGV.Velocity.x_velocity);
+	//My_Serial.print("  v_y:");
+	//My_Serial.print(AGV_Target_Position_InAGV.Velocity.y_velocity);
+	//My_Serial.print("  w:");
+	//My_Serial.print(AGV_Target_Position_InAGV.Velocity.angle_velocity);
 	//My_Serial.print("\r\n");
+}
+
+void Gcode_I115(void)
+{
+	My_Serial.print("\r\nEncoder---x:");
+	My_Serial.print(AGV_Current_Position_InWorld_By_Encoder.Coordinate.x_coor);
+	My_Serial.print("  y:");
+	My_Serial.print(AGV_Current_Position_InWorld_By_Encoder.Coordinate.y_coor);
+	My_Serial.print("  angle:");
+	My_Serial.print(AGV_Current_Position_InWorld_By_Encoder.Coordinate.angle_coor);
+}
+
+void Gcode_I116(void)
+{
+	My_Serial.print("\r\nPGV---x:");
+	My_Serial.print(AGV_Current_Position_InWorld_By_PGV.Coordinate.x_coor);
+	My_Serial.print("  y:");
+	My_Serial.print(AGV_Current_Position_InWorld_By_PGV.Coordinate.y_coor);
+	My_Serial.print("  angle:");
+	My_Serial.print(AGV_Current_Position_InWorld_By_PGV.Coordinate.angle_coor);
 }

@@ -5,8 +5,8 @@
 bool PGV_Class::rx_flag = false;			  //表明收到了一帧数据
 uint16_t PGV_Class::tx_cnt = 0;				  //发送字节的计数
 uint16_t PGV_Class::rx_cnt = 0;				  //接收字节的计数
-uint8_t PGV_Class::TX_buf[16] = {0};		  //发送数据的缓冲区，若缓冲区满，则不会发送
-volatile uint8_t PGV_Class::RX_buf[32] = {0}; //接收数据的缓冲区
+uint8_t PGV_Class::TX_buf[16] = { 0 };		  //发送数据的缓冲区，若缓冲区满，则不会发送
+volatile uint8_t PGV_Class::RX_buf[32] = { 0 }; //接收数据的缓冲区
 
 IO_Class PGV_Class::dir = IO_Class(GPIOD, GPIO_Pin_0);
 
@@ -313,6 +313,17 @@ bool PGV_Class::Analyze_Data(void)
 		angle_deviation += 360.0;
 	}
 	return rx_xor_flag;
+}
+
+Position_Class::Coordinate_Class & PGV_Class::Cal_Coor(void)
+{
+	coor.x_coor = (tag_control_num % 4) * 600.0f + x_deviation;	//测试用间隔为60cm
+	coor.y_coor = (tag_control_num / 4) * 600.0f + y_deviation;	//测试用间隔为60cm
+	coor.angle_coor = angle_deviation;
+
+	coor = Position_Class::Truncation_Coor(coor);
+
+	// TODO: 在此处插入 return 语句
 }
 
 inline void PGV_Class::TX_Dir(void)

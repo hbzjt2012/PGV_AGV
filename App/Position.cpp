@@ -16,6 +16,14 @@ Position_Class::Velocity_Class &Position_Class::Velocity_Class::operator-=(const
 	return *this;
 }
 
+Position_Class::Velocity_Class Position_Class::Velocity_Class::operator*=(float factor)
+{
+	x_velocity *= factor;
+	y_velocity *= factor;
+	angle_velocity *= factor;
+	return *this;
+}
+
 Position_Class::Coordinate_Class &Position_Class::Coordinate_Class::operator+=(const Coordinate_Class &addend)
 {
 	x_coor += addend.x_coor;
@@ -140,9 +148,11 @@ Position_Class & Position_Class::Relative_To_Absolute(Position_Class & Absolute_
 //角度缩小至360°内
 Position_Class::Coordinate_Class &Position_Class::Truncation_Coor(Coordinate_Class &Source_Coor)
 {
+	long angle_temp = ((long)(Source_Coor.angle_coor * 10.0f) % 3600);
 	Source_Coor.x_coor = (long)(Source_Coor.x_coor * 10.0f) / 10.0f;
 	Source_Coor.y_coor = (long)(Source_Coor.y_coor * 10.0f) / 10.0f;
-	Source_Coor.angle_coor = ((long)(Source_Coor.angle_coor * 10.0f) % 3600) / 10.0f;
+	Source_Coor.angle_coor = ((angle_temp + 3600) % 3600) / 10.0f;
+	//Source_Coor.angle_coor = ((long)(Source_Coor.angle_coor * 10.0f) % 3600) / 10.0f;
 
 	return Source_Coor;
 	// TODO: 在此处插入 return 语句
