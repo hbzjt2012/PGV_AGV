@@ -18,6 +18,7 @@ Position_Class AGV_Current_Position_InWorld_By_PGV;	//世界坐标系下由PGV�
 int command_line = 0;		  //表示当前已经接收到的指令行数
 int agv_add = 1;			  //AGV地址号
 bool Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
+bool update_coor_bycode = false;
 
 bool demo_flag = false;
 
@@ -368,7 +369,16 @@ void Update_Print_MSG(void)
 
 void Update_Position_InWorld(Position_Class &Position_By_Encoder)
 {
-	AGV_Current_Position_InWorld = Position_By_Encoder;
+	if (update_coor_bycode)
+	{
+		update_coor_bycode = false;
+		Position_By_Encoder = AGV_Current_Position_InWorld;
+	}
+	else
+	{
+		AGV_Current_Position_InWorld = Position_By_Encoder;
+	}
+
 }
 
 //************************************
@@ -491,7 +501,7 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 		else //插补角度
 		{
 			float angle_delta = Destination_Coor_InOrigin.angle_coor - Current_Coor_InOrigin.angle_coor;
-
+			Origin_Coor_InWorld = Current_Coor_InWorld; //保存起点坐标
 			Para_Input.displacement = angle_delta;
 			Para_Input.acceleration_abs = AGV_MAX_LINE_ACCELERATION_ACCELERATION / (1000.0f * 1000.0f); //单位转换
 			Para_Input.max_velocity_abs = AGV_MAX_ANGULAR_VELOCITY / 1000.0f;
@@ -652,6 +662,7 @@ Position_Class::Coordinate_Class & Gcode_G92(Gcode_Class * command, Position_Cla
 	Position_Class::Coordinate_Class Coor_Temp = Current_Coor_InWorld;
 	Current_Coor_InWorld = Get_Command_Coor(command, Current_Coor_InWorld, Coor_Temp);
 	Current_Coor_InWorld = Position_Class::Truncation_Coor(Current_Coor_InWorld); //圆整
+	update_coor_bycode = true;
 	return Current_Coor_InWorld;
 }
 
