@@ -44,15 +44,15 @@ int main(void)
 	My_Serial.enable();
 	Gcode_M17();
 
-	//NVIC_InitTypeDef NVIC_InitStructure;
-	//NVIC_InitStructure.NVIC_IRQChannel = TIM1_TRG_COM_TIM11_IRQn;
-	//NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	//NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
-	//NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
-	//NVIC_Init(&NVIC_InitStructure);
+	NVIC_InitTypeDef NVIC_InitStructure;
+	NVIC_InitStructure.NVIC_IRQChannel = TIM1_TRG_COM_TIM11_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
+	NVIC_Init(&NVIC_InitStructure);
 
-	//TIM_Base_Class::Init(TIM11, 10000, 84, true);	//设置定时器11的中断频率，时基	
-	//TIM_Base_Class::Begin(TIM11);
+	TIM_Base_Class::Init(TIM11, 10000, 840, true);	//设置定时器11的中断频率，时基	
+	TIM_Base_Class::Begin(TIM11);
 
 	//Mecanum_Wheel_Class::Front_Right_Wheel.Set_Speed_Demo(target_speed_demo / MOTOR_MAX_ROTATIONL_VELOCITY);
 
@@ -87,27 +87,27 @@ int main(void)
 		//	My_Serial.print("\r\n");
 		//	My_Serial.flush();
 		//}
-		//计算当前位姿
 
+		//计算当前位姿
 		AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
 		//融合陀螺仪得到的速度和坐标
 		//融合PGV传感器得到的速度和坐标
-		//if (PGV100.Return_rx_flag())
-		//{
-		//	PGV100.Clear_rx_flag();
-		//	if (PGV100.Analyze_Data()&&(PGV100.target==PGV_Class::Data_Matrix_Tag))
-		//	{
-		//		AGV_Current_Position_InWorld_By_PGV.Coordinate = PGV100.Cal_Coor();
-		//	}
-		//}
-		//if (demo_flag)
-		//{
-		//	demo_flag = false;
-		//	//Gcode_I116();
-		//	PGV100.Send(PGV_Class::Read_PGV_Data);
-		//	//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
-
-		//}
+		if (PGV100.Return_rx_flag())
+		{
+			PGV100.Clear_rx_flag();
+			if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
+			{
+				AGV_Current_Position_InWorld_By_PGV.Coordinate = PGV100.Cal_Coor();
+				//Gcode_I116();
+			}
+		}
+		if (demo_flag)
+		{
+			demo_flag = false;
+			
+			PGV100.Send(PGV_Class::Read_PGV_Data);
+			//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
+		}
 
 		Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度(此处需要处理与G92指令的关系)
 
@@ -139,10 +139,10 @@ void Init_System(void)
 	Init_System_RCC();
 
 	Led.Init(GPIO_Mode_OUT);
-	//for (int i = 0; i < 20; i++)
-	//{
-	//	delay_ms(500);
-	//}
+	for (int i = 0; i < 20; i++)
+	{
+		delay_ms(500);
+	}
 	Mecanum_AGV.Init();
 	My_Serial.Init(115200);
 	Gcode_Queue.Init();

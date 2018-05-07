@@ -75,6 +75,9 @@ $$
 ## 理想情况
 * 纯滚动
 * 刚体  
+## 约束
+$\Large \color{#C0Df0f} |v_x|+|v_y|+|(l_x+l_y)*w|\leqslant w_{rmax}*r$
+> $v_x,v_y,w$分别为车体的线速度、角速度,$w_{rmax},r$为轮子的最大速度，半径。约束空间为正八面体
 
 设实际当前坐标$\color{#C2CBF2}  P_{Current\_InWorld}=[x_c,y_c,\theta_c]^T$，期望坐标$\color{#C2CBF2} P_{Target\_InWorld}=[x_t,y_t,\theta_t]^T$  
 定义误差$\color{#C2CBF2} P_{Error\_InWorld}=P_{Target\_InWorld}-P_{Current\_InWorld}$  
