@@ -14,7 +14,7 @@ unsigned short AGV_Control_Class::Cal_Cycle(void)
 
 void AGV_Control_Class::Write_Velocity(const Position_Class::Coordinate_Class&AGV_Current_Coor_InWorld, const Position_Class::Coordinate_Class&AGV_Target_Coor_InWorld, Position_Class::Velocity_Class &AGV_Target_Velocity_InAGV)
 {
-	Position_Class::Coordinate_Class Error_Coor_InWorld = AGV_Target_Coor_InWorld - AGV_Current_Coor_InWorld;	//获取世界坐标系中的误差
+	//Position_Class::Coordinate_Class Error_Coor_InWorld = AGV_Target_Coor_InWorld - AGV_Current_Coor_InWorld;	//获取世界坐标系中的误差
 	Position_Class::Coordinate_Class Error_Coor_InAGV;
 	//Error_Coor_InAGV = Position_Class::Absolute_To_Relative(Error_Coor_InWorld, Error_Coor_InAGV, AGV_Current_Coor_InWorld);	//获取在当前AGV坐标系中的误差
 

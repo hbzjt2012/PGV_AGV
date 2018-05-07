@@ -14,7 +14,7 @@ class Encoder_Class : protected TIM_Base_Class
 {
 	friend void TIM1_BRK_TIM9_IRQHandler(void);
 
-  public:
+public:
 	Encoder_Class(TIM_TypeDef *TIMx) : TIM_Base_Class(TIMx) {}
 	~Encoder_Class() = default;
 
@@ -23,6 +23,7 @@ class Encoder_Class : protected TIM_Base_Class
 
 	float Get_Palstance(float time_ms); //根据采样时间计算角速度（单位为°/ms）
 	int16_t Get_Pulse(void);			//读取编码器旋转的角度
+	void Clear(void) { TIM_Base_Class::Write(0x7FFF); }
 
 	void Set_Pulse(int16_t);	//测试用
 
@@ -33,7 +34,7 @@ class Encoder_Class : protected TIM_Base_Class
 		time_10us_Interrupt_cnt = 0;
 	}
 
-  private:
+private:
 	static TIM_Base_Class Encoder_Fre_Tim;
 	static volatile unsigned long time_10us_Interrupt_cnt; //单位10us
 	int16_t pulse_cnt;									   //编码器旋转的脉冲数(4倍频)

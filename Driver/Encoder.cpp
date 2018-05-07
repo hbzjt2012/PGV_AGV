@@ -34,7 +34,8 @@ void Encoder_Class::Init_Fre_TIM(void)
 int16_t Encoder_Class::Get_Pulse(void)
 {
 	pulse_cnt = ((TIM_Base_Class::Read()) - 0x7FFF); //在TI1、TI2边沿采样，4倍频
-	TIM_Base_Class::Write(0x7FFF);					 //将初值计数设定为溢出计数的一半
+	Clear();
+	//TIM_Base_Class::Write(0x7FFF);					 //将初值计数设定为溢出计数的一半
 	return pulse_cnt;								 //4倍频
 }
 

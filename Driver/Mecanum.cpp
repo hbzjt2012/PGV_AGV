@@ -4,9 +4,9 @@
 
 #define Velocity_RES 1000 //速度分辨率
 //使用Lyapunov方法根据误差更新速度
-#define C1 0.0f
+#define C1 3.0f
 #define C2 C1
-#define C3 0.0f
+#define C3 30.0f
 
 Motor_Class Mecanum_Wheel_Class::Front_Left_Wheel = Motor_Class FRONT_LEFT_MOTOR;	 //前左轮
 Motor_Class Mecanum_Wheel_Class::Front_Right_Wheel = Motor_Class FRONT_RIGHT_MOTOR;   //前右轮
@@ -105,9 +105,18 @@ void Mecanum_Wheel_Class::Run(bool value)
 Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Position_Class::Coordinate_Class & Error_Coor_InAGV, Position_Class::Velocity_Class & AGV_Velocity_InAGV)
 {
 	//此处算法应改进
-	AGV_Velocity_InAGV.x_velocity += C1*Error_Coor_InAGV.x_coor;
-	AGV_Velocity_InAGV.y_velocity += C2*Error_Coor_InAGV.y_coor;
-	AGV_Velocity_InAGV.angle_velocity += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+	if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
+	{
+		AGV_Velocity_InAGV.x_velocity += C1*Error_Coor_InAGV.x_coor;
+	}
+	if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
+	{
+		AGV_Velocity_InAGV.y_velocity += C2*Error_Coor_InAGV.y_coor;
+	}
+	if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
+	{
+		AGV_Velocity_InAGV.angle_velocity += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+	}
 	return AGV_Velocity_InAGV;
 }
 
@@ -187,6 +196,7 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 	{
 		time_10us_threshold = Cal_Cycle();	//计算时间周期
 
+
 		//若新阈值>0，重置时间
 		if (time_10us_threshold > 0)
 		{
@@ -194,6 +204,13 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 			time_current_10us = 0;
 			time_last_10us = 0;
 			time_10us = 0;
+		}
+		else
+		{
+			Front_Right_Encoder.Clear();
+			Front_Left_Encoder.Clear();
+			Behind_Right_Encoder.Clear();
+			Behind_Left_Encoder.Clear();
 		}
 	}
 

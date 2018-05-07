@@ -113,7 +113,6 @@ int main(void)
 
 		//AGV_Current_Position_InWorld_By_Encoder.Coordinate.angle_coor=0.0f;
 
-		//C0运动到C8有问题
 		Get_Available_Command(command_buf_state); //获取处理当前指令(已完成)
 		//检查避障
 		//计算实际所需速度(需要当前坐标、当前速度，预期坐标，预期速度)
@@ -459,6 +458,10 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 	float target_coor = 0.0f;
 	MyMath::Coor coor_temp1, coor_temp2; //过点1，和路径的垂直点2
 
+	float velocity_temp = 0.0f;
+	bool interpolation_result;	//插补结果
+	Position_Class::Coordinate_Class Target_Coor_InOrigin;	//起点坐标系中的目标坐标
+
 	//static int singal_Destination_Coor_InOrigin = 1; //终点坐标在起点坐标中的符号位，若待插补距离<0，则为-1，否则为1
 
 	switch (command->Parse_State)
@@ -550,17 +553,42 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 
 		target_coor = current_coor;
 
+		interpolation_result = Interpolation::Get_Expectation(velocity_temp, current_coor, target_coor);	//插补结果
+		//Target_Coor_InOrigin.x_coor = target_coor;
+		//Target_Coor_InOrigin.y_coor = target_coor;
+		//Target_Coor_InOrigin.angle_coor = target_coor;
+
+		//Target_Coor_InWorld = Position_Class::Relative_To_Absolute(Target_Coor_InWorld, Target_Coor_InOrigin, Origin_Coor_InWorld);
+
+
+		if (!Is_Interpolation_Angle) //在对x,y轴进行插补
+		{
+			if (Is_X_Coor)	//对x轴插补
+			{
+				Target_Coor_InOrigin.x_coor = target_coor;
+				Target_Coor_InOrigin.y_coor = coor_temp2.y;
+			}
+			else
+			{
+				Target_Coor_InOrigin.x_coor = coor_temp2.x;
+				Target_Coor_InOrigin.y_coor = target_coor;
+			}
+		}
+		else //对角度进行插补
+		{
+			Target_Coor_InOrigin.angle_coor = target_coor;
+		}
+		Target_Coor_InWorld = Position_Class::Relative_To_Absolute(Target_Coor_InWorld, Target_Coor_InOrigin, Origin_Coor_InWorld);
+
+
 		//获取插补速度
 		if (!Is_Interpolation_Angle) //在对x,y轴进行插补
 		{
-			float velocity_temp = 0.0f;
-			if (Interpolation::Get_Expectation(velocity_temp, current_coor, target_coor))
+			//float velocity_temp = 0.0f;
+			//if (Interpolation::Get_Expectation(velocity_temp, current_coor, target_coor))
+			if (interpolation_result)
 			{
 
-				//////////////////////////////////////////////////////////////////////////
-				//对于除数0处理错误，记得修正
-				//已修正，判断除数的绝对值，若小于某个值，则认为是0
-				//////////////////////////////////////////////////////////////////////////
 				if (Is_X_Coor)
 				{
 					//if (Destination_Coor_InOrigin.x_coor < 0.0f)
@@ -568,7 +596,7 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//	velocity_temp = -velocity_temp;
 					//}
 					Target_Velocity_InAGV.x_velocity = velocity_temp * 1000.0f; //计算目标x轴速度
-					Target_Coor_InWorld.x_coor = target_coor;				 //更新目标点
+					//Target_Coor_InWorld.x_coor = target_coor;				 //更新目标点
 					//if (ABS(Destination_Coor_InOrigin.x_coor) < FLOAT_DELTA)
 					//{
 					//	Target_Position_InAGV.Velocity.y_velocity = 0.0f;
@@ -577,7 +605,8 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//else
 					{
 						Target_Velocity_InAGV.y_velocity = Destination_Coor_InOrigin.y_coor / Destination_Coor_InOrigin.x_coor * Target_Velocity_InAGV.x_velocity;
-						Target_Coor_InWorld.y_coor = coor_temp2.y;
+						//类似该语句存在问题
+						//Target_Coor_InWorld.y_coor = coor_temp2.y;
 					}
 				}
 				else
@@ -587,7 +616,9 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//	velocity_temp = -velocity_temp;
 					//}
 					Target_Velocity_InAGV.y_velocity = velocity_temp * 1000.0f;
-					Target_Coor_InWorld.y_coor = target_coor; //更新目标点
+					//类似该处地方错误，target_coor为相对坐标，而左值为绝对坐标
+					//target_coor有错误，需纠正
+					//Target_Coor_InWorld.y_coor = target_coor; //更新目标点
 					//if (ABS(Destination_Coor_InOrigin.y_coor) < FLOAT_DELTA)
 					//{
 					//	Target_Position_InAGV.Velocity.x_velocity = 0.0f;
@@ -596,7 +627,7 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 					//else
 					{
 						Target_Velocity_InAGV.x_velocity = Destination_Coor_InOrigin.x_coor / Destination_Coor_InOrigin.y_coor * Target_Velocity_InAGV.y_velocity;
-						Target_Coor_InWorld.x_coor = coor_temp2.x;
+						//Target_Coor_InWorld.x_coor = coor_temp2.x;
 					}
 				}
 				Target_Velocity_InAGV.angle_velocity = 0.0f;
@@ -607,36 +638,42 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 				Target_Velocity_InAGV.x_velocity = 0.0f;
 				Target_Velocity_InAGV.y_velocity = 0.0f;
 				Target_Velocity_InAGV.angle_velocity = 0.0f;
-				Target_Coor_InWorld.x_coor = Destination_Coor_InWorld.x_coor;
-				Target_Coor_InWorld.y_coor = Destination_Coor_InWorld.y_coor;
-				Target_Coor_InWorld.angle_coor = Origin_Coor_InWorld.angle_coor;
+				Target_Coor_InWorld.x_coor = Current_Coor_InWorld.x_coor;
+				Target_Coor_InWorld.y_coor = Current_Coor_InWorld.y_coor;
+				Target_Coor_InWorld.angle_coor = Current_Coor_InWorld.angle_coor;
 				Is_Interpolation_Angle = true; //对角度进行插补
 				command->Parse_State = Gcode_Class::NO_PARSE;
 			}
 		}
 		else //对角度插补
 		{
-			float velocity_temp = 0.0f;
-			if (Interpolation::Get_Expectation(velocity_temp, current_coor, target_coor))
+			//float velocity_temp = 0.0f;
+			//if (Interpolation::Get_Expectation(velocity_temp, current_coor, target_coor))
+			if (interpolation_result)
 			{
 				//if (Destination_Coor_InOrigin.angle_coor < 0.0f)
 				//{
 				//	velocity_temp = -velocity_temp;
 				//}
+				Target_Velocity_InAGV.x_velocity = 0.0f;
+				Target_Velocity_InAGV.y_velocity = 0.0f;
 				Target_Velocity_InAGV.angle_velocity = velocity_temp * 1000.0f;
-				Target_Coor_InWorld.angle_coor = target_coor;
+				Target_Coor_InWorld.x_coor = Destination_Coor_InWorld.x_coor;
+				Target_Coor_InWorld.y_coor = Destination_Coor_InWorld.y_coor;
+				//Target_Coor_InWorld.angle_coor = target_coor;
 			}
 			else
 			{
+				Target_Velocity_InAGV.x_velocity = 0.0f;
+				Target_Velocity_InAGV.y_velocity = 0.0f;
 				Target_Velocity_InAGV.angle_velocity = 0.0f;
-				Target_Coor_InWorld.angle_coor = Destination_Coor_InWorld.angle_coor;
+				Target_Coor_InWorld.x_coor = Current_Coor_InWorld.x_coor;
+				Target_Coor_InWorld.y_coor = Current_Coor_InWorld.y_coor;
+				Target_Coor_InWorld.angle_coor = Current_Coor_InWorld.angle_coor;
 				Is_Interpolation_Angle = false;				   //对x,y轴进行插补
 				command->Parse_State = Gcode_Class::IS_PARSED; //执行完毕
 			}
-			Target_Velocity_InAGV.x_velocity = 0.0f;
-			Target_Velocity_InAGV.y_velocity = 0.0f;
-			Target_Coor_InWorld.x_coor = Destination_Coor_InWorld.x_coor;
-			Target_Coor_InWorld.y_coor = Destination_Coor_InWorld.y_coor;
+
 		}
 		break;
 	case Gcode_Class::IS_PARSED: //插补完成
