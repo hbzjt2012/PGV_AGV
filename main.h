@@ -59,6 +59,7 @@ void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); 
 void Process_Command(Gcode_Class *command, bool &IS_Parsing);					//处理指令
 void Update_Print_MSG(void);													//更新状态，打印信息
 void Update_Position_InWorld(Position_Class&Position_By_Encoder);	//由编码器获取的坐标和速度更新全局坐标和速度，待更新
+void Update_Coor_InWorld(Position_Class::Coordinate_Class&Coor_By_Encoder, Position_Class::Coordinate_Class&Coor_By_PGV);	//由编码器、PGV传感器更新全局坐标
 
 Position_Class::Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Coordinate_Class &Target_Coor_InWorld, bool Is_Absolute_Coor = true);
 

@@ -2,11 +2,11 @@
 #include "../Math/Trigonometric.h"
 #include <cmath>
 
-#define Velocity_RES 1000 //速度分辨率
+#define Velocity_RES 10000 //速度分辨率
 //使用Lyapunov方法根据误差更新速度
-#define C1 3.0f
+#define C1 2.0f
 #define C2 C1
-#define C3 30.0f
+#define C3 20.0f
 
 Motor_Class Mecanum_Wheel_Class::Front_Left_Wheel = Motor_Class FRONT_LEFT_MOTOR;	 //前左轮
 Motor_Class Mecanum_Wheel_Class::Front_Right_Wheel = Motor_Class FRONT_RIGHT_MOTOR;   //前右轮
@@ -143,7 +143,7 @@ Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(P
 // Access:    public 
 // Returns:   void
 // Parameter: Position_Class::Velocity_Class & AGV_Velocity_InAGV
-// Description: 将AGV速度转换为车轮速度，更新velocity
+// Description: 将AGV速度转换为车轮速度
 //************************************
 void Mecanum_Wheel_Class::Write_Velocity(Position_Class::Velocity_Class &AGV_Velocity_InAGV)
 {
@@ -157,7 +157,7 @@ void Mecanum_Wheel_Class::Write_Velocity(Position_Class::Velocity_Class &AGV_Vel
 	y_velocity_abs = ABS(AGV_Velocity_InAGV.y_velocity);
 	yaw_velocity_abs = ABS(yaw_temp);
 
-	velocity = sqrtf(x_velocity_abs*x_velocity_abs + y_velocity_abs*y_velocity_abs + yaw_velocity_abs*yaw_velocity_abs);	//更新AGV的质心速度2范数
+	velocity = sqrtf(x_velocity_abs*x_velocity_abs + y_velocity_abs*y_velocity_abs + temp*temp);	//更新AGV的质心速度2范数
 
 	duty_FR = (-AGV_Velocity_InAGV.x_velocity + AGV_Velocity_InAGV.y_velocity + temp) / WHEEL_MAX_LINE_VELOCITY;
 	duty_FL = (AGV_Velocity_InAGV.x_velocity + AGV_Velocity_InAGV.y_velocity - temp) / WHEEL_MAX_LINE_VELOCITY;
@@ -182,7 +182,7 @@ void Mecanum_Wheel_Class::Write_Velocity(Position_Class::Velocity_Class &AGV_Vel
 // Parameter: Position_Class & Current_InWorld 世界坐标系下当前AGV的坐标和速度
 // Description: 根据编码器更新世界坐标系下的坐标和速度
 //************************************
-Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Current_InWorld)
+Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Current_InWorld, bool &update_by_extern)
 {
 	static unsigned short time_10us_threshold = 0;
 	static unsigned long time_last_10us = 0, time_current_10us = 0; //上一次时间计数，当前时间计数
@@ -191,6 +191,12 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 
 	float angular_velocity_FR, angular_velocity_FL;   //前右，前左轮角速度
 	float angular_velocity_BL, angular_velocity_BR;   //后左，后右轮角速度
+
+	if (update_by_extern)	//坐标由外部更新
+	{
+		time_10us_threshold = 0;	//重新计算阈值
+		update_by_extern = false;
+	}
 
 	if (!time_10us_threshold) //阈值==0，计算新阈值
 	{

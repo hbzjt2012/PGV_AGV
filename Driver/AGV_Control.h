@@ -24,7 +24,7 @@ public:
 	virtual Position_Class::Velocity_Class & Update_Velocity_By_ErrorCoor(const Position_Class::Coordinate_Class&Error_Coor_InAGV, Position_Class::Velocity_Class &AGV_Velocity_InAGV) = 0;	//根据位姿误差更新期望速度
 	virtual Position_Class::Velocity_Class& Update_Velocity_By_Limit(Position_Class::Velocity_Class&Velocity) = 0;	//对速度限幅
 	virtual void Write_Velocity(Position_Class::Velocity_Class &AGV_Velocity_InAGV) = 0;	//将AGV速度转换为车轮速度，更新velocity
-	virtual Position_Class &Update_Post_By_Encoder(Position_Class &Current_InWorld) = 0; //根据编码器更新世界坐标系下的坐标和速度
+	virtual Position_Class &Update_Post_By_Encoder(Position_Class &Current_InWorld,bool &update_by_extern) = 0; //根据编码器更新世界坐标系下的坐标和速度
 
 	//Position_Class::Coordinate_Class &Absolute_To_Relative(Position_Class::Coordinate_Class &Absolute_Coor, Position_Class::Coordinate_Class &Relative_Coor)
 	//{

@@ -25,7 +25,7 @@ public:
 	Position_Class::Velocity_Class & Update_Velocity_By_ErrorCoor(const Position_Class::Coordinate_Class&Error_Coor_InAGV, Position_Class::Velocity_Class &AGV_Velocity_InAGV) override;	//根据位姿误差更新期望速度
 	Position_Class::Velocity_Class& Update_Velocity_By_Limit(Position_Class::Velocity_Class&Velocity) override;	//对速度限幅
 	void Write_Velocity(Position_Class::Velocity_Class &AGV_Velocity_InAGV) override;	//将AGV速度转换为车轮速度，更新velocity
-	Position_Class &Update_Post_By_Encoder(Position_Class &Current_InWorld) override; //根据编码器更新世界坐标系下的坐标和速度
+	Position_Class &Update_Post_By_Encoder(Position_Class &Current_InWorld, bool &update_by_extern) override; //根据编码器更新世界坐标系下的坐标和速度
 	
 
 //private:

@@ -18,7 +18,9 @@ Position_Class AGV_Current_Position_InWorld_By_PGV;	//世界坐标系下由PGV�
 int command_line = 0;		  //表示当前已经接收到的指令行数
 int agv_add = 1;			  //AGV地址号
 bool Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
-bool update_coor_bycode = false;
+bool update_coor_by_G92 = false;
+bool update_coor_by_PGV = false;
+bool current_existing_task = false;
 
 bool demo_flag = false;
 
@@ -89,7 +91,7 @@ int main(void)
 		//}
 
 		//计算当前位姿
-		AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
+		AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder, update_coor_by_PGV); //根据编码器更新速度和坐标
 		//融合陀螺仪得到的速度和坐标
 		//融合PGV传感器得到的速度和坐标
 		if (PGV100.Return_rx_flag())
@@ -98,18 +100,20 @@ int main(void)
 			if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
 			{
 				AGV_Current_Position_InWorld_By_PGV.Coordinate = PGV100.Cal_Coor();
+				update_coor_by_PGV = true;
 				//Gcode_I116();
 			}
 		}
 		if (demo_flag)
 		{
 			demo_flag = false;
-			
+
 			PGV100.Send(PGV_Class::Read_PGV_Data);
 			//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
 		}
 
-		Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度(此处需要处理与G92指令的关系)
+		//Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度(此处需要处理与G92指令的关系)
+		Update_Coor_InWorld(AGV_Current_Position_InWorld_By_Encoder.Coordinate, AGV_Current_Position_InWorld_By_PGV.Coordinate);
 
 		//AGV_Current_Position_InWorld_By_Encoder.Coordinate.angle_coor=0.0f;
 
@@ -227,15 +231,18 @@ void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state)
 		{
 			Gcode_Index_r = Gcode_Buf + Gcode_Queue.DEqueue();  //获取队头
 			Process_Command(Gcode_Index_r, Is_Parsing_Command); //处理指令
+			current_existing_task = true;
 		}
 		else//缓存区空
 		{
 			Gcode_Queue.Init();	//缓存区空，没有在处理指令，初始化
+			current_existing_task = false;
 		}
 	}
 	else
 	{
 		Process_Command(Gcode_Index_r, Is_Parsing_Command); //处理指令
+		current_existing_task = true;
 	}
 }
 
@@ -368,9 +375,9 @@ void Update_Print_MSG(void)
 
 void Update_Position_InWorld(Position_Class &Position_By_Encoder)
 {
-	if (update_coor_bycode)
+	if (update_coor_by_G92)
 	{
-		update_coor_bycode = false;
+		update_coor_by_G92 = false;
 		Position_By_Encoder = AGV_Current_Position_InWorld;
 	}
 	else
@@ -378,6 +385,30 @@ void Update_Position_InWorld(Position_Class &Position_By_Encoder)
 		AGV_Current_Position_InWorld = Position_By_Encoder;
 	}
 
+}
+
+void Update_Coor_InWorld(Position_Class::Coordinate_Class & Coor_By_Encoder, Position_Class::Coordinate_Class & Coor_By_PGV)
+{
+	if (update_coor_by_PGV)
+	{
+		AGV_Current_Position_InWorld.Coordinate = Coor_By_PGV;
+		
+		Coor_By_Encoder = Coor_By_PGV;
+	}
+	else if (update_coor_by_G92)	//由G92指令更新
+	{
+		update_coor_by_G92 = false;
+		Coor_By_Encoder = AGV_Current_Position_InWorld.Coordinate;
+	}
+	else   //根据编码器更新全局坐标
+	{
+		AGV_Current_Position_InWorld.Coordinate = Coor_By_Encoder;
+	}
+
+	if (!current_existing_task)
+	{
+		AGV_Target_Position_InWorld.Coordinate = AGV_Current_Position_InWorld.Coordinate;
+	}
 }
 
 //************************************
@@ -699,7 +730,8 @@ Position_Class::Coordinate_Class & Gcode_G92(Gcode_Class * command, Position_Cla
 	Position_Class::Coordinate_Class Coor_Temp = Current_Coor_InWorld;
 	Current_Coor_InWorld = Get_Command_Coor(command, Current_Coor_InWorld, Coor_Temp);
 	Current_Coor_InWorld = Position_Class::Truncation_Coor(Current_Coor_InWorld); //圆整
-	update_coor_bycode = true;
+	update_coor_by_G92 = true;
+	current_existing_task = false;
 	return Current_Coor_InWorld;
 }
 
