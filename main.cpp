@@ -200,6 +200,7 @@ void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state)
 			{
 				//++command_line;	//指令行数+1	//插入指令不增加指令行数
 				Process_Command(&Gcode_Inject, Is_Parsing_Command); //处理指令
+				My_Serial.print("\r\nInject OK");
 			}
 			else //不为插入指令
 			{
@@ -316,6 +317,9 @@ void Process_Command(Gcode_Class *command, bool &IS_Parsing)
 		case 0:
 			Gcode_I0();
 			break;
+		case 30:
+			Gcode_I30();
+			break;
 		case 114:
 			Gcode_I114();
 			break;
@@ -392,7 +396,7 @@ void Update_Coor_InWorld(Position_Class::Coordinate_Class & Coor_By_Encoder, Pos
 	if (update_coor_by_PGV)
 	{
 		AGV_Current_Position_InWorld.Coordinate = Coor_By_PGV;
-		
+
 		Coor_By_Encoder = Coor_By_PGV;
 	}
 	else if (update_coor_by_G92)	//由G92指令更新
@@ -528,15 +532,41 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 				abs_temp = abs_y;
 				Para_Input.displacement = Destination_Coor_InOrigin.y_coor;
 			}
+
+			if (ABS(Para_Input.displacement) < 5.0f)
+			{
+				Target_Velocity_InAGV.x_velocity = 0.0f;
+				Target_Velocity_InAGV.y_velocity = 0.0f;
+				Target_Velocity_InAGV.angle_velocity = 0.0f;
+				Target_Coor_InWorld = Current_Coor_InWorld;
+				Is_Interpolation_Angle = true; //对角度进行插补
+				command->Parse_State = Gcode_Class::NO_PARSE;
+				break;
+			}
+
 			Para_Input.max_velocity_abs = AGV_MAX_LINE_VELOCITY * abs_temp / (abs_x + abs_y) / 1000.0f;
 			Para_Input.min_velocity_abs = AGV_MIN_LINE_VELOCITY * abs_temp / (abs_x + abs_y) / 1000.0f;
 			Para_Input.slow_distance_abs = LINE_SLOWEST_DISTANCE;
 		}
 		else //插补角度
 		{
-			float angle_delta = Destination_Coor_InOrigin.angle_coor - Current_Coor_InOrigin.angle_coor;
+			Origin_Coor_InWorld = Current_Coor_InWorld; //保存起点坐标
+			Destination_Coor_InOrigin = Position_Class::Absolute_To_Relative(Destination_Coor_InWorld, Destination_Coor_InOrigin, Origin_Coor_InWorld); //获取终点坐标系在起点坐标系中的坐标
+			float angle_delta = Destination_Coor_InOrigin.angle_coor ;
 			Origin_Coor_InWorld = Current_Coor_InWorld; //保存起点坐标
 			Para_Input.displacement = angle_delta;
+
+			if (ABS(Para_Input.displacement) < 2.0f)
+			{
+				Target_Velocity_InAGV.x_velocity = 0.0f;
+				Target_Velocity_InAGV.y_velocity = 0.0f;
+				Target_Velocity_InAGV.angle_velocity = 0.0f;
+				Target_Coor_InWorld = Current_Coor_InWorld;
+				Is_Interpolation_Angle = false;				   //对x,y轴进行插补
+				command->Parse_State = Gcode_Class::IS_PARSED; //执行完毕
+				break;
+			}
+
 			Para_Input.acceleration_abs = AGV_MAX_LINE_ACCELERATION_ACCELERATION / (1000.0f * 1000.0f); //单位转换
 			Para_Input.max_velocity_abs = AGV_MAX_ANGULAR_VELOCITY / 1000.0f;
 			Para_Input.min_velocity_abs = AGV_MIN_ANGULAR_VELOCITY / 1000.0f;
@@ -669,9 +699,10 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 				Target_Velocity_InAGV.x_velocity = 0.0f;
 				Target_Velocity_InAGV.y_velocity = 0.0f;
 				Target_Velocity_InAGV.angle_velocity = 0.0f;
-				Target_Coor_InWorld.x_coor = Current_Coor_InWorld.x_coor;
-				Target_Coor_InWorld.y_coor = Current_Coor_InWorld.y_coor;
-				Target_Coor_InWorld.angle_coor = Current_Coor_InWorld.angle_coor;
+				Target_Coor_InWorld = Current_Coor_InWorld;
+				//Target_Coor_InWorld.x_coor = Current_Coor_InWorld.x_coor;
+				//Target_Coor_InWorld.y_coor = Current_Coor_InWorld.y_coor;
+				//Target_Coor_InWorld.angle_coor = Current_Coor_InWorld.angle_coor;
 				Is_Interpolation_Angle = true; //对角度进行插补
 				command->Parse_State = Gcode_Class::NO_PARSE;
 			}
@@ -698,9 +729,10 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 				Target_Velocity_InAGV.x_velocity = 0.0f;
 				Target_Velocity_InAGV.y_velocity = 0.0f;
 				Target_Velocity_InAGV.angle_velocity = 0.0f;
-				Target_Coor_InWorld.x_coor = Current_Coor_InWorld.x_coor;
-				Target_Coor_InWorld.y_coor = Current_Coor_InWorld.y_coor;
-				Target_Coor_InWorld.angle_coor = Current_Coor_InWorld.angle_coor;
+				Target_Coor_InWorld = Current_Coor_InWorld;
+				//Target_Coor_InWorld.x_coor = Current_Coor_InWorld.x_coor;
+				//Target_Coor_InWorld.y_coor = Current_Coor_InWorld.y_coor;
+				//Target_Coor_InWorld.angle_coor = Current_Coor_InWorld.angle_coor;
 				Is_Interpolation_Angle = false;				   //对x,y轴进行插补
 				command->Parse_State = Gcode_Class::IS_PARSED; //执行完毕
 			}
@@ -752,6 +784,12 @@ void Gcode_I0(void)
 {
 	Mecanum_AGV.Brake(true);
 	Gcode_Queue.Init();
+}
+
+void Gcode_I30(void)
+{
+	Gcode_Queue.Init();	//缓存区空，没有在处理指令，初始化
+	current_existing_task = false;
 }
 
 //返回AGV在世界坐标系中的坐标

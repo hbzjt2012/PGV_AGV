@@ -90,7 +90,7 @@
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.extraargs</Key>
-          <Value>-c init -c "reset init" -c "gdb_port 50227" -c "telnet_port 50226" </Value>
+          <Value>-c init -c "reset init" -c "gdb_port 49865" -c "telnet_port 49864"  </Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.initargs</Key>

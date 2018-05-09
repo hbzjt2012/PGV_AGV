@@ -74,6 +74,7 @@ void Gcode_M17(void);	//启动所有电机
 void Gcode_M18(void);	//禁用所有电机
 
 void Gcode_I0(void);	//急停
+void Gcode_I30(void);	//清除指令队列
 void Gcode_I114(void);	//获取坐标
 void Gcode_I115(void);	//获取最近一次编码器的坐标
 void Gcode_I116(void);	//获取最近一次PGV的坐标
