@@ -11,6 +11,7 @@
 #include "./Math/MyMath.h"
 #include "./App/Position.h"
 #include "./Driver/PGV100.h"
+#include "./Driver/TL740D.h"
 
 /*
 * TIM1 编码器FL

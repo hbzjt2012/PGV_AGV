@@ -292,3 +292,33 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 	return Current_InWorld;
 }
 
+float Mecanum_Wheel_Class::Get_theta_rate(float time_ms)
+{
+	float angular_velocity_FR, angular_velocity_FL;   //前右，前左轮角速度
+	float angular_velocity_BL, angular_velocity_BR;   //后左，后右轮角速度
+
+	float theta_rate = 0.0f;	//角速度（°/s）
+
+	Front_Left_Encoder.Get_Pulse(); //读取编码器旋转的脉冲数
+	Front_Right_Encoder.Get_Pulse();
+	Behind_Left_Encoder.Get_Pulse();
+	Behind_Right_Encoder.Get_Pulse();
+
+	//根据角速度和运动学计算位移
+	//计算4个轮子的角速度(°/s)
+
+	angular_velocity_FR = Front_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	angular_velocity_FL = Front_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	angular_velocity_BR = Behind_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	angular_velocity_BL = Behind_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
+
+	//PI* WHEEL_DIAMETER/1440=M_PI / 180 * WHEEL_DIAMETER /2/ 4
+	//PI/180为转换成弧度
+	//WHEEL_DIAMETER /2为半径
+	//获取AGV坐标系下AGV的速度和位移
+
+	theta_rate = (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
+
+	return theta_rate;
+}
+

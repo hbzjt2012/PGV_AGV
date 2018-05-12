@@ -85,6 +85,18 @@ void Serial_Class::flush(void)
 	}
 }
 
+void Serial_Class::flush_demo(float time_s)
+{
+	if (tx_cnt > 0)
+	{
+		print(" S:");
+		print(time_s);
+		print("\r\n");
+		TX_DMA.Set_Data_Num(tx_cnt); //设置要发送的数据数量
+		tx_cnt = 0;
+	}
+}
+
 void Serial_Class::write(const char c)
 {
 	if (tx_cnt < 1024)

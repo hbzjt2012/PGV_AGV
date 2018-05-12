@@ -1,7 +1,10 @@
 #pragma once
 
 #define FLOAT_DELTA 0.001f //当两个浮点数之间的差值小于FLOAT_DELTA，认为两个浮点数一致
+#ifndef M_PI
 #define M_PI 3.14159265358979323846f //圆周率
+#endif
+
 #define NOP() asm("nop")
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

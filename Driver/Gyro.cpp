@@ -49,7 +49,9 @@ void Gyro_Class::Init(uint32_t baudrate)
 	//配置TIM7中断时间
 	//定时器7的时钟频率为系统时钟的一半（APB1分配系数2，定时器频率*2）
 	TIM7_Arr = (uint16_t)(SystemCoreClock / 2 / (baudrate / 22) / 10 + 1); //设置静默时间为22个位(定时器分频系数10)
-	TIM_Base_Class::Init(TIM7, TIM7_Arr, 10);								   //设置定时器7的中断频率，用于设置串口接收超时检测
+	TIM_Base_Class::Init(TIM7, TIM7_Arr, 10,true);							//设置定时器7的中断频率，用于设置串口接收超时检测
+
+
 
 	NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

@@ -9,6 +9,7 @@ Queue_Class Gcode_Queue = Queue_Class(4);					   //存放Gcode指令用的队列
 AGV_State::Command_State::Get_Command_State command_buf_state; //指令缓存区的状态
 Gcode_Class Gcode_Buf[4], Gcode_Inject;						   //指令暂存区，插入指令暂存区
 Gcode_Class *Gcode_Index_w = 0, *Gcode_Index_r = 0;			   //指令暂存区读写下标
+TL740D_Class TL740;
 
 Position_Class AGV_Target_Position_InWorld, AGV_Current_Position_InWorld;	//AGV在世界坐标系下的目标位姿和速度，在AGV坐标系下的当前位姿和速度
 Position_Class AGV_Target_Position_InAGV, AGV_Current_Position_InAGV;	//AGV在AGV坐标系下的目标位姿和速度,在AGV坐标系下的当前位姿和速度
@@ -24,9 +25,11 @@ bool current_existing_task = false;
 
 bool demo_flag = false;
 
-float target_speed_demo = 10.0f;
-float angular_velocity_temp = 0.0f;
-int cnt = 0;
+float theta_rate_by_gyro = 0.0f;
+float theta_by_gyro = 0.0f;
+float theta_rate_by_encoder = 0.0f;
+float theta_by_pgv = 0.0f;
+static long long cnt_temp = 0;
 
 extern "C" {
 	void TIM1_TRG_COM_TIM11_IRQHandler()
@@ -53,76 +56,120 @@ int main(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
 	NVIC_Init(&NVIC_InitStructure);
 
-	TIM_Base_Class::Init(TIM11, 10000, 840, true);	//设置定时器11的中断频率，时基	
+	TIM_Base_Class::Init(TIM11, 2000, 840, true);	//设置定时器11的中断频率，时基--10ms	
 	TIM_Base_Class::Begin(TIM11);
 
-	//Mecanum_Wheel_Class::Front_Right_Wheel.Set_Speed_Demo(target_speed_demo / MOTOR_MAX_ROTATIONL_VELOCITY);
+	AGV_Target_Position_InAGV.Velocity.x_velocity = 0.0f;
+	AGV_Target_Position_InAGV.Velocity.y_velocity = 0.0f;
 
-	/*for (int i = 0; i < 20; i++)
+	while (!TL740.Return_rx_flag())
 	{
-		delay_ms(500);
-	}*/
+		TL740.Clear_rx_flag();
+	}
 
 	while (1)
 	{
 
-		//if (demo_flag)
-		//{
-		//	cnt++;
-		//	if (cnt%2000==0)
-		//	{
-		//		cnt = 0;
-		//		target_speed_demo += 10.0f;
-		//		Mecanum_Wheel_Class::Front_Right_Wheel.Set_Speed_Demo(target_speed_demo / MOTOR_MAX_ROTATIONL_VELOCITY);
-		//	}
-		//	if (target_speed_demo>3000.0f)
-		//	{
-		//		target_speed_demo = 10.0f;
-		//	}
-		//	demo_flag = false;
-		//	int16_t pulse = Mecanum_Wheel_Class::Front_Right_Encoder.Get_Pulse();	//获取脉冲数
-		//	angular_velocity_temp = Mecanum_Wheel_Class::Front_Right_Encoder.Get_Palstance(5) * 1000.0f;	//获取角速度(°/s)
-		//	angular_velocity_temp = angular_velocity_temp / 6;	//转换为转速(rpm)
-		//	My_Serial.print(target_speed_demo);	//输出目标速度
-		//	My_Serial.print(",");
-		//	My_Serial.print(angular_velocity_temp);	//输出当前转速
-		//	My_Serial.print("\r\n");
-		//	My_Serial.flush();
-		//}
-
-		//计算当前位姿
-		AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder, update_coor_by_PGV); //根据编码器更新速度和坐标
-		//融合陀螺仪得到的速度和坐标
-		//融合PGV传感器得到的速度和坐标
-		if (PGV100.Return_rx_flag())
-		{
-			PGV100.Clear_rx_flag();
-			if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
-			{
-				AGV_Current_Position_InWorld_By_PGV.Coordinate = PGV100.Cal_Coor();
-				update_coor_by_PGV = true;
-				//Gcode_I116();
-			}
-		}
 		if (demo_flag)
 		{
 			demo_flag = false;
+			if (cnt_temp % 5 == 0)	//50ms读取一次PGV数据
+			{
+				PGV100.Send(PGV_Class::Read_PGV_Data);	//获取PGV数据
+			}
 
-			PGV100.Send(PGV_Class::Read_PGV_Data);
-			//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
+			if (cnt_temp % 2 == 0)	//20ms更新一次数据
+			{
+
+				AGV_Target_Position_InAGV.Velocity.angle_velocity = ABS(AGV_MAX_ANGULAR_VELOCITY* Sin_Lookup(cnt_temp / 100.0f / (M_PI*3) * 180));	//角速度是关于时间的函数
+
+				theta_rate_by_encoder = Mecanum_AGV.Get_theta_rate(20.0f);	//获取编码器数据
+				My_Serial.print(theta_rate_by_encoder);	//编码器角速度
+				My_Serial.print("  ");
+				My_Serial.print(theta_rate_by_gyro);	//陀螺仪角速度
+				My_Serial.print("  ");
+				My_Serial.print(theta_by_gyro);	//陀螺仪角度
+				My_Serial.print("  ");
+				My_Serial.print(theta_by_pgv);	//PGV角度
+				My_Serial.flush_demo(cnt_temp*0.01f);	//刷新数据
+			}
+
+			cnt_temp++;
 		}
 
-		//Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度(此处需要处理与G92指令的关系)
-		Update_Coor_InWorld(AGV_Current_Position_InWorld_By_Encoder.Coordinate, AGV_Current_Position_InWorld_By_PGV.Coordinate);
+		if (PGV100.Return_rx_flag())	//处理PGV数据
+		{
+			PGV100.Clear_rx_flag();
+			if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))	//解析PGV数据
+			{
+				PGV100.Cal_Coor();
+				theta_by_pgv = PGV100.angle_deviation;
+			}
+		}
 
-		//AGV_Current_Position_InWorld_By_Encoder.Coordinate.angle_coor=0.0f;
+		if (TL740.Return_rx_flag())	//处理陀螺仪数据
+		{
+			TL740.Clear_rx_flag();
+			if (TL740.Analyze_Data())	//解析陀螺仪数据
+			{
+				theta_rate_by_gyro = TL740.z_rate;
+				theta_by_gyro = TL740.z_heading;
+			}
+		}
 
-		Get_Available_Command(command_buf_state); //获取处理当前指令(已完成)
-		//检查避障
-		//计算实际所需速度(需要当前坐标、当前速度，预期坐标，预期速度)
+		Mecanum_AGV.Write_Velocity(AGV_Target_Position_InAGV.Velocity);
 
-		Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Position_InWorld.Coordinate, AGV_Target_Position_InWorld.Coordinate, AGV_Target_Position_InAGV.Velocity);
-		//Mecanum_AGV.Write_Velocity(AGV_Target_Position_InAGV.Velocity); //运动控制
+
+		//计算当前位姿
+		//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder, update_coor_by_PGV); //根据编码器更新速度和坐标
+		////融合陀螺仪得到的速度和坐标
+		////融合PGV传感器得到的速度和坐标
+		//if (PGV100.Return_rx_flag())
+		//{
+		//	PGV100.Clear_rx_flag();
+		//	if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
+		//	{
+		//		AGV_Current_Position_InWorld_By_PGV.Coordinate = PGV100.Cal_Coor();
+		//		update_coor_by_PGV = true;
+		//		//Gcode_I116();
+		//	}
+		//}
+		//if (demo_flag)
+		//{
+		//	demo_flag = false;
+
+		//	PGV100.Send(PGV_Class::Read_PGV_Data);		
+		//	//AGV_Current_Position_InWorld_By_Encoder = Mecanum_AGV.Update_Post_By_Encoder(AGV_Current_Position_InWorld_By_Encoder); //根据编码器更新速度和坐标
+		//}
+
+		//if (TL740.Return_rx_flag())
+		//{
+		//	TL740.Clear_rx_flag();
+		//	if (TL740.Analyze_Data())
+		//	{
+		//		//if (TL740.z_rate>500.0f)
+		//		//{
+		//		//	My_Serial.print("\r\n");
+		//		//	My_Serial.print(TL740.Return_RX_buf(), 14);
+		//		//}
+		//		My_Serial.print("\r\nw=");
+		//		My_Serial.print(TL740.z_rate);  
+		//		My_Serial.print("   theta=");
+		//		My_Serial.print(TL740.z_heading);
+		//	}
+		//	//TL740.Read_Data();
+		//}
+		////Update_Position_InWorld(AGV_Current_Position_InWorld_By_Encoder); //更新世界坐标系下的坐标和速度(此处需要处理与G92指令的关系)
+		//Update_Coor_InWorld(AGV_Current_Position_InWorld_By_Encoder.Coordinate, AGV_Current_Position_InWorld_By_PGV.Coordinate);
+
+		////AGV_Current_Position_InWorld_By_Encoder.Coordinate.angle_coor=0.0f;
+
+		//Get_Available_Command(command_buf_state); //获取处理当前指令(已完成)
+		////检查避障
+		////计算实际所需速度(需要当前坐标、当前速度，预期坐标，预期速度)
+
+		//Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Position_InWorld.Coordinate, AGV_Target_Position_InWorld.Coordinate, AGV_Target_Position_InAGV.Velocity);
+		////Mecanum_AGV.Write_Velocity(AGV_Target_Position_InAGV.Velocity); //运动控制
 
 
 		//if (encoder_flag)
@@ -132,7 +179,7 @@ int main(void)
 		//	My_Serial.print(encoder_time);
 		//}
 
-		Update_Print_MSG(); //更新信息(待补全)
+		//Update_Print_MSG(); //更新信息(待补全)
 	}
 }
 
@@ -149,8 +196,10 @@ void Init_System(void)
 	}
 	Mecanum_AGV.Init();
 	My_Serial.Init(115200);
+	//My_Serial.Init(512000);
 	Gcode_Queue.Init();
 	PGV100.Init(115200);
+	TL740.Init(115200);
 }
 
 void Init_System_RCC(void)
@@ -552,7 +601,7 @@ void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Curr
 		{
 			Origin_Coor_InWorld = Current_Coor_InWorld; //保存起点坐标
 			Destination_Coor_InOrigin = Position_Class::Absolute_To_Relative(Destination_Coor_InWorld, Destination_Coor_InOrigin, Origin_Coor_InWorld); //获取终点坐标系在起点坐标系中的坐标
-			float angle_delta = Destination_Coor_InOrigin.angle_coor ;
+			float angle_delta = Destination_Coor_InOrigin.angle_coor;
 			Origin_Coor_InWorld = Current_Coor_InWorld; //保存起点坐标
 			Para_Input.displacement = angle_delta;
 

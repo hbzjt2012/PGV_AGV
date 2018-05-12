@@ -5,6 +5,9 @@
 	It is needed for IntelliSense to parse other header files correctly.
 */
 #if defined(_MSC_VER) || defined (__SYSPROGS_CODESENSE__)
+#ifndef __FPU_USED
+#define __FPU_USED 1
+#endif
 #ifndef __DBL_MIN_EXP__
 #define __DBL_MIN_EXP__ (-1021)
 #endif
@@ -393,7 +396,7 @@
 #define __UACCUM_EPSILON__ 0x1P-16UK
 #endif
 #ifndef __GNUC__
-#define __GNUC__ 7
+#define __GNUC__ 1
 #endif
 #ifndef __ULLACCUM_MAX__
 #define __ULLACCUM_MAX__ 0XFFFFFFFFFFFFFFFFP-32ULLK
@@ -884,6 +887,9 @@
 #endif
 #ifndef __SIZE_WIDTH__
 #define __SIZE_WIDTH__ 32
+#endif
+#ifndef __FPU_PRESENT
+#define __FPU_PRESENT 1
 #endif
 #ifndef __INT_LEAST16_MAX__
 #define __INT_LEAST16_MAX__ 0x7fff

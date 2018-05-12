@@ -1,56 +1,59 @@
 #pragma once
 #include "../Math/Trigonometric.h"
+#include "../DSP_Lib/arm_math.h"
 
-class Position_Class
+class Velocity_Class
 {
 public:
-	class Velocity_Class
+	Velocity_Class(void) :velocity(0.0f), velocity_angle(0.0f), angular_velocity(0.0f) {
+		velocity_matrix.numCols = 3;
+		velocity_matrix.numRows = 1;
+		velocity_matrix.pData = velocity_array;
+	}
+	union
 	{
-	public:
-		Velocity_Class(void) :x_velocity(0.0f), y_velocity(0.0f), angle_velocity(0.0f) {}
-		float x_velocity;   //x轴速度,mm/s
-		float y_velocity;   //y轴速度,mm/s
-		float angle_velocity; //旋转角速度,°/s
-		//Velocity_StructTypedef() :x_velocity(0.0f), y_velocity(0.0f), angle_velocity(0.0f) {};
-		Velocity_Class &operator+=(const Velocity_Class &addend);
-		Velocity_Class &operator-=(const Velocity_Class &subtrahend);
-		Velocity_Class operator*=(float factor);
-	}; //速度
+		struct
+		{
+			float32_t velocity;			//线速度速度,mm/s
+			float32_t velocity_angle;   //线速度与x轴的夹角 °
+			float32_t angular_velocity; //旋转角速度,°/s
+		};
+		float32_t velocity_array[3];
+	};
 
-	class Coordinate_Class
+	arm_matrix_instance_f32 velocity_matrix;	//速度矩阵(3*1列向量)
+
+	Velocity_Class &operator+=(const Velocity_Class &addend);
+	Velocity_Class &operator-=(const Velocity_Class &subtrahend);
+	Velocity_Class &operator*=(const float factor);
+	Velocity_Class &operator/=(const float divisor);
+}; //速度
+
+class Coordinate_Class
+{
+public:
+	Coordinate_Class(void) :x_coor(0.0f), y_coor(0.0f), angle_coor(0.0f) {
+		coor_matrix.numCols = 3;
+		coor_matrix.numRows = 1;
+		coor_matrix.pData = coor_array;
+	}
+	union
 	{
-	public:
-		Coordinate_Class(void) :x_coor(0.0f), y_coor(0.0f), angle_coor(0.0f) {}
-		float x_coor;	 //x轴坐标(mm)，精确到0.1mm
-		float y_coor;	 //y轴坐标(mm)，精确到0.1mm
-		float angle_coor; //角度坐标(°),精确到0.1°
-		//Coordinate_StructTypedef() :x_coor(0.0f), y_coor(0.0f), angle_coor(0.0f) {};
-		Coordinate_Class &operator+=(const Coordinate_Class &addend);
-		Coordinate_Class &operator-=(const Coordinate_Class &subtrahend);
-	}; //坐标
+		struct
+		{
+			float32_t x_coor;	//x坐标(mm)
+			float32_t y_coor;   //y坐标(mm)
+			float32_t angle_coor; //角度坐标(°)
+		};
+		float32_t coor_array[3];
+	};
 
-	Velocity_Class Velocity;	 //速度
-	Coordinate_Class Coordinate; //坐标
+	arm_matrix_instance_f32 coor_matrix;	//速度矩阵(3*1列向量)
 
-	Position_Class &operator+=(const Position_Class &addend);
-	Position_Class &operator-=(const Position_Class &subtrahend);
+	Coordinate_Class &operator+=(const Coordinate_Class &addend);
+	Coordinate_Class &operator-=(const Coordinate_Class &subtrahend);
+	Coordinate_Class &operator*=(const float factor);
+	Coordinate_Class &operator/=(const float divisor);
 
-	static Velocity_Class &Absolute_To_Relative(const Velocity_Class &Absolute_Velocity, Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
-	static Coordinate_Class &Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
-	static Position_Class &Absolute_To_Relative(const Position_Class &Absolute_Position, Position_Class &Relative_Position, const Coordinate_Class &Base_Coor); //绝对坐标转换为相对坐标
-
-	static Velocity_Class &Relative_To_Absolute(Velocity_Class &Absolute_Velocity, const Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
-	static Position_Class &Relative_To_Absolute(Position_Class &Absolute_Position, const Position_Class &Relative_Position, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
-
-	static Coordinate_Class &Truncation_Coor(Coordinate_Class &Source_Coor);
-
-private:
-};
-
-Position_Class::Velocity_Class operator+(const Position_Class::Velocity_Class &summand, const Position_Class::Velocity_Class &addend);
-Position_Class::Velocity_Class operator-(const Position_Class::Velocity_Class &minuend, const Position_Class::Velocity_Class &subtrahend);
-Position_Class::Coordinate_Class operator+(const Position_Class::Coordinate_Class &summand, const Position_Class::Coordinate_Class &addend);
-Position_Class::Coordinate_Class operator-(const Position_Class::Coordinate_Class &minuend, const Position_Class::Coordinate_Class &subtrahend);
-Position_Class operator+(const Position_Class &summand, const Position_Class &addend);
-Position_Class operator-(const Position_Class &minuend, const Position_Class &subtrahend);
+}; //坐标

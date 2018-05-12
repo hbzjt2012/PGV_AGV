@@ -25,6 +25,8 @@ public:
 	void Init(uint32_t baudrate); //根据波特率初始化串口
 	void flush(void);			  //发送缓存区内的数据
 
+	void flush_demo(float time_s);	//测试用，还需发送当前时间
+
 	bool Return_rx_flag(void) { return rx_flag; }
 	void Clear_rx_flag(void) { rx_flag = false; }
 	uint16_t Return_rx_cnt(void) { return rx_cnt; }
