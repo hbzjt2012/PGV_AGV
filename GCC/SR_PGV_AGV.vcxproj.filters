@@ -299,6 +299,9 @@
     <ClCompile Include="..\Driver\AGV_Control.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
+    <ClCompile Include="parameter_define.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

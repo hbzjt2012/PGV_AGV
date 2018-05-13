@@ -135,6 +135,7 @@
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_usart.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_wwdg.c" />
     <ClCompile Include="..\system_stm32f4xx.c" />
+    <ClCompile Include="parameter_define.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LinkerScripts\STM32F407VE_flash.lds" />

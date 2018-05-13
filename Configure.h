@@ -6,11 +6,29 @@
 #define M_PI 3.14159265358979323846f //圆周率	
 #endif // !M_PI
 
-//定义车体左右前后轮子之间的距离,即前右轮的坐标为(267,267)
-#define DISTANCE_OF_WHEEL_X_AXES 534.0f //左右两轮在X轴上的距离为534mm
-#define DISTANCE_OF_WHEEL_Y_AXES 534.0f //前后两轮在Y轴上的距离为534mm
+//定义车体左右前后轮子之间的距离
+extern const float Parameter_Define::distance_of_wheel_x_axes; //左右两轮在X轴上的距离为534mm
+extern const float Parameter_Define::distance_of_wheel_y_axes; //前后两轮在Y轴上的距离为534mm
 
-#define WHEEL_DIAMETER 127.0f //麦克纳姆轮轮直径127mm
+//定义车轮直径
+extern const float Parameter_Define::Mecanum_wheel_diameter; //定义麦克纳姆轮直径
+
+//定义电机转速
+extern float Parameter_Define::motor_max_rotationl_velocity; //电机最高转速3000rpm/min
+extern float Parameter_Define::motor_min_rotationl_velocity; //电机最低转速100rpm/min
+
+//定义轮子最大速度、最小速度和最大加速度
+extern float Parameter_Define::wheel_max_angular_velocity;	//轮子最大角速度(°/s)
+extern float Parameter_Define::wheel_min_angular_velocity;	//轮子最小角速度(°/s)
+
+extern float Parameter_Define::wheel_max_line_velocity;     //轮子最大线速度(mm/s);
+extern float Parameter_Define::wheel_min_line_velocity;      //轮子最小线速度(mm/s);
+
+//定义车轮最大加减速时间
+extern float Parameter_Define::wheel_acceleration_time;	//车轮最大加减速所需时间(从最低速到最高速)(单位s)
+extern float Parameter_Define::wheel_acceleration_line;	//车轮最大线加速度(mm/s2)
+
+extern float Parameter_Define::line_slowest_time = 20.0f;	//最低速移动的时间
 
 //定义了车轮的默认前进方向
 #define FRONT_LEFTT_DEFAULT_DIR false  //前左轮默认方向
@@ -52,34 +70,4 @@
 #define ENCODER_FIX_WHEEL true       //指示编码器和轮子固连在一起
 #define REDUCTION_RATIO 30           //减速比
 #define ENCODER_RESOLUTION_INIT 2000 //编码器的分辨率（线数）
-#if ENCODER_FIX_WHEEL
-#define ENCODER_RESOLUTION ENCODER_RESOLUTION_INIT //编码器最终分辨率（线数）
-#else
-#define ENCODER_RESOLUTION ENCODER_RESOLUTION_INIT *REDUCTION_RATIO //编码器最终分辨率（线数）
-#endif
-
-//定义电机转速
-#define MOTOR_MAX_ROTATIONL_VELOCITY 3000.0f //电机最高转速3000rpm/min
-#define MOTOR_MIN_ROTATIONL_VELOCITY 100.0f  //电机最低转速100rpm/min
-//定义轮子最大速度、最小速度和最大加速度
-#define WHEEL_MAX_ANGULAR_VELOCITY (MOTOR_MAX_ROTATIONL_VELOCITY * 6 / REDUCTION_RATIO)          //轮子最大角速度(°/s)
-#define WHEEL_MIN_ANGULAR_VELOCITY (MOTOR_MIN_ROTATIONL_VELOCITY * 6 / REDUCTION_RATIO)          //轮子最小角速度(°/s)
-#define WHEEL_ANGULAR_ACCELERATION 5.0f                                                          //(5s达到最大角速度)
-#define WHEEL_MAX_ANGULAR_ACCELERATION (WHEEL_MAX_ANGULAR_VELOCITY / WHEEL_ANGULAR_ACCELERATION) //轮子最大角加速度(°/s2)
-
-#define WHEEL_MAX_LINE_VELOCITY (MOTOR_MAX_ROTATIONL_VELOCITY / 60 / REDUCTION_RATIO * WHEEL_DIAMETER * M_PI)                                //轮子最大线速度(mm/s)
-#define WHEEL_MIN_LINE_VELOCITY (MOTOR_MIN_ROTATIONL_VELOCITY / 60 / REDUCTION_RATIO * WHEEL_DIAMETER * M_PI)                                //轮子最小线速度(mm/s)
-#define WHEEL_LINE_VELOCITY_ACCELERATION_TIME 5.0f                                                                                         //(5s达到最大线速度)
-#define WHEEL_MAX_LINE_VELOCITY_ACCELERATION ((WHEEL_MAX_LINE_VELOCITY - WHEEL_MIN_LINE_VELOCITY) / WHEEL_LINE_VELOCITY_ACCELERATION_TIME) //轮子最大线加速度(mm/s2)
-
-//定义车体的最大线加速度、角加速度，最大最小线速度、角速度
-#define AGV_MAX_LINE_ACCELERATION_ACCELERATION WHEEL_MAX_LINE_VELOCITY_ACCELERATION //即轮子最大线加速度
-#define AGV_MAX_LINE_VELOCITY WHEEL_MAX_LINE_VELOCITY                               //即轮子最大线速度
-#define AGV_MIN_LINE_VELOCITY WHEEL_MIN_LINE_VELOCITY                               //即轮子最小线速度
-
-#define AGV_MAX_ANGULAR_ACCELERATION_ACCELERATION WHEEL_MAX_ANGULAR_ACCELERATION *WHEEL_DIAMETER / 2 / (DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) //参考运动学公式
-#define AGV_MAX_ANGULAR_VELOCITY WHEEL_MAX_ANGULAR_VELOCITY *(WHEEL_DIAMETER / 2 )/ ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES)/2)                      //AGV转向时最大角速度
-#define AGV_MIN_ANGULAR_VELOCITY WHEEL_MIN_ANGULAR_VELOCITY *(WHEEL_DIAMETER / 2 )/ ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) /2)                     //AGV转向时最小角速度
-
-#define LINE_SLOWEST_DISTANCE	20.0f	//最低速度移动20mm
-#define ANGULAR_SLOWEST_DISTANCE 0.0f	//最低速度移动0°
+extern const float Parameter_Define::encoder_resolution; 	//轮子最终分辨率（线数）
