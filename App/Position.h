@@ -50,10 +50,11 @@ public:
 
 	arm_matrix_instance_f32 coor_matrix;	//速度矩阵(3*1列向量)
 
-	Coordinate_Class &operator+=(const Coordinate_Class &addend);
-	Coordinate_Class &operator-=(const Coordinate_Class &subtrahend);
+	Coordinate_Class &operator+=(const Coordinate_Class &addend_relative);
+	Coordinate_Class &operator-=(const Coordinate_Class &subtrahend_absolute);
 	Coordinate_Class &operator*=(const float factor);
 	Coordinate_Class &operator/=(const float divisor);
 
 	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
+	static Coordinate_Class& Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor);	//从绝对坐标转换为相对坐标
 }; //坐标

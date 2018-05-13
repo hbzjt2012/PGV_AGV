@@ -299,7 +299,7 @@
     <ClCompile Include="..\Driver\AGV_Control.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
-    <ClCompile Include="parameter_define.cpp">
+    <ClCompile Include="..\parameter_define.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -563,6 +563,9 @@
     </ClInclude>
     <ClInclude Include="..\Math\Trigonometric.h">
       <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\parameter_define.h">
+      <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

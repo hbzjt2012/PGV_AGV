@@ -54,28 +54,28 @@ namespace AGV_State
 	}
 }
 
-void Init_System(void);
-void Init_System_RCC(void);														//初始化系统所需时钟
-void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); //获取指令
-void Process_Command(Gcode_Class *command, bool &IS_Parsing);					//处理指令
-void Update_Print_MSG(void);													//更新状态，打印信息
-void Update_Position_InWorld(Position_Class&Position_By_Encoder);	//由编码器获取的坐标和速度更新全局坐标和速度，待更新
-void Update_Coor_InWorld(Position_Class::Coordinate_Class&Coor_By_Encoder, Position_Class::Coordinate_Class&Coor_By_PGV);	//由编码器、PGV传感器更新全局坐标
-
-Position_Class::Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Coordinate_Class &Target_Coor_InWorld, bool Is_Absolute_Coor = true);
-
-void Gcode_G0(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Velocity_Class &Target_Velocity_InAGV, Position_Class::Coordinate_Class &Target_Coor_InWorld);
-void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Velocity_Class &Target_Velocity_InAGV, Position_Class::Coordinate_Class &Target_Coor_InWorld);
-
-void Gcode_G90(void);	//设定为绝对坐标
-void Gcode_G91(void);	//设定为相对坐标
-Position_Class::Coordinate_Class & Gcode_G92(Gcode_Class *command, Position_Class::Coordinate_Class&Current_Coor_InWorld);	//设置当前坐标
-
-void Gcode_M17(void);	//启动所有电机
-void Gcode_M18(void);	//禁用所有电机
-
-void Gcode_I0(void);	//急停
-void Gcode_I30(void);	//清除指令队列
-void Gcode_I114(void);	//获取坐标
-void Gcode_I115(void);	//获取最近一次编码器的坐标
-void Gcode_I116(void);	//获取最近一次PGV的坐标
+//void Init_System(void);
+//void Init_System_RCC(void);														//初始化系统所需时钟
+//void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); //获取指令
+//void Process_Command(Gcode_Class *command, bool &IS_Parsing);					//处理指令
+//void Update_Print_MSG(void);													//更新状态，打印信息
+//void Update_Position_InWorld(Position_Class&Position_By_Encoder);	//由编码器获取的坐标和速度更新全局坐标和速度，待更新
+//void Update_Coor_InWorld(Position_Class::Coordinate_Class&Coor_By_Encoder, Position_Class::Coordinate_Class&Coor_By_PGV);	//由编码器、PGV传感器更新全局坐标
+//
+//Position_Class::Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Coordinate_Class &Target_Coor_InWorld, bool Is_Absolute_Coor = true);
+//
+//void Gcode_G0(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Velocity_Class &Target_Velocity_InAGV, Position_Class::Coordinate_Class &Target_Coor_InWorld);
+//void Gcode_G1(Gcode_Class *command, const Position_Class::Coordinate_Class &Current_Coor_InWorld, Position_Class::Velocity_Class &Target_Velocity_InAGV, Position_Class::Coordinate_Class &Target_Coor_InWorld);
+//
+//void Gcode_G90(void);	//设定为绝对坐标
+//void Gcode_G91(void);	//设定为相对坐标
+//Position_Class::Coordinate_Class & Gcode_G92(Gcode_Class *command, Position_Class::Coordinate_Class&Current_Coor_InWorld);	//设置当前坐标
+//
+//void Gcode_M17(void);	//启动所有电机
+//void Gcode_M18(void);	//禁用所有电机
+//
+//void Gcode_I0(void);	//急停
+//void Gcode_I30(void);	//清除指令队列
+//void Gcode_I114(void);	//获取坐标
+//void Gcode_I115(void);	//获取最近一次编码器的坐标
+//void Gcode_I116(void);	//获取最近一次PGV的坐标

@@ -315,17 +315,6 @@ bool PGV_Class::Analyze_Data(void)
 	return rx_xor_flag;
 }
 
-Position_Class::Coordinate_Class & PGV_Class::Cal_Coor(void)
-{
-	coor.x_coor = (tag_control_num % 4) * 600.0f + x_deviation;	//测试用间隔为60cm
-	coor.y_coor = (tag_control_num / 4) * 600.0f + y_deviation;	//测试用间隔为60cm
-	coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
-
-	coor = Position_Class::Truncation_Coor(coor);
-
-	// TODO: 在此处插入 return 语句
-}
-
 inline void PGV_Class::TX_Dir(void)
 {
 	dir.Set();

@@ -396,7 +396,7 @@
 #define __UACCUM_EPSILON__ 0x1P-16UK
 #endif
 #ifndef __GNUC__
-#define __GNUC__ 1
+#define __GNUC__ 7
 #endif
 #ifndef __ULLACCUM_MAX__
 #define __ULLACCUM_MAX__ 0XFFFFFFFFFFFFFFFFP-32ULLK

@@ -76,13 +76,13 @@ Velocity_Class &Velocity_Class::operator/=(const float divisor)
 // Method:    operator+=
 // FullName:  Coordinate_Class::operator+=
 // Access:    public 
-// Returns:   Coordinate_Class &
-// Parameter: const Coordinate_Class & addend
-// Description: 重载+=运算符，映射为坐标变换
+// Returns:   Coordinate_Class & 在世界坐标系中的坐标
+// Parameter: const Coordinate_Class & addend_relative 加数，在*this坐标系中的相对坐标
+// Description: 重载+=运算符，映射为坐标变换，从相对坐标（加数相对于被加数）变换为绝对坐标（加数）
 //************************************
-Coordinate_Class &Coordinate_Class::operator+=(const Coordinate_Class &addend)
+Coordinate_Class &Coordinate_Class::operator+=(const Coordinate_Class &addend_relative)
 {
-	Coordinate_Class::Relative_To_Absolute(*this, addend, *this);
+	Coordinate_Class::Relative_To_Absolute(*this, addend_relative, *this);
 	return *this;
 }
 
@@ -90,17 +90,13 @@ Coordinate_Class &Coordinate_Class::operator+=(const Coordinate_Class &addend)
 // Method:    operator-=
 // FullName:  Coordinate_Class::operator-=
 // Access:    public 
-// Returns:   Coordinate_Class &
-// Parameter: const Coordinate_Class & subtrahend
-// Description: 重载为-=运算符，映射为+=运算
+// Returns:   Coordinate_Class & 在*this坐标系中的相对坐标
+// Parameter: const Coordinate_Class & subtrahend_absolute 减数，世界坐标系中的坐标
+// Description: 重载为-=运算符，映射坐标变换，从绝对坐标（减数）变换为相对坐标（相对于被减数）
 //************************************
-Coordinate_Class &Coordinate_Class::operator-=(const Coordinate_Class &subtrahend)
+Coordinate_Class &Coordinate_Class::operator-=(const Coordinate_Class &subtrahend_absolute)
 {
-	Coordinate_Class addend = subtrahend;
-	addend.x_coor = -addend.x_coor;
-	addend.y_coor = -addend.y_coor;
-	addend.angle_coor = -addend.angle_coor;
-	this->operator+=(addend);
+	Coordinate_Class::Absolute_To_Relative(subtrahend_absolute, *this, *this);
 	return *this;
 }
 
@@ -146,4 +142,30 @@ Coordinate_Class & Coordinate_Class::Relative_To_Absolute(Coordinate_Class & Abs
 	Absolute_Coor.angle_coor = Relative_Coor.angle_coor + angle_temp;
 
 	return Absolute_Coor;
+}
+
+//************************************
+// Method:    Absolute_To_Relative
+// FullName:  Coordinate_Class::Absolute_To_Relative
+// Access:    public static 
+// Returns:   Coordinate_Class &
+// Parameter: const Coordinate_Class & Absolute_Coor
+// Parameter: Coordinate_Class & Relative_Coor
+// Parameter: const Coordinate_Class & Base_Coor
+// Description: 从绝对坐标转换为相对坐标
+//************************************
+Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class & Absolute_Coor, Coordinate_Class & Relative_Coor, const Coordinate_Class & Base_Coor)
+{
+	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
+	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
+
+	const float x_temp = Base_Coor.x_coor;
+	const float y_temp = Base_Coor.y_coor;
+	const float angle_temp = Base_Coor.angle_coor;
+
+	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - x_temp) + sin_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
+	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
+	Relative_Coor.angle_coor = (Absolute_Coor.angle_coor - angle_temp);
+
+	return Relative_Coor;
 }

@@ -2,6 +2,7 @@
 #include "../Math/Trigonometric.h"
 #include <cmath>
 
+
 #define Velocity_RES 10000 //速度分辨率
 //使用Lyapunov方法根据误差更新速度
 #define C1 2.0f
@@ -75,13 +76,10 @@ void Mecanum_Wheel_Class::Init(void)
 	Behind_Left_Encoder.Init(!BEHIND_LEFTT_DEFAULT_DIR);
 	Behind_Right_Encoder.Init(!BEHIND_RIGHT_DEFAULT_DIR);
 
-	//Displacement_Velocity_InAGV_By_Encoder.Velocity.x_velocity = 0.0f;
-	//Displacement_Velocity_InAGV_By_Encoder.Velocity.y_velocity = 0.0f;
-	//Displacement_Velocity_InAGV_By_Encoder.Velocity.angle_velocity = 0.0f;
-	//Displacement_Velocity_InAGV_By_Encoder.Coordinate.x_coor = 0.0f;
-	//Displacement_Velocity_InAGV_By_Encoder.Coordinate.y_coor = 0.0f;
-	//Displacement_Velocity_InAGV_By_Encoder.Coordinate.angle_coor = 0.0f;
-	Write_Velocity(Displacement_Velocity_InAGV_By_Encoder.Velocity);
+	AGV_Velocity_InAGV.velocity = 0.0f;
+	AGV_Velocity_InAGV.velocity_angle = 0.0f;
+	AGV_Velocity_InAGV.angular_velocity = 0.0f;
+	Write_Velocity(AGV_Velocity_InAGV);
 
 	Encoder_Class::Init_Fre_TIM();
 }
@@ -102,38 +100,49 @@ void Mecanum_Wheel_Class::Run(bool value)
 	Behind_Right_Wheel.Run_Enable(value);
 }
 
-Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Position_Class::Coordinate_Class & Error_Coor_InAGV, Position_Class::Velocity_Class & AGV_Velocity_InAGV)
+Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & Error_Coor_InAGV, Velocity_Class & AGV_Velocity_InAGV)
 {
 	//此处算法应改进
-	if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
-	{
-		AGV_Velocity_InAGV.x_velocity += C1*Error_Coor_InAGV.x_coor;
-	}
-	if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
-	{
-		AGV_Velocity_InAGV.y_velocity += C2*Error_Coor_InAGV.y_coor;
-	}
-	if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
-	{
-		AGV_Velocity_InAGV.angle_velocity += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
-	}
+	//if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
+	//{
+	//	AGV_Velocity_InAGV.x_velocity += C1*Error_Coor_InAGV.x_coor;
+	//}
+	//if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
+	//{
+	//	AGV_Velocity_InAGV.y_velocity += C2*Error_Coor_InAGV.y_coor;
+	//}
+	//if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
+	//{
+	//	AGV_Velocity_InAGV.angle_velocity += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+	//}
 	return AGV_Velocity_InAGV;
 }
 
 //依照麦克纳姆轮的物理限制，更新速度
-Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(Position_Class::Velocity_Class & Velocity)
+Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(Velocity_Class & Velocity)
 {
 	//根据麦克纳姆轮的运动学关系式以及不打滑的约束方程
 	//Vx，Vy，(Lx+Ly)W(弧度)的约束面为正八面体的表面,即|Vx|+|Vy|+|(Lx+Ly)W(弧度)|<=V_wheel
 
 	//|Velocity.x_velocity|+|Velocity.y_velocity|+|angular_velocity|<=WHEEL_MAX_LINE_VELOCITY
-	float angular_velocity = Velocity.angle_velocity*M_PI / 180.0f*(DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2.0f;
-	float abs_temp = ABS(Velocity.x_velocity) + ABS(Velocity.y_velocity) + ABS(angular_velocity);
-	if (abs_temp > WHEEL_MAX_LINE_VELOCITY)
+	float angular_velocity = Velocity.angular_velocity*M_PI / 180.0f*(DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2.0f;
+	float x_velocity = Velocity.velocity*Cos_Lookup(Velocity.velocity_angle);
+	float y_velocity = Velocity.velocity*Sin_Lookup(Velocity.velocity_angle);
+	float abs_temp = ABS(x_velocity) + ABS(y_velocity) + ABS(angular_velocity);
+	
+	float k = 1.0f;
+
+	if (abs_temp > Parameter_Class::wheel_max_line_velocity)
 	{
-		float k = WHEEL_MAX_LINE_VELOCITY / abs_temp;
-		Velocity *= k;
+		k = Parameter_Class::wheel_max_line_velocity / abs_temp;
 	}
+	//else if (abs_temp < Parameter_Class::wheel_min_line_velocity)
+	//{
+	//	k = Parameter_Class::wheel_min_line_velocity / abs_temp;
+	//}
+	Velocity *= k;
+
+	velocity = abs_temp*k;
 	return Velocity;
 }
 
@@ -145,23 +154,19 @@ Position_Class::Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(P
 // Parameter: Position_Class::Velocity_Class & AGV_Velocity_InAGV
 // Description: 将AGV速度转换为车轮速度
 //************************************
-void Mecanum_Wheel_Class::Write_Velocity(Position_Class::Velocity_Class &AGV_Velocity_InAGV)
+void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 {
 	float duty_FR, duty_FL, duty_BR, duty_BL;
-	float yaw_temp = (DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2 * AGV_Velocity_InAGV.angle_velocity;
+	float yaw_temp = (DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2 * AGV_Velocity_InAGV.angular_velocity;
 	float temp = yaw_temp* M_PI / 180.0f;	//单位为mm/s
 
-	float x_velocity_abs, y_velocity_abs, yaw_velocity_abs;
+	float x_velocity = AGV_Velocity_InAGV.velocity*Cos_Lookup(AGV_Velocity_InAGV.velocity_angle);
+	float y_velocity = AGV_Velocity_InAGV.velocity*Sin_Lookup(AGV_Velocity_InAGV.velocity_angle);
 
-	x_velocity_abs = ABS(AGV_Velocity_InAGV.x_velocity);
-	y_velocity_abs = ABS(AGV_Velocity_InAGV.y_velocity);
-	yaw_velocity_abs = ABS(yaw_temp);
 
-	velocity = sqrtf(x_velocity_abs*x_velocity_abs + y_velocity_abs*y_velocity_abs + temp*temp);	//更新AGV的质心速度2范数
-
-	duty_FR = (-AGV_Velocity_InAGV.x_velocity + AGV_Velocity_InAGV.y_velocity + temp) / WHEEL_MAX_LINE_VELOCITY;
-	duty_FL = (AGV_Velocity_InAGV.x_velocity + AGV_Velocity_InAGV.y_velocity - temp) / WHEEL_MAX_LINE_VELOCITY;
-	duty_BL = (-AGV_Velocity_InAGV.x_velocity + AGV_Velocity_InAGV.y_velocity - temp) / WHEEL_MAX_LINE_VELOCITY;
+	duty_FR = (-x_velocity + y_velocity + temp) / Parameter_Class::wheel_max_line_velocity_hard;
+	duty_FL = (x_velocity + y_velocity - temp) / Parameter_Class::wheel_max_line_velocity_hard;
+	duty_BL = (-x_velocity + y_velocity - temp) / Parameter_Class::wheel_max_line_velocity_hard;
 	//duty_BL = (velocity.x_speed + velocity.y_speed + temp) / WHEEL_MAX_LINE_VELOCITY;
 	duty_FR = RANGE(duty_FR, -1.0f, 1.0f);
 	duty_FL = RANGE(duty_FL, -1.0f, 1.0f);
@@ -182,7 +187,7 @@ void Mecanum_Wheel_Class::Write_Velocity(Position_Class::Velocity_Class &AGV_Vel
 // Parameter: Position_Class & Current_InWorld 世界坐标系下当前AGV的坐标和速度
 // Description: 根据编码器更新世界坐标系下的坐标和速度
 //************************************
-Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Current_InWorld, bool &update_by_extern)
+Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Encoder(void)
 {
 	static unsigned short time_10us_threshold = 0;
 	static unsigned long time_last_10us = 0, time_current_10us = 0; //上一次时间计数，当前时间计数
@@ -192,16 +197,11 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 	float angular_velocity_FR, angular_velocity_FL;   //前右，前左轮角速度
 	float angular_velocity_BL, angular_velocity_BR;   //后左，后右轮角速度
 
-	if (update_by_extern)	//坐标由外部更新
-	{
-		time_10us_threshold = 0;	//重新计算阈值
-		update_by_extern = false;
-	}
 
 	if (!time_10us_threshold) //阈值==0，计算新阈值
 	{
-		time_10us_threshold = Cal_Cycle();	//计算时间周期
-
+		//time_10us_threshold = Cal_Cycle();	//计算时间周期
+		time_10us_threshold = CONTROL_PERIOD * 100;	//时间周期20ms
 
 		//若新阈值>0，重置时间
 		if (time_10us_threshold > 0)
@@ -233,12 +233,6 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 			Behind_Left_Encoder.Get_Pulse();
 			Behind_Right_Encoder.Get_Pulse();
 
-			////测试用
-			//Front_Left_Encoder.Set_Pulse(20); //读取编码器旋转的脉冲数
-			//Front_Right_Encoder.Set_Pulse(20);
-			//Behind_Left_Encoder.Set_Pulse(20);
-			//Behind_Right_Encoder.Set_Pulse(20);
-
 
 			//根据角速度和运动学计算位移
 			//计算4个轮子的角速度(°/s)
@@ -254,21 +248,16 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 			//WHEEL_DIAMETER /2为半径
 			//获取AGV坐标系下AGV的速度和位移
 
-			Displacement_Velocity_InAGV_By_Encoder.Velocity.x_velocity = (-angular_velocity_FR + angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * M_PI * WHEEL_DIAMETER / 1440;
-			Displacement_Velocity_InAGV_By_Encoder.Velocity.y_velocity = (angular_velocity_FR + angular_velocity_FL + angular_velocity_BL + angular_velocity_BR) * M_PI * WHEEL_DIAMETER / 1440;
-			Displacement_Velocity_InAGV_By_Encoder.Velocity.angle_velocity = (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
+			float x_velocity_temp= (-angular_velocity_FR + angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
+			float y_velocity_temp= (angular_velocity_FR + angular_velocity_FL + angular_velocity_BL + angular_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
+			float angle_velocity_temp= (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * MECANUM_WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
 
-			Displacement_Velocity_InAGV_By_Encoder.Coordinate.x_coor = Displacement_Velocity_InAGV_By_Encoder.Velocity.x_velocity * time_ms / 1000.0f;
-			Displacement_Velocity_InAGV_By_Encoder.Coordinate.y_coor = Displacement_Velocity_InAGV_By_Encoder.Velocity.y_velocity * time_ms / 1000.0f;
-			Displacement_Velocity_InAGV_By_Encoder.Coordinate.angle_coor = Displacement_Velocity_InAGV_By_Encoder.Velocity.angle_velocity * time_ms / 1000.0f;
+			float velocity_temp = sqrtf(x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp);
+			float angle_temp = ArcTan_Lookup(x_velocity_temp, y_velocity_temp);
 
-			Position_Class Absolute_coor_Inworld_temp;
-
-			//将AGV坐标系中的速度和位移变换至世界坐标系
-			Absolute_coor_Inworld_temp = Position_Class::Relative_To_Absolute(Absolute_coor_Inworld_temp, Displacement_Velocity_InAGV_By_Encoder, Current_InWorld.Coordinate);
-
-			Current_InWorld.Coordinate = Absolute_coor_Inworld_temp.Coordinate;
-			Current_InWorld.Velocity = Absolute_coor_Inworld_temp.Velocity;
+			AGV_Velocity_InAGV.velocity = velocity_temp;
+			AGV_Velocity_InAGV.velocity_angle = angle_temp;
+			AGV_Velocity_InAGV.angular_velocity = angle_velocity_temp;
 
 			Encoder_Class::Clear_Time_US(); //清空计数器
 			time_current_10us = 0;
@@ -283,42 +272,7 @@ Position_Class & Mecanum_Wheel_Class::Update_Post_By_Encoder(Position_Class & Cu
 			time_last_10us = time_current_10us;
 		}
 	}
-	else
-	{
-		Current_InWorld.Velocity.x_velocity = 0.0f;
-		Current_InWorld.Velocity.y_velocity = 0.0f;
-		Current_InWorld.Velocity.angle_velocity = 0.0f;
-	}
-	return Current_InWorld;
+	return AGV_Velocity_InAGV;
 }
 
-float Mecanum_Wheel_Class::Get_theta_rate(float time_ms)
-{
-	float angular_velocity_FR, angular_velocity_FL;   //前右，前左轮角速度
-	float angular_velocity_BL, angular_velocity_BR;   //后左，后右轮角速度
-
-	float theta_rate = 0.0f;	//角速度（°/s）
-
-	Front_Left_Encoder.Get_Pulse(); //读取编码器旋转的脉冲数
-	Front_Right_Encoder.Get_Pulse();
-	Behind_Left_Encoder.Get_Pulse();
-	Behind_Right_Encoder.Get_Pulse();
-
-	//根据角速度和运动学计算位移
-	//计算4个轮子的角速度(°/s)
-
-	angular_velocity_FR = Front_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	angular_velocity_FL = Front_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	angular_velocity_BR = Behind_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	angular_velocity_BL = Behind_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
-
-	//PI* WHEEL_DIAMETER/1440=M_PI / 180 * WHEEL_DIAMETER /2/ 4
-	//PI/180为转换成弧度
-	//WHEEL_DIAMETER /2为半径
-	//获取AGV坐标系下AGV的速度和位移
-
-	theta_rate = (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
-
-	return theta_rate;
-}
 

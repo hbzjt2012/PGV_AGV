@@ -91,6 +91,7 @@
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\Math\MyMath.cpp" />
     <ClCompile Include="..\Math\Trigonometric.c" />
+    <ClCompile Include="..\parameter_define.cpp" />
     <ClCompile Include="..\StartupFiles\startup_stm32f407xx.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_adc.c" />
@@ -135,7 +136,6 @@
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_usart.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_wwdg.c" />
     <ClCompile Include="..\system_stm32f4xx.c" />
-    <ClCompile Include="parameter_define.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LinkerScripts\STM32F407VE_flash.lds" />
@@ -190,6 +190,7 @@
     <ClInclude Include="..\main.h" />
     <ClInclude Include="..\Math\MyMath.h" />
     <ClInclude Include="..\Math\Trigonometric.h" />
+    <ClInclude Include="..\parameter_define.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\misc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_adc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can.h" />

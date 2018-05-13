@@ -21,11 +21,9 @@ public:
 	void Init(bool dir);			//设置默认的计数方向
 	static void Init_Fre_TIM(void); //初始化用于采样频率计算的定时器
 
-	float Get_Palstance(float time_ms); //根据采样时间计算角速度（单位为°/ms）
+	float Get_Palstance(float time_ms); //根据采样时间计算轮子角速度（单位为°/ms）
 	int16_t Get_Pulse(void);			//读取编码器旋转的角度
 	void Clear(void) { TIM_Base_Class::Write(0x7FFF); }
-
-	void Set_Pulse(int16_t);	//测试用
 
 	static unsigned long Update_Period(void); //更新
 	static void Clear_Time_US(void)
