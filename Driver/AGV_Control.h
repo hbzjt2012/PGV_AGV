@@ -22,7 +22,7 @@ public:
 	virtual Velocity_Class & Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class &AGV_Velocity_InAGV) = 0;	//根据位姿误差更新期望速度
 	virtual Velocity_Class& Update_Velocity_By_Limit(Velocity_Class&Velocity) = 0;	//对速度限幅
 	virtual void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV) = 0;	//将AGV速度转换为车轮速度，更新velocity
-	virtual Velocity_Class &Update_Velocity_By_Encoder(void)= 0;	//根据编码器获取AGV速度
+	virtual Velocity_Class &Cal_Velocity_By_Encoder(void)= 0;	//根据编码器获取AGV速度
 
 	Velocity_Class AGV_Velocity_InAGV;	//AGV坐标系下由编码器获取的AGV速度
 

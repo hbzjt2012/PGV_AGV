@@ -187,7 +187,7 @@ void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 // Parameter: Position_Class & Current_InWorld 世界坐标系下当前AGV的坐标和速度
 // Description: 根据编码器更新世界坐标系下的坐标和速度
 //************************************
-Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Encoder(void)
+Velocity_Class & Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(void)
 {
 	static unsigned short time_10us_threshold = 0;
 	static unsigned long time_last_10us = 0, time_current_10us = 0; //上一次时间计数，当前时间计数

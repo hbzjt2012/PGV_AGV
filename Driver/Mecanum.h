@@ -26,8 +26,7 @@ public:
 	Velocity_Class & Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class &AGV_Velocity_InAGV) override;	//根据位姿误差更新期望速度
 	Velocity_Class& Update_Velocity_By_Limit(Velocity_Class&Velocity) override;	//对速度限幅
 	void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV) override;	//将AGV速度转换为车轮速度，更新velocity
-	Velocity_Class &Update_Velocity_By_Encoder(void) override;	//根据编码器获取AGV速度
-
+	Velocity_Class &Cal_Velocity_By_Encoder(void) override;	//根据编码器获取AGV速度
 
 private:
 	static Motor_Class Front_Left_Wheel, Front_Right_Wheel;			//左、右前轮

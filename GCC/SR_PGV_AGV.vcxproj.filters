@@ -302,6 +302,9 @@
     <ClCompile Include="..\parameter_define.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="..\App\Movement.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -566,6 +569,9 @@
     </ClInclude>
     <ClInclude Include="..\parameter_define.h">
       <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Movement.h">
+      <Filter>App\Inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
