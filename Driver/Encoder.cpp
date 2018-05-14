@@ -17,9 +17,10 @@ void Encoder_Class::Init(bool dir)
 
 void Encoder_Class::Init_Fre_TIM(void)
 {
-	NVIC_InitTypeDef NVIC_InitStructure;
+	//NVIC_InitTypeDef NVIC_InitStructure;
 
-	Encoder_Fre_Tim.Init((uint16_t)65530, 1680); //TIM9的时钟为168Mhz，1680分频，最大计数时间为655.3ms
+	//设置时基，TIM9的时钟为168Mhz，1680分频，最大计数时间为655.3ms
+	Encoder_Fre_Tim.Init((uint16_t)65530, 1680);
 
 	Encoder_Fre_Tim.Begin(); //开始计数
 }
@@ -42,6 +43,7 @@ int16_t Encoder_Class::Get_Pulse(void)
 //************************************
 unsigned long Encoder_Class::Update_Period(void)
 {
+
 	unsigned long time_temp = time_10us_Interrupt_cnt + Encoder_Fre_Tim.Read(); //保存定时器计数,单位为10us
 	//time_temp = time_10us_Interrupt_cnt;	//单位为10us
 	//time_10us_Interrupt_cnt = 0;
@@ -66,13 +68,13 @@ float Encoder_Class::Get_Palstance(float time_ms)
 	return palstance;
 }
 
-void TIM1_BRK_TIM9_IRQHandler(void)
-{
-	if (TIM9->SR & TIM_IT_Update) //更新中断
-	{
-		TIM9->SR = ~TIM_IT_Update; //清除中断
-		//Encoder_Class::time_10us_Interrupt_cnt++;
-		Encoder_Class::time_10us_Interrupt_cnt += 6553;
-		//GPIOA->ODR ^= 1 << 15;
-	}
-}
+//void TIM1_BRK_TIM9_IRQHandler(void)
+//{
+//	if (TIM9->SR & TIM_IT_Update) //更新中断
+//	{
+//		TIM9->SR = ~TIM_IT_Update; //清除中断
+//		//Encoder_Class::time_10us_Interrupt_cnt++;
+//		Encoder_Class::time_10us_Interrupt_cnt += 6553;
+//		//GPIOA->ODR ^= 1 << 15;
+//	}
+//}

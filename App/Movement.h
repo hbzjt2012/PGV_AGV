@@ -28,24 +28,32 @@ public:
 		float slow_distance_abs;	//最小速度移动的位移(mm或°)
 	} Actual_INPUT_TypedefStructure;
 
-	void Init(const Actual_INPUT_TypedefStructure&Input);	//根据运动输入条件(限制)插补运动路径
+	void Init(const Actual_INPUT_TypedefStructure&Input,bool Is_Linear=true);	//根据运动输入条件(限制)插补运动路径
 	bool Get_Expectation(const Coordinate_Class Current_Coor_InWorld);	//根据当前坐标计算目标坐标，目标速度
+	void Set_Destination(Coordinate_Class &coor) { Destination_Coor_InWorld = coor; }
+	void Set_Origin(Coordinate_Class&coor) { Origin_Coor_InWorld = coor; }
 
 	bool Interpolation_OK;	//true表示插补完成
+	bool Is_Linear;	//表示当前为直线运动
+
+	static Velocity_Class Target_Velocity_InAGV;	//目标速度
+	static Coordinate_Class Target_Coor_InWorld;	//目标坐标
 
 private:
 
-	virtual float Cal_Displacement(const Coordinate_Class &Origin_Coor, const Coordinate_Class&Destination_Coors) = 0;	//根据起点终点计算插补距离
-	virtual Velocity_Class Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) = 0;	//根据终点坐标在起点坐标中的坐标，将合速度分配给各个轴
+	virtual float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) = 0;	//根据终点坐标在起点坐标中的坐标计算插补距离
+	virtual Velocity_Class& Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) = 0;	//根据终点坐标在起点坐标中的坐标，将合速度分配给各个轴
+	virtual float Cal_Current_Coor_InOrigin(const Coordinate_Class Current_Coor_InOrigin) = 0;	//根据当前坐标计算在源坐标系上的位移
 
 	Coordinate_Class Destination_Coor_InWorld;	//终点坐标
 	Coordinate_Class Origin_Coor_InWorld;	//起点坐标
 	Coordinate_Class Destination_Coor_InOrigin;	//起点坐标系中的终点坐标
 
-	//因为同一时间只会执行一条运动指令，故为静态变量
-	static Velocity_Class Target_Velocity_InAGV;	//目标速度
-	static Coordinate_Class Target_Coor_InWorld;	//目标坐标
+	Actual_INPUT_TypedefStructure Input_Para;
 
+	
+
+	//因为同一时间只会执行一条运动指令，故为静态变量
 	static int Distance_Symbols; //指示待插补数据的符号
 
 	static float acc_distance;	//加速段距离(mm)

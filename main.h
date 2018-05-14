@@ -12,6 +12,8 @@
 #include "./App/Position.h"
 #include "./Driver/PGV100.h"
 #include "./Driver/TL740D.h"
+#include "./App/Movement_Mecanum.h"
+
 
 /*
 * TIM1 编码器FL
@@ -56,20 +58,21 @@ namespace AGV_State
 
 void Init_System(void);
 void Init_System_RCC(void);														//初始化系统所需时钟
-void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); //获取指令
-void Process_Gcode(Gcode_Class *command, bool &IS_Parsing);					//处理指令
+void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); //获取命令指令
+void Process_Gcode(Gcode_Class *command, bool &IS_Parsing);						//处理命令指令
+bool Add_Movement( Coordinate_Class Origin, Coordinate_Class Destination);
+void Get_Available_Movement(void);	//获取运动指令
+void Process_Movement(Movemeng_Mecanum_Class*movement, bool &Is_Parsing);		//处理运动指令
 void Update_Print_MSG(void);													//更新状态，打印信息
-
 Coordinate_Class Update_Coor_InWorld(void);	//更新全局坐标(定位)
 
-Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld, Coordinate_Class &Target_Coor_InWorld, bool Is_Absolute_Coor = true);	//获取指令中的坐标
+Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld, Coordinate_Class &Target_Coor_InWorld_ByGcode, bool Is_Absolute_Coor = true);	//获取指令中的坐标
 
-void Gcode_G0(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld, Velocity_Class &Target_Velocity_InAGV, Coordinate_Class &Target_Coor_InWorld);	//直接插补
-void Gcode_G1(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld, Velocity_Class &Target_Velocity_InAGV, Coordinate_Class &Target_Coor_InWorld);	//直线插补
+void Gcode_G0(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//直接插补
+void Gcode_G1(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//直线插补
 
 void Gcode_G90(void);	//设定为绝对坐标
 void Gcode_G91(void);	//设定为相对坐标
-Coordinate_Class & Gcode_G92(Gcode_Class *command,Coordinate_Class&Current_Coor_InWorld);	//设置当前坐标
 
 void Gcode_M17(void);	//启动所有电机
 void Gcode_M18(void);	//禁用所有电机
@@ -77,5 +80,5 @@ void Gcode_M18(void);	//禁用所有电机
 void Gcode_I0(void);	//急停
 void Gcode_I30(void);	//清除指令队列
 void Gcode_I114(void);	//获取坐标
-void Gcode_I115(void);	//获取最近一次编码器的坐标
-void Gcode_I116(void);	//获取最近一次PGV的坐标
+//void Gcode_I115(void);	//获取最近一次编码器的坐标
+//void Gcode_I116(void);	//获取最近一次PGV的坐标

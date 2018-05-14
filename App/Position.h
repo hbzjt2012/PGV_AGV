@@ -27,12 +27,19 @@ public:
 	Velocity_Class &operator-=(const Velocity_Class &subtrahend);
 	Velocity_Class &operator*=(const float factor);
 	Velocity_Class &operator/=(const float divisor);
+
 }; //速度
 
 class Coordinate_Class
 {
 public:
 	Coordinate_Class(void) :x_coor(0.0f), y_coor(0.0f), angle_coor(0.0f) {
+		coor_matrix.numCols = 3;
+		coor_matrix.numRows = 1;
+		coor_matrix.pData = coor_array;
+	}
+
+	Coordinate_Class(float x, float y, float angle) :x_coor(x), y_coor(y), angle_coor(angle) {
 		coor_matrix.numCols = 3;
 		coor_matrix.numRows = 1;
 		coor_matrix.pData = coor_array;
@@ -50,11 +57,18 @@ public:
 
 	arm_matrix_instance_f32 coor_matrix;	//速度矩阵(3*1列向量)
 
-	Coordinate_Class &operator+=(const Coordinate_Class &addend_relative);
-	Coordinate_Class &operator-=(const Coordinate_Class &subtrahend_absolute);
 	Coordinate_Class &operator*=(const float factor);
 	Coordinate_Class &operator/=(const float divisor);
+
+	void Clear(void);
+	void Truncation_Coor(void);	//将角度变换至0-360°，保留0.1精度
 
 	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 	static Coordinate_Class& Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor);	//从绝对坐标转换为相对坐标
 }; //坐标
+
+
+Velocity_Class operator+(const Velocity_Class &summand, const Velocity_Class &addend);
+Velocity_Class operator-(const Velocity_Class &minuend, const Velocity_Class &subtrahend);
+Coordinate_Class operator+(const Coordinate_Class &summand, const Coordinate_Class &addend);
+Coordinate_Class operator-(const Coordinate_Class &minuend, const Coordinate_Class &subtrahend);

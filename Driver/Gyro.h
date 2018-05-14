@@ -17,8 +17,8 @@ class Gyro_Class : protected Uart_Base_Class
 	friend void USART2_IRQHandler(void);
 	friend void TIM7_IRQHandler(void);
 
-  public:
-	Gyro_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6) {}
+public:
+	Gyro_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6), data_OK(false) {}
 	virtual ~Gyro_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口
@@ -33,7 +33,9 @@ class Gyro_Class : protected Uart_Base_Class
 	float forward_accel; //前向加速度
 	float z_heading;	 //Z轴方位角，0°~360°
 
-  protected:
+	bool data_OK;
+
+protected:
 	DMA_Base_Class TX_DMA;
 	static bool rx_flag;				//表明收到了一帧数据
 	static uint16_t tx_cnt;				//发送字节的计数

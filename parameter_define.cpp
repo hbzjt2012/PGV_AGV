@@ -40,7 +40,7 @@ float Parameter_Class::wheel_min_line_velocity = Update_wheel_line_velocity(moto
 float Parameter_Class::wheel_acceleration_time = 5.0f;//车轮最大加减速所需时间(从最低速到最高速)(单位s)
 float Parameter_Class::wheel_acceleration_line_velocity = Update_wheel_acceleration_line(wheel_acceleration_time);		//车轮最大线加减速度(mm/s2)
 
-float Parameter_Class::line_slowest_time = 1.0f;	//最低速移动的时间
+float Parameter_Class::line_slowest_time = 2.0f;	//最低速移动的时间
 
 
 void Parameter_Class::Update_Parameter(int num, float para)

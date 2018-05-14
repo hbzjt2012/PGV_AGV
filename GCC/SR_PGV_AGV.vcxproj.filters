@@ -305,6 +305,9 @@
     <ClCompile Include="..\App\Movement.cpp">
       <Filter>App\Src</Filter>
     </ClCompile>
+    <ClCompile Include="..\App\Movement_Mecanum.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -571,6 +574,9 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="..\App\Movement.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Movement_Mecanum.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
   </ItemGroup>

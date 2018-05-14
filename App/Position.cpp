@@ -35,8 +35,9 @@ Velocity_Class &Velocity_Class::operator+=(const Velocity_Class &addend)
 Velocity_Class &Velocity_Class::operator-=(const Velocity_Class &subtrahend)
 {
 	//转化为加法
+	//大小相反，角度不变，角速度不变
 	Velocity_Class addend_temp = subtrahend;
-	addend_temp.angular_velocity = -addend_temp.angular_velocity;
+	//addend_temp.angular_velocity = addend_temp.angular_velocity;
 	addend_temp.velocity = -addend_temp.velocity;
 	this->operator+=(addend_temp);	//转换为加法
 	return *this;
@@ -52,6 +53,7 @@ Velocity_Class &Velocity_Class::operator-=(const Velocity_Class &subtrahend)
 //************************************
 Velocity_Class&Velocity_Class::operator*=(const float factor)
 {
+	//线速度、角速度乘因子
 	this->angular_velocity *= factor;
 	this->velocity *= factor;
 	return *this;
@@ -71,33 +73,18 @@ Velocity_Class &Velocity_Class::operator/=(const float divisor)
 	return *this;
 }
 
-
-//************************************
-// Method:    operator+=
-// FullName:  Coordinate_Class::operator+=
-// Access:    public 
-// Returns:   Coordinate_Class & 在世界坐标系中的坐标
-// Parameter: const Coordinate_Class & addend_relative 加数，在*this坐标系中的相对坐标
-// Description: 重载+=运算符，映射为坐标变换，从相对坐标（加数相对于被加数）变换为绝对坐标（加数）
-//************************************
-Coordinate_Class &Coordinate_Class::operator+=(const Coordinate_Class &addend_relative)
+Velocity_Class operator+(const Velocity_Class & summand, const Velocity_Class & addend)
 {
-	Coordinate_Class::Relative_To_Absolute(*this, addend_relative, *this);
-	return *this;
+	Velocity_Class temp = summand;
+	temp += addend;
+	return temp;
 }
 
-//************************************
-// Method:    operator-=
-// FullName:  Coordinate_Class::operator-=
-// Access:    public 
-// Returns:   Coordinate_Class & 在*this坐标系中的相对坐标
-// Parameter: const Coordinate_Class & subtrahend_absolute 减数，世界坐标系中的坐标
-// Description: 重载为-=运算符，映射坐标变换，从绝对坐标（减数）变换为相对坐标（相对于被减数）
-//************************************
-Coordinate_Class &Coordinate_Class::operator-=(const Coordinate_Class &subtrahend_absolute)
+Velocity_Class operator-(const Velocity_Class & minuend, const Velocity_Class & subtrahend)
 {
-	Coordinate_Class::Absolute_To_Relative(subtrahend_absolute, *this, *this);
-	return *this;
+	Velocity_Class temp = minuend;
+	temp -= subtrahend;
+	return temp;
 }
 
 //************************************
@@ -127,6 +114,39 @@ Coordinate_Class &Coordinate_Class::operator/=(const float divisor)
 {
 	this->operator*=(1.0f / divisor);
 	return *this;
+}
+
+void Coordinate_Class::Clear(void)
+{
+	x_coor = 0.0f;
+	y_coor = 0.0f;
+	angle_coor = 0.0f;
+}
+
+void Coordinate_Class::Truncation_Coor(void)
+{
+	long angle_temp = ((long)(angle_coor * 10.0f) % 3600);
+	x_coor = (long)(x_coor * 10.0f) / 10.0f;
+	y_coor = (long)(y_coor * 10.0f) / 10.0f;
+	angle_coor = ((angle_temp + 3600) % 3600) / 10.0f;
+}
+
+Coordinate_Class operator+(const Coordinate_Class & summand, const Coordinate_Class & addend)
+{
+	Coordinate_Class temp = summand;
+
+	temp = Coordinate_Class::Relative_To_Absolute(temp, addend, temp);
+
+	return temp;
+}
+
+Coordinate_Class operator-(const Coordinate_Class & minuend, const Coordinate_Class & subtrahend)
+{
+	Coordinate_Class temp;
+
+	Coordinate_Class::Absolute_To_Relative(minuend, temp, subtrahend);
+
+	return temp;
 }
 
 Coordinate_Class & Coordinate_Class::Relative_To_Absolute(Coordinate_Class & Absolute_Coor, const Coordinate_Class & Relative_Coor, const Coordinate_Class & Base_Coor)

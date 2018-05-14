@@ -12,7 +12,7 @@ extern "C" void TIM1_BRK_TIM9_IRQHandler(void);
 */
 class Encoder_Class : protected TIM_Base_Class
 {
-	friend void TIM1_BRK_TIM9_IRQHandler(void);
+	//friend void TIM1_BRK_TIM9_IRQHandler(void);
 
 public:
 	Encoder_Class(TIM_TypeDef *TIMx) : TIM_Base_Class(TIMx) {}
@@ -26,6 +26,7 @@ public:
 	void Clear(void) { TIM_Base_Class::Write(0x7FFF); }
 
 	static unsigned long Update_Period(void); //更新
+	static unsigned long Read_Time(void) { return Encoder_Fre_Tim.Read(); }	//获取定时器时间
 	static void Clear_Time_US(void)
 	{
 		Encoder_Fre_Tim.Init_UG();

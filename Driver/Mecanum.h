@@ -28,6 +28,8 @@ public:
 	void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV) override;	//将AGV速度转换为车轮速度，更新velocity
 	Velocity_Class &Cal_Velocity_By_Encoder(void) override;	//根据编码器获取AGV速度
 
+	float Get_Time(void);
+
 private:
 	static Motor_Class Front_Left_Wheel, Front_Right_Wheel;			//左、右前轮
 	static Motor_Class Behind_Left_Wheel, Behind_Right_Wheel;		//左、右后轮

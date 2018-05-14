@@ -8,7 +8,7 @@
 class Queue_Class
 {
   public:
-	Queue_Class(int length) : queue_length(length) {}
+	Queue_Class(int length) : queue_length(length){}
 	~Queue_Class() = default;
 
 	void Init(void);   //初始化队列
