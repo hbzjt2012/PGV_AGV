@@ -5,9 +5,10 @@
 class Velocity_Class
 {
 public:
+	//速度为一个3*1的列向量
 	Velocity_Class(void) :velocity(0.0f), velocity_angle(0.0f), angular_velocity(0.0f) {
-		velocity_matrix.numCols = 3;
-		velocity_matrix.numRows = 1;
+		velocity_matrix.numRows = 3;
+		velocity_matrix.numCols = 1;
 		velocity_matrix.pData = velocity_array;
 	}
 	union
@@ -33,15 +34,16 @@ public:
 class Coordinate_Class
 {
 public:
+	//坐标为一个3*1的列向量
 	Coordinate_Class(void) :x_coor(0.0f), y_coor(0.0f), angle_coor(0.0f) {
-		coor_matrix.numCols = 3;
-		coor_matrix.numRows = 1;
+		coor_matrix.numRows = 3;
+		coor_matrix.numCols = 1;
 		coor_matrix.pData = coor_array;
 	}
-
+	//坐标为一个3*1的列向量
 	Coordinate_Class(float x, float y, float angle) :x_coor(x), y_coor(y), angle_coor(angle) {
-		coor_matrix.numCols = 3;
-		coor_matrix.numRows = 1;
+		coor_matrix.numRows = 3;
+		coor_matrix.numCols = 1;
 		coor_matrix.pData = coor_array;
 	}
 	union

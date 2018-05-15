@@ -100,6 +100,32 @@ void Mecanum_Wheel_Class::Run(bool value)
 	Behind_Right_Wheel.Run_Enable(value);
 }
 
+Coordinate_Class & Mecanum_Wheel_Class::Update_Coor_By_Encoder_demo(const Coordinate_Class Coor_InWorld_Last)
+{
+	float delta_x = 0.0f, delta_y = 0.0f, delta_theta = AGV_Velocity_InAGV.angular_velocity*0.02;
+
+	float velocity_theta_t_1 = Coor_InWorld_Last.angle_coor + AGV_Velocity_InAGV.velocity_angle;	//t-1时刻的速度方向（世界坐标系）
+	float velocity_theta_t = velocity_theta_t_1 + delta_theta;	//t时刻的速度方向(世界坐标系)(计算周期是20ms)
+
+
+
+	if (ABS(AGV_Velocity_InAGV.angular_velocity) < FLOAT_DELTA)	//认为是直线运动
+	{
+		delta_x = AGV_Velocity_InAGV.velocity*Cos_Lookup(velocity_theta_t_1);
+		delta_y = AGV_Velocity_InAGV.velocity*Sin_Lookup(velocity_theta_t_1);
+	}
+	else  //圆弧运动
+	{
+		delta_x = AGV_Velocity_InAGV.velocity / AGV_Velocity_InAGV.angular_velocity*(Sin_Lookup(velocity_theta_t) - Sin_Lookup(velocity_theta_t_1));
+		delta_y = AGV_Velocity_InAGV.velocity / AGV_Velocity_InAGV.angular_velocity*(Cos_Lookup(velocity_theta_t_1) - Cos_Lookup(velocity_theta_t));
+	}
+	AGV_Coor_InWorld.x_coor += delta_x;
+	AGV_Coor_InWorld.y_coor += delta_y;
+	AGV_Coor_InWorld.angle_coor += delta_theta;
+	return AGV_Coor_InWorld;
+	// TODO: 在此处插入 return 语句
+}
+
 Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & Error_Coor_InAGV, Velocity_Class & AGV_Velocity_InAGV)
 {
 	//此处算法应改进
@@ -129,7 +155,7 @@ Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(Velocity_Class & 
 	float x_velocity = Velocity.velocity*Cos_Lookup(Velocity.velocity_angle);
 	float y_velocity = Velocity.velocity*Sin_Lookup(Velocity.velocity_angle);
 	float abs_temp = ABS(x_velocity) + ABS(y_velocity) + ABS(angular_velocity);
-	
+
 	float k = 1.0f;
 
 	if (abs_temp > Parameter_Class::wheel_max_line_velocity)
@@ -224,7 +250,7 @@ Velocity_Class & Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(void)
 	float time_ms = time_10us / 100.0f;
 
 	Encoder_Class::Clear_Time_US(); //清空计数器
-													
+
 	Front_Left_Encoder.Get_Pulse(); //读取编码器旋转的脉冲数
 	Front_Right_Encoder.Get_Pulse();
 	Behind_Left_Encoder.Get_Pulse();
@@ -245,7 +271,7 @@ Velocity_Class & Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(void)
 	float angle_velocity_temp = (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * MECANUM_WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
 
 	float velocity_temp = sqrtf(x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp);
-	float angle_temp = ArcTan_Lookup(x_velocity_temp, y_velocity_temp);
+	float angle_temp = ArcTan_Lookup(x_velocity_temp, y_velocity_temp) / 10.0f;
 
 	AGV_Velocity_InAGV.velocity = velocity_temp;
 	AGV_Velocity_InAGV.velocity_angle = angle_temp;

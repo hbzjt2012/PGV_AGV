@@ -54,6 +54,7 @@ private:
 	
 
 	//因为同一时间只会执行一条运动指令，故为静态变量
+	static float X_H_mul_X;	//用于计算投影向量
 	static int Distance_Symbols; //指示待插补数据的符号
 
 	static float acc_distance;	//加速段距离(mm)

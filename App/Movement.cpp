@@ -8,6 +8,8 @@
 Velocity_Class Movement_Class::Target_Velocity_InAGV;	//目标速度
 Coordinate_Class Movement_Class::Target_Coor_InWorld;	//目标坐标
 
+float Movement_Class::X_H_mul_X = 0.0f;
+
 int Movement_Class::Distance_Symbols = 1; //指示待插补数据的符号
 
 float Movement_Class::acc_distance = 0.0f;	//加速段距离(mm)
@@ -27,6 +29,7 @@ void Movement_Class::Init(const Actual_INPUT_TypedefStructure & Input, bool Is_L
 	float distance_temp = (Input.max_velocity_abs * Input.max_velocity_abs - Input.min_velocity_abs * Input.min_velocity_abs) / Input.acceleration_abs;	//若存在匀速段最小位移,最小位移的距离
 	float input_distance = Cal_Displacement(Destination_Coor_InOrigin);	//计算移动距离
 	Input_Para = Input;
+	Interpolation_OK = false;
 
 	if (ABS(Input.min_velocity_abs) < INTER_FLOAT_DELTA) //最小速度为0
 	{
@@ -77,6 +80,11 @@ void Movement_Class::Init(const Actual_INPUT_TypedefStructure & Input, bool Is_L
 																					//slowly_distance = Input_Para.min_velocity_abs * Result.slowly_time + Input.slow_distance_abs;
 	slowly_time = (long)(slowly_distance / Input_Para.min_velocity_abs * 100.0f) / 100.0f; //获取总的慢速时间，圆整
 
+	X_H_mul_X = Destination_Coor_InOrigin.x_coor*Destination_Coor_InOrigin.x_coor \
+		+ Destination_Coor_InOrigin.y_coor*Destination_Coor_InOrigin.y_coor \
+		+ Destination_Coor_InOrigin.angle_coor*Destination_Coor_InOrigin.angle_coor;
+
+
 }
 
 //************************************
@@ -90,29 +98,43 @@ void Movement_Class::Init(const Actual_INPUT_TypedefStructure & Input, bool Is_L
 bool Movement_Class::Get_Expectation(const Coordinate_Class Current_Coor_InWorld)
 {
 	Coordinate_Class Current_Coor_InOrigin = Current_Coor_InWorld - Origin_Coor_InWorld;	//获取当前坐标在起点坐标系中的坐标
-	Coordinate_Class Target_Coor_InOrigin;	//起始坐标上的目标坐标
+	Coordinate_Class Target_Coor_InOrigin;	//当前坐标向量在终点坐标向量上的投影（即目标坐标）
 
-	//根据当前坐标求垂直轨迹的目标坐标
-	MyMath::Coor coor_temp1, coor_temp2;
+	float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
+		+ Destination_Coor_InOrigin.y_coor*Current_Coor_InOrigin.y_coor \
+		+ Destination_Coor_InOrigin.angle_coor*Current_Coor_InOrigin.angle_coor;
 
-	coor_temp1.x = Current_Coor_InOrigin.x_coor;
-	coor_temp1.y = Current_Coor_InOrigin.y_coor;
+	float k = X_H_mul_y / X_H_mul_X;
 
-	//获取斜率不存在的交点
-	if (ABS(Destination_Coor_InOrigin.x_coor) < FLOAT_DELTA)
-	{
-		coor_temp2.y = coor_temp1.y;
-		coor_temp2.x = Destination_Coor_InOrigin.x_coor;
-	}
-	else
-	{
-		MyMath::Get_Vertical_Line_Crossover_Point(Destination_Coor_InOrigin.y_coor / Destination_Coor_InOrigin.x_coor, coor_temp1, coor_temp2);
-	}
+	//获取当前向量在终点向量上的投影向量
+	Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
+	Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
+	Target_Coor_InOrigin.angle_coor = k*Destination_Coor_InOrigin.angle_coor;
 
-	Target_Coor_InOrigin.x_coor = coor_temp2.x;
-	Target_Coor_InOrigin.y_coor = coor_temp2.y;
 
-	Target_Coor_InOrigin.angle_coor = Current_Coor_InOrigin.angle_coor;
+
+	////根据当前坐标求垂直轨迹的目标坐标
+	//MyMath::Coor coor_temp1, coor_temp2;
+
+	//coor_temp1.x = Current_Coor_InOrigin.x_coor;
+	//coor_temp1.y = Current_Coor_InOrigin.y_coor;
+
+	////获取斜率不存在的交点
+	//if (ABS(Destination_Coor_InOrigin.x_coor) < FLOAT_DELTA)
+	//{
+	//	coor_temp2.y = coor_temp1.y;
+	//	coor_temp2.x = Destination_Coor_InOrigin.x_coor;
+	//}
+	//else
+	//{
+	//	MyMath::Get_Vertical_Line_Crossover_Point(Destination_Coor_InOrigin.y_coor / Destination_Coor_InOrigin.x_coor, coor_temp1, coor_temp2);
+	//}
+
+	//Target_Coor_InOrigin.x_coor = coor_temp2.x;
+	//Target_Coor_InOrigin.y_coor = coor_temp2.y;
+
+
+	//Target_Coor_InOrigin.angle_coor = Current_Coor_InOrigin.angle_coor;
 
 
 	float current_coor = Cal_Current_Coor_InOrigin(Target_Coor_InOrigin)*Distance_Symbols;	//获取在源坐标系上的位移

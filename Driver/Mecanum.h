@@ -23,6 +23,7 @@ public:
 	void Brake(bool value) override;
 	void Run(bool value) override;
 
+	Coordinate_Class &Update_Coor_By_Encoder_demo(const Coordinate_Class Coor_InWorld_Last) override;
 	Velocity_Class & Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class &AGV_Velocity_InAGV) override;	//根据位姿误差更新期望速度
 	Velocity_Class& Update_Velocity_By_Limit(Velocity_Class&Velocity) override;	//对速度限幅
 	void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV) override;	//将AGV速度转换为车轮速度，更新velocity

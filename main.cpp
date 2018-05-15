@@ -19,14 +19,11 @@ Movemeng_Mecanum_Class *Movement_Index_w = Movement_Buf, *Movement_Index_r = Mov
 
 
 Coordinate_Class AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld;	//AGV在世界坐标系下的当前坐标和目标坐标
-Velocity_Class AGV_Current_Velocity_InAGV, AGV_Target_Velocity_InWorld;	//AGV在小车坐标系下的当前速度和目标速度
+Velocity_Class AGV_Current_Velocity_InAGV, AGV_Target_Velocity_InAGV;	//AGV在小车坐标系下的当前速度和目标速度
 
 int command_line = 0;		  //表示当前已经接收到的指令行数
 int agv_add = 1;			  //AGV地址号
 bool Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
-
-bool current_existing_task = false;	//表示当前是否存在任务
-bool current_existing_movement = false;	//表示当前是否存在运动任务
 
 bool demo_flag = false;
 
@@ -71,31 +68,33 @@ int main(void)
 			{
 				//计算当前位姿
 				Mecanum_AGV.Cal_Velocity_By_Encoder();	//使用编码器计算AGV速度
-				if ((TL740.data_OK) && (!PGV100.Coor_OK))
-				{
-					TL740.data_OK = false;
-					//将陀螺仪与编码器融合
-				}
-				else if ((!TL740.data_OK) && (PGV100.Coor_OK))
-				{
-					PGV100.Coor_OK = false;
-					//编码器与PGV融合
-				}
-				else if ((!TL740.data_OK) && (!PGV100.Coor_OK))
-				{
-					//只使用编码器
-				}
-				else
-				{
-					//使用陀螺仪、编码器、陀螺仪融合
-				}
+				AGV_Current_Coor_InWorld = Mecanum_AGV.Update_Coor_By_Encoder_demo(AGV_Current_Coor_InWorld);	//计算位姿
+				//if ((TL740.data_OK) && (!PGV100.Coor_OK))
+				//{
+				//	TL740.data_OK = false;
+				//	//将陀螺仪与编码器融合
+				//}
+				//else if ((!TL740.data_OK) && (PGV100.Coor_OK))
+				//{
+				//	PGV100.Coor_OK = false;
+				//	//编码器与PGV融合
+				//}
+				//else if ((!TL740.data_OK) && (!PGV100.Coor_OK))
+				//{
+				//	AGV_Current_Coor_InWorld = Mecanum_AGV.Update_Coor_By_Encoder_demo(AGV_Current_Coor_InWorld);
+				//	//只使用编码器
+				//}
+				//else
+				//{
+				//	//使用陀螺仪、编码器、陀螺仪融合
+				//}
 			}
 
-			if (!(cnt_temp % 5))	//50ms时间到
-			{
-				//读取PGV数据
-				PGV100.Send(PGV_Class::Read_PGV_Data);
-			}
+			//if (!(cnt_temp % 5))	//50ms时间到
+			//{
+			//	//读取PGV数据
+			//	PGV100.Send(PGV_Class::Read_PGV_Data);
+			//}
 
 			//处理运动指令
 			Get_Available_Movement();
@@ -106,34 +105,35 @@ int main(void)
 
 		}
 
-		if (PGV100.Return_rx_flag())
-		{
-			PGV100.Clear_rx_flag();
-			if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
-			{
-				PGV100.Cal_Coor();
-				PGV100.Coor_OK = true;	//表示接受到了新的PGV数据
-			}
-		}
+		//if (PGV100.Return_rx_flag())
+		//{
+		//	PGV100.Clear_rx_flag();
+		//	if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
+		//	{
+		//		PGV100.Cal_Coor();
+		//		PGV100.Coor_OK = true;	//表示接受到了新的PGV数据
+		//	}
+		//}
 
-		if (TL740.Return_rx_flag())
-		{
-			TL740.Clear_rx_flag();
-			if (TL740.Analyze_Data())
-			{
-				TL740.data_OK = true;	//表示接收到了新的陀螺仪数据
-			}
-			//TL740.Read_Data();
-		}
+		//if (TL740.Return_rx_flag())
+		//{
+		//	TL740.Clear_rx_flag();
+		//	if (TL740.Analyze_Data())
+		//	{
+		//		TL740.data_OK = true;	//表示接收到了新的陀螺仪数据
+		//	}
+		//	//TL740.Read_Data();
+		//}
 
 		//检查避障
-		Get_Available_Command(command_buf_state); //获取处理当前指令(已完成)
-		Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InWorld);	//运动控制
+		Get_Available_Command(command_buf_state); //获取处理当前指令(已完成)                                                                                          
+		Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);	//运动控制
 		Update_Print_MSG(); //更新信息(待补全)
 
 
 	}
 }
+
 
 void Init_System(void)
 {
@@ -234,18 +234,15 @@ void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state)
 		{
 			Gcode_Index_r = Gcode_Buf + Gcode_Queue.DEqueue();  //获取队头
 			Process_Gcode(Gcode_Index_r, Is_Parsing_Command); //处理指令
-			current_existing_task = true;
 		}
 		else//缓存区空
 		{
 			Gcode_Queue.Init();	//缓存区空，没有在处理指令，初始化
-			current_existing_task = false;
 		}
 	}
 	else
 	{
 		Process_Gcode(Gcode_Index_r, Is_Parsing_Command); //处理指令
-		current_existing_task = true;
 	}
 }
 
@@ -371,18 +368,17 @@ void Get_Available_Movement(void)
 		{
 			Movement_Index_r = Movement_Buf + Movement_Queue.DEqueue();  //获取队头
 			Process_Movement(Movement_Index_r, Is_Parsing_Movement); //处理指令
-			current_existing_movement = true;
 		}
 		else//缓存区空
 		{
 			Movement_Queue.Init();	//缓存区空，没有在处理运动指令，初始化
-			current_existing_movement = false;
+			AGV_Current_Coor_InWorld.Truncation_Coor();
+			AGV_Target_Coor_InWorld.Truncation_Coor();
 		}
 	}
 	else
 	{
 		Process_Movement(Movement_Index_r, Is_Parsing_Movement); //处理指令
-		current_existing_movement = true;
 	}
 
 }
@@ -402,14 +398,16 @@ void Process_Movement(Movemeng_Mecanum_Class * movement, bool & Is_Parsing)
 
 		movement->Init(Input);
 		Is_Init = false;
+		Is_Parsing = true;
 	}
-	else
+
+	if (!movement->Get_Expectation(AGV_Current_Coor_InWorld))	//插补完成
 	{
-		if (!movement->Get_Expectation(AGV_Current_Coor_InWorld))
-		{
-			Is_Parsing = false;
-		}
+		Is_Parsing = false;
+		Is_Init = true;
 	}
+	AGV_Target_Coor_InWorld = movement->Target_Coor_InWorld;
+	AGV_Target_Velocity_InAGV = movement->Target_Velocity_InAGV;
 }
 
 //************************************
@@ -558,7 +556,7 @@ void Gcode_G0(Gcode_Class * command, const Coordinate_Class & Current_Coor_InWor
 	}
 	else
 	{
-		if (Index_w < (unsigned long)Movement_Index_r)
+		if ((Index_w == (unsigned long)Movement_Index_r) && (Movement_Index_r->Interpolation_OK))
 		{
 			command->Parse_State = Gcode_Class::IS_PARSED;
 		}
@@ -883,7 +881,6 @@ void Gcode_I0(void)
 void Gcode_I30(void)
 {
 	Gcode_Queue.Init();	//缓存区空，没有在处理指令，初始化
-	current_existing_task = false;
 }
 
 //返回AGV在世界坐标系中的坐标

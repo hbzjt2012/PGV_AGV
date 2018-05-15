@@ -41,7 +41,7 @@ Velocity_Class &Movemeng_Mecanum_Class::Cal_Velocity(const Coordinate_Class & De
 	k = angle_equivalent_temp_InOrigin / distance_InOrigin;
 	float angle_equivalent_velocity = k*velocity;
 
-	Target_Velocity_InAGV.velocity_angle = ArcTan_Lookup(x_velocity, y_velocity);
+	Target_Velocity_InAGV.velocity_angle = ArcTan_Lookup(x_velocity, y_velocity) / 10.0f;
 	x_velocity = ABS(x_velocity);
 	y_velocity = ABS(y_velocity);
 
