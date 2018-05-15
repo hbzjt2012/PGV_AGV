@@ -50,21 +50,28 @@ namespace AGV_State
 		typedef enum {
 			No_Action, //无动作
 			BUSY,	  //缓存区繁忙
-			OK,		   //指令接收正常
+			OK,		  //指令接收正常
 			ERROR	  //指令错误
 		} Get_Command_State;
 	}
 }
 
 void Init_System(void);
-void Init_System_RCC(void);														//初始化系统所需时钟
-void Get_Available_Command(AGV_State::Command_State::Get_Command_State &state); //获取命令指令
-void Process_Gcode(Gcode_Class *command, bool &IS_Parsing);						//处理命令指令
-bool Add_Movement( Coordinate_Class Origin, Coordinate_Class Destination);
-void Get_Available_Movement(void);	//获取运动指令
-void Process_Movement(Movemeng_Mecanum_Class*movement, bool &Is_Parsing);		//处理运动指令
-void Update_Print_MSG(void);													//更新状态，打印信息
-Coordinate_Class Update_Coor_InWorld(void);	//更新全局坐标(定位)
+void Init_System_RCC(void);		//初始化系统所需时钟
+
+Coordinate_Class Location(Coordinate_Class Current_Coor);		//对AGV当前坐标定位
+void Process_Movement_Command(void);	//处理运动指令
+void Movement_Control(void);	//运动控制
+void Check_Avoidance_Buton(void);	//检查避障和按键
+void Parse_Sensor_Data(void);	//处理传感器数据
+void Process_Gcode_Command(AGV_State::Command_State::Get_Command_State &state); //获取并处理命令指令
+void Update_Print_MSG(void);		//打印信息
+
+bool Get_Next_Movement_Command(Movement_Class*&command);	//获取下一条可执行的指令
+bool Run_Movement_Command(Movement_Class*movement, Coordinate_Class Target_Coor, Velocity_Class Target_Velocity);
+void Run_Gcode_Command(Gcode_Class *command, bool &IS_Parsing);
+
+bool Add_Movement_Command(Coordinate_Class Origin, Coordinate_Class Destination);
 
 Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld, Coordinate_Class &Target_Coor_InWorld_ByGcode, bool Is_Absolute_Coor = true);	//获取指令中的坐标
 

@@ -7,9 +7,9 @@ inline float Update_wheel_angular_velocity(float motor_rotationl_velocity)
 	return motor_rotationl_velocity * 6 / REDUCTION_RATIO;
 }
 
-inline float Update_wheel_line_velocity(float motor_line_velocity)
+inline float Update_wheel_line_velocity(float motor_rotationl_velocity)
 {
-	return motor_line_velocity / 60 / REDUCTION_RATIO * MECANUM_WHEEL_DIAMETER * M_PI;
+	return motor_rotationl_velocity / 60 / REDUCTION_RATIO * MECANUM_WHEEL_DIAMETER * M_PI;
 }
 
 inline float Update_wheel_acceleration_line(float acceleration_time)

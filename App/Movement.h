@@ -28,7 +28,7 @@ public:
 		float slow_distance_abs;	//最小速度移动的位移(mm或°)
 	} Actual_INPUT_TypedefStructure;
 
-	void Init(const Actual_INPUT_TypedefStructure&Input,bool Is_Linear=true);	//根据运动输入条件(限制)插补运动路径
+	virtual bool Init(const Actual_INPUT_TypedefStructure&Input, float threshold, bool Is_Linear = true) = 0;	//根据运动输入条件(限制)插补运动路径
 	bool Get_Expectation(const Coordinate_Class Current_Coor_InWorld);	//根据当前坐标计算目标坐标，目标速度
 	void Set_Destination(Coordinate_Class &coor) { Destination_Coor_InWorld = coor; }
 	void Set_Origin(Coordinate_Class&coor) { Origin_Coor_InWorld = coor; }
@@ -39,7 +39,7 @@ public:
 	static Velocity_Class Target_Velocity_InAGV;	//目标速度
 	static Coordinate_Class Target_Coor_InWorld;	//目标坐标
 
-private:
+protected:
 
 	virtual float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) = 0;	//根据终点坐标在起点坐标中的坐标计算插补距离
 	virtual Velocity_Class& Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) = 0;	//根据终点坐标在起点坐标中的坐标，将合速度分配给各个轴
@@ -51,7 +51,7 @@ private:
 
 	Actual_INPUT_TypedefStructure Input_Para;
 
-	
+
 
 	//因为同一时间只会执行一条运动指令，故为静态变量
 	static float X_H_mul_X;	//用于计算投影向量

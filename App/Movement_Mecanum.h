@@ -2,10 +2,10 @@
 #include "Movement.h"
 #include "../parameter_define.h"
 
-class Movemeng_Mecanum_Class:public Movement_Class
+class Movement_Mecanum_Class:public Movement_Class
 {
 public:
-
+	bool Init(const Actual_INPUT_TypedefStructure&Input, float threshold,bool Is_Linear = true) override;
 private:
 	float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) override;	//根据终点坐标在起点坐标中的坐标计算插补距离
 	Velocity_Class &Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) override;	//根据终点坐标在起点坐标中的坐标，将合速度分配给各个轴

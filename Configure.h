@@ -36,5 +36,5 @@
 #define BEHIND_LEFTT_ENCODER (Encoder_Class(TIM3)) //后左编码器
 #define BEHIND_RIGHT_ENCODER (Encoder_Class(TIM4)) //后右编码器
 
-#define CONTROL_PERIOD	20	//控制周期20ms
+#define CONTROL_PERIOD	10	//控制周期10ms
 

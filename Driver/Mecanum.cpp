@@ -102,22 +102,22 @@ void Mecanum_Wheel_Class::Run(bool value)
 
 Coordinate_Class & Mecanum_Wheel_Class::Update_Coor_By_Encoder_demo(const Coordinate_Class Coor_InWorld_Last)
 {
-	float delta_x = 0.0f, delta_y = 0.0f, delta_theta = AGV_Velocity_InAGV.angular_velocity*0.02;
+	float delta_x = 0.0f, delta_y = 0.0f, delta_theta = AGV_Velocity_InAGV.angular_velocity*0.01f;
 
 	float velocity_theta_t_1 = Coor_InWorld_Last.angle_coor + AGV_Velocity_InAGV.velocity_angle;	//t-1时刻的速度方向（世界坐标系）
 	float velocity_theta_t = velocity_theta_t_1 + delta_theta;	//t时刻的速度方向(世界坐标系)(计算周期是20ms)
 
+	float angular_velocity = AGV_Velocity_InAGV.angular_velocity / 180.0*M_PI;	//将角度转换为弧度
 
-
-	if (ABS(AGV_Velocity_InAGV.angular_velocity) < FLOAT_DELTA)	//认为是直线运动
+	if (ABS(angular_velocity) < FLOAT_DELTA)	//角速度小于阈值，认为是直线运动
 	{
-		delta_x = AGV_Velocity_InAGV.velocity*Cos_Lookup(velocity_theta_t_1);
-		delta_y = AGV_Velocity_InAGV.velocity*Sin_Lookup(velocity_theta_t_1);
+		delta_x = AGV_Velocity_InAGV.velocity*Cos_Lookup(velocity_theta_t_1)*0.01f;
+		delta_y = AGV_Velocity_InAGV.velocity*Sin_Lookup(velocity_theta_t_1)*0.01f;
 	}
 	else  //圆弧运动
 	{
-		delta_x = AGV_Velocity_InAGV.velocity / AGV_Velocity_InAGV.angular_velocity*(Sin_Lookup(velocity_theta_t) - Sin_Lookup(velocity_theta_t_1));
-		delta_y = AGV_Velocity_InAGV.velocity / AGV_Velocity_InAGV.angular_velocity*(Cos_Lookup(velocity_theta_t_1) - Cos_Lookup(velocity_theta_t));
+		delta_x = AGV_Velocity_InAGV.velocity / angular_velocity*(Sin_Lookup(velocity_theta_t) - Sin_Lookup(velocity_theta_t_1));
+		delta_y = AGV_Velocity_InAGV.velocity / angular_velocity*(Cos_Lookup(velocity_theta_t_1) - Cos_Lookup(velocity_theta_t));
 	}
 	AGV_Coor_InWorld.x_coor += delta_x;
 	AGV_Coor_InWorld.y_coor += delta_y;
@@ -183,8 +183,7 @@ Velocity_Class & Mecanum_Wheel_Class::Update_Velocity_By_Limit(Velocity_Class & 
 void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 {
 	float duty_FR, duty_FL, duty_BR, duty_BL;
-	float yaw_temp = (DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2 * AGV_Velocity_InAGV.angular_velocity;
-	float temp = yaw_temp* M_PI / 180.0f;	//单位为mm/s
+	float temp = (DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2 * AGV_Velocity_InAGV.angular_velocity* M_PI / 180.0f;	//将角速度转换为线速度
 
 	float x_velocity = AGV_Velocity_InAGV.velocity*Cos_Lookup(AGV_Velocity_InAGV.velocity_angle);
 	float y_velocity = AGV_Velocity_InAGV.velocity*Sin_Lookup(AGV_Velocity_InAGV.velocity_angle);
@@ -219,10 +218,8 @@ Velocity_Class & Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(void)
 	//static unsigned long time_last_10us = 0, time_current_10us = 0; //上一次时间计数，当前时间计数
 	//static unsigned long time_10us = 0;
 
-
-	float angular_velocity_FR, angular_velocity_FL;   //前右，前左轮角速度
-	float angular_velocity_BL, angular_velocity_BR;   //后左，后右轮角速度
-
+	float line_velocity_FR, line_velocity_FL;   //前右，前左轮线速度
+	float line_velocity_BL, line_velocity_BR;   //后左，后右轮线速度
 
 	//if (!time_10us_threshold) //阈值==0，计算新阈值
 	//{
@@ -256,19 +253,19 @@ Velocity_Class & Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(void)
 	Behind_Left_Encoder.Get_Pulse();
 	Behind_Right_Encoder.Get_Pulse();
 
-	angular_velocity_FR = Front_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	angular_velocity_FL = Front_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	angular_velocity_BR = Behind_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	angular_velocity_BL = Behind_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	//获取轮子的线速度
+	line_velocity_FR = Front_Right_Encoder.Get_Palstance(time_ms) * 1000.0f*MECANUM_WHEEL_DIAMETER*M_PI / 360.0f;
+	line_velocity_FL = Front_Left_Encoder.Get_Palstance(time_ms) * 1000.0f*MECANUM_WHEEL_DIAMETER*M_PI / 360.0f;
+	line_velocity_BR = Behind_Right_Encoder.Get_Palstance(time_ms) * 1000.0f*MECANUM_WHEEL_DIAMETER*M_PI / 360.0f;
+	line_velocity_BL = Behind_Left_Encoder.Get_Palstance(time_ms) * 1000.0f*MECANUM_WHEEL_DIAMETER*M_PI / 360.0f;
 
-	//PI* WHEEL_DIAMETER/1440=M_PI / 180 * WHEEL_DIAMETER /2/ 4
-	//PI/180为转换成弧度
-	//WHEEL_DIAMETER /2为半径
-	//获取AGV坐标系下AGV的速度和位移
+	//将轮子的线速度转化为车身的速度
+	float x_velocity_temp = (-line_velocity_FR + line_velocity_FL - line_velocity_BL + line_velocity_BR) / 4;
+	float y_velocity_temp = (line_velocity_FR + line_velocity_FL + line_velocity_BL + line_velocity_BR) / 4;
+	float angle_velocity_temp = (line_velocity_FR - line_velocity_FL - line_velocity_BL + line_velocity_BR) / 4;	//此时单位还是mm/s
 
-	float x_velocity_temp = (-angular_velocity_FR + angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
-	float y_velocity_temp = (angular_velocity_FR + angular_velocity_FL + angular_velocity_BL + angular_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
-	float angle_velocity_temp = (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * MECANUM_WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
+	//转化为°/s
+	angle_velocity_temp / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2) / M_PI * 180;
 
 	float velocity_temp = sqrtf(x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp);
 	float angle_temp = ArcTan_Lookup(x_velocity_temp, y_velocity_temp) / 10.0f;
@@ -299,19 +296,19 @@ Velocity_Class & Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(void)
 	//		//计算4个轮子的角速度(°/s)
 	//		float time_ms = time_10us / 100.0f;
 
-	//		angular_velocity_FR = Front_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	//		angular_velocity_FL = Front_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	//		angular_velocity_BR = Behind_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
-	//		angular_velocity_BL = Behind_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	//		line_velocity_FR = Front_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	//		line_velocity_FL = Front_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	//		line_velocity_BR = Behind_Right_Encoder.Get_Palstance(time_ms) * 1000.0f;
+	//		line_velocity_BL = Behind_Left_Encoder.Get_Palstance(time_ms) * 1000.0f;
 
 	//		//PI* WHEEL_DIAMETER/1440=M_PI / 180 * WHEEL_DIAMETER /2/ 4
 	//		//PI/180为转换成弧度
 	//		//WHEEL_DIAMETER /2为半径
 	//		//获取AGV坐标系下AGV的速度和位移
 
-	//		float x_velocity_temp= (-angular_velocity_FR + angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
-	//		float y_velocity_temp= (angular_velocity_FR + angular_velocity_FL + angular_velocity_BL + angular_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
-	//		float angle_velocity_temp= (angular_velocity_FR - angular_velocity_FL - angular_velocity_BL + angular_velocity_BR) * MECANUM_WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
+	//		float x_velocity_temp= (-line_velocity_FR + line_velocity_FL - line_velocity_BL + line_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
+	//		float y_velocity_temp= (line_velocity_FR + line_velocity_FL + line_velocity_BL + line_velocity_BR) * M_PI * MECANUM_WHEEL_DIAMETER / 1440;
+	//		float angle_velocity_temp= (line_velocity_FR - line_velocity_FL - line_velocity_BL + line_velocity_BR) * MECANUM_WHEEL_DIAMETER / 8 / ((DISTANCE_OF_WHEEL_X_AXES + DISTANCE_OF_WHEEL_Y_AXES) / 2);
 
 	//		float velocity_temp = sqrtf(x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp);
 	//		float angle_temp = ArcTan_Lookup(x_velocity_temp, y_velocity_temp);
