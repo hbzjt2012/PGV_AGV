@@ -7,13 +7,13 @@ class Movement_Mecanum_Class:public Movement_Class
 public:
 	bool Init(const Actual_INPUT_TypedefStructure&Input, float threshold,bool Is_Linear = true) override;
 private:
-	float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) override;	//¸ù¾İÖÕµã×ø±êÔÚÆğµã×ø±êÖĞµÄ×ø±ê¼ÆËã²å²¹¾àÀë
-	Velocity_Class &Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) override;	//¸ù¾İÖÕµã×ø±êÔÚÆğµã×ø±êÖĞµÄ×ø±ê£¬½«ºÏËÙ¶È·ÖÅä¸ø¸÷¸öÖá
-	float Cal_Current_Coor_InOrigin(const Coordinate_Class Current_Coor_InOrigin) override;	//¸ù¾İµ±Ç°×ø±ê¼ÆËãÔÚÔ´×ø±êÏµÉÏµÄÎ»ÒÆ
+	float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) override;	//æ ¹æ®ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ä¸­çš„åæ ‡è®¡ç®—æ’è¡¥è·ç¦»
+	Velocity_Class &Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) override;	//æ ¹æ®ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ä¸­çš„åæ ‡ï¼Œå°†åˆé€Ÿåº¦åˆ†é…ç»™å„ä¸ªè½´
+	float Cal_Current_Coor_InOrigin(const Coordinate_Class Current_Coor_InOrigin) override;	//æ ¹æ®å½“å‰åæ ‡è®¡ç®—åœ¨æºåæ ‡ç³»ä¸Šçš„ä½ç§»
 
-	float x_temp_InOrigin;	//ÖÕµã×ø±êÔÚÆğµã×ø±êÏµÉÏµÄxÖáÆ«ÒÆ
-	float y_temp_InOrigin;	//ÖÕµã×ø±êÔÚÆğµã×ø±êÏµÉÏµÄyÖáÆ«ÒÆ
-	float angle_equivalent_temp_InOrigin;	//ÖÕµã×ø±êÔÚÆğµã×ø±êÏµÉÏµÄ½Ç¶ÈÖáµÄÆ«ÒÆ£¨µÈĞ§ÎªÏßÆ«ÒÆ£©
-	float distance_InOrigin;	//ÖÕµã×ø±êÀëÆğµã×ø±êµÄ¾àÀë¾ø¶ÔÖµ
+	float x_temp_InOrigin;	//ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ç³»ä¸Šçš„xè½´åç§»
+	float y_temp_InOrigin;	//ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ç³»ä¸Šçš„yè½´åç§»
+	float angle_equivalent_temp_InOrigin;	//ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ç³»ä¸Šçš„è§’åº¦è½´çš„åç§»ï¼ˆç­‰æ•ˆä¸ºçº¿åç§»ï¼‰
+	float distance_InOrigin;	//ç»ˆç‚¹åæ ‡ç¦»èµ·ç‚¹åæ ‡çš„è·ç¦»ç»å¯¹å€¼
 
 };

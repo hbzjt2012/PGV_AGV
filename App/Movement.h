@@ -1,15 +1,15 @@
 #pragma once
 
-//ÓÃÓÚ´æ·ÅÔË¶¯Ö¸Áî
+//ç”¨äºå­˜æ”¾è¿åŠ¨æŒ‡ä»¤
 
 /*
-* ËÙ¶È²å²¹
-* ²ÉÓÃÌİĞÎ²å²¹
-* ·ÖÎªËÄ¶Î£¨¿¼ÂÇµ½µç»ú´æÔÚ×îĞ¡ËÙ¶È£©
-*	ÔÈ¼ÓËÙ¶Îta
-*	ÔÈËÙ¶Îtc
-*	ÔÈ¼õËÙ¶Îtd
-*	ÔÈµÍËÙ¶Îts
+* é€Ÿåº¦æ’è¡¥
+* é‡‡ç”¨æ¢¯å½¢æ’è¡¥
+* åˆ†ä¸ºå››æ®µï¼ˆè€ƒè™‘åˆ°ç”µæœºå­˜åœ¨æœ€å°é€Ÿåº¦ï¼‰
+*	åŒ€åŠ é€Ÿæ®µta
+*	åŒ€é€Ÿæ®µtc
+*	åŒ€å‡é€Ÿæ®µtd
+*	åŒ€ä½é€Ÿæ®µts
 */
 
 #include "Position.h"
@@ -22,48 +22,48 @@ public:
 	~Movement_Class() = default;
 	typedef struct
 	{
-		float max_velocity_abs; //×î´óËÙ¶È(mm/ms»ò¡ã/ms)
-		float min_velocity_abs; //×îĞ¡ËÙ¶È(mm/ms»ò¡ã/ms)
-		float acceleration_abs; //¼ÓËÙ¶È(mm/ms2»ò¡ã/ms2)
-		float slow_distance_abs;	//×îĞ¡ËÙ¶ÈÒÆ¶¯µÄÎ»ÒÆ(mm»ò¡ã)
+		float max_velocity_abs; //æœ€å¤§é€Ÿåº¦(mm/msæˆ–Â°/ms)
+		float min_velocity_abs; //æœ€å°é€Ÿåº¦(mm/msæˆ–Â°/ms)
+		float acceleration_abs; //åŠ é€Ÿåº¦(mm/ms2æˆ–Â°/ms2)
+		float slow_distance_abs;	//æœ€å°é€Ÿåº¦ç§»åŠ¨çš„ä½ç§»(mmæˆ–Â°)
 	} Actual_INPUT_TypedefStructure;
 
-	virtual bool Init(const Actual_INPUT_TypedefStructure&Input, float threshold, bool Is_Linear = true) = 0;	//¸ù¾İÔË¶¯ÊäÈëÌõ¼ş(ÏŞÖÆ)²å²¹ÔË¶¯Â·¾¶
-	bool Get_Expectation(const Coordinate_Class Current_Coor_InWorld);	//¸ù¾İµ±Ç°×ø±ê¼ÆËãÄ¿±ê×ø±ê£¬Ä¿±êËÙ¶È
+	virtual bool Init(const Actual_INPUT_TypedefStructure&Input, float threshold, bool Is_Linear = true) = 0;	//æ ¹æ®è¿åŠ¨è¾“å…¥æ¡ä»¶(é™åˆ¶)æ’è¡¥è¿åŠ¨è·¯å¾„
+	bool Get_Expectation(const Coordinate_Class Current_Coor_InWorld);	//æ ¹æ®å½“å‰åæ ‡è®¡ç®—ç›®æ ‡åæ ‡ï¼Œç›®æ ‡é€Ÿåº¦
 	void Set_Destination(Coordinate_Class &coor) { Destination_Coor_InWorld = coor; }
 	void Set_Origin(Coordinate_Class&coor) { Origin_Coor_InWorld = coor; }
 
-	bool Interpolation_OK;	//true±íÊ¾²å²¹Íê³É
-	bool Is_Linear;	//±íÊ¾µ±Ç°ÎªÖ±ÏßÔË¶¯
+	bool Interpolation_OK;	//trueè¡¨ç¤ºæ’è¡¥å®Œæˆ
+	bool Is_Linear;	//è¡¨ç¤ºå½“å‰ä¸ºç›´çº¿è¿åŠ¨
 
-	static Velocity_Class Target_Velocity_InAGV;	//Ä¿±êËÙ¶È
-	static Coordinate_Class Target_Coor_InWorld;	//Ä¿±ê×ø±ê
+	static Velocity_Class Target_Velocity_InAGV;	//ç›®æ ‡é€Ÿåº¦
+	static Coordinate_Class Target_Coor_InWorld;	//ç›®æ ‡åæ ‡
 
 protected:
 
-	virtual float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) = 0;	//¸ù¾İÖÕµã×ø±êÔÚÆğµã×ø±êÖĞµÄ×ø±ê¼ÆËã²å²¹¾àÀë
-	virtual Velocity_Class& Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) = 0;	//¸ù¾İÖÕµã×ø±êÔÚÆğµã×ø±êÖĞµÄ×ø±ê£¬½«ºÏËÙ¶È·ÖÅä¸ø¸÷¸öÖá
-	virtual float Cal_Current_Coor_InOrigin(const Coordinate_Class Current_Coor_InOrigin) = 0;	//¸ù¾İµ±Ç°×ø±ê¼ÆËãÔÚÔ´×ø±êÏµÉÏµÄÎ»ÒÆ
+	virtual float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) = 0;	//æ ¹æ®ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ä¸­çš„åæ ‡è®¡ç®—æ’è¡¥è·ç¦»
+	virtual Velocity_Class& Cal_Velocity(const Coordinate_Class&Destination_Coor_InOrigin, const float velocity) = 0;	//æ ¹æ®ç»ˆç‚¹åæ ‡åœ¨èµ·ç‚¹åæ ‡ä¸­çš„åæ ‡ï¼Œå°†åˆé€Ÿåº¦åˆ†é…ç»™å„ä¸ªè½´
+	virtual float Cal_Current_Coor_InOrigin(const Coordinate_Class Current_Coor_InOrigin) = 0;	//æ ¹æ®å½“å‰åæ ‡è®¡ç®—åœ¨æºåæ ‡ç³»ä¸Šçš„ä½ç§»
 
-	Coordinate_Class Destination_Coor_InWorld;	//ÖÕµã×ø±ê
-	Coordinate_Class Origin_Coor_InWorld;	//Æğµã×ø±ê
-	Coordinate_Class Destination_Coor_InOrigin;	//Æğµã×ø±êÏµÖĞµÄÖÕµã×ø±ê
+	Coordinate_Class Destination_Coor_InWorld;	//ç»ˆç‚¹åæ ‡
+	Coordinate_Class Origin_Coor_InWorld;	//èµ·ç‚¹åæ ‡
+	Coordinate_Class Destination_Coor_InOrigin;	//èµ·ç‚¹åæ ‡ç³»ä¸­çš„ç»ˆç‚¹åæ ‡
 
 	Actual_INPUT_TypedefStructure Input_Para;
 
 
 
-	//ÒòÎªÍ¬Ò»Ê±¼äÖ»»áÖ´ĞĞÒ»ÌõÔË¶¯Ö¸Áî£¬¹ÊÎª¾²Ì¬±äÁ¿
-	static float X_H_mul_X;	//ÓÃÓÚ¼ÆËãÍ¶Ó°ÏòÁ¿
-	static int Distance_Symbols; //Ö¸Ê¾´ı²å²¹Êı¾İµÄ·ûºÅ
+	//å› ä¸ºåŒä¸€æ—¶é—´åªä¼šæ‰§è¡Œä¸€æ¡è¿åŠ¨æŒ‡ä»¤ï¼Œæ•…ä¸ºé™æ€å˜é‡
+	static float X_H_mul_X;	//ç”¨äºè®¡ç®—æŠ•å½±å‘é‡
+	static int Distance_Symbols; //æŒ‡ç¤ºå¾…æ’è¡¥æ•°æ®çš„ç¬¦å·
 
-	static float acc_distance;	//¼ÓËÙ¶Î¾àÀë(mm)
-	static float const_distance;  //ÔÈËÙ¶Î¾àÀë(mm)
-	static float dec_distance;	//¼õËÙ¶Î¾àÀë(mm)
-	static float slowly_distance; //ÂıËÙ¶Î¾àÀë(mm)
+	static float acc_distance;	//åŠ é€Ÿæ®µè·ç¦»(mm)
+	static float const_distance;  //åŒ€é€Ÿæ®µè·ç¦»(mm)
+	static float dec_distance;	//å‡é€Ÿæ®µè·ç¦»(mm)
+	static float slowly_distance; //æ…¢é€Ÿæ®µè·ç¦»(mm)
 
-	static float acceleration_time; //¼ÓËÙ¶ÎÊ±¼ä(ms)
-	static float const_time;		 //ÔÈËÙ¶ÎÊ±¼ä(ms)
-	static float deceleration_time; //¼õËÙ¶ÎÊ±¼ä(ms)
-	static float slowly_time;		 //ÂıËÙ¶ÎÊ±¼ä(ms)
+	static float acceleration_time; //åŠ é€Ÿæ®µæ—¶é—´(ms)
+	static float const_time;		 //åŒ€é€Ÿæ®µæ—¶é—´(ms)
+	static float deceleration_time; //å‡é€Ÿæ®µæ—¶é—´(ms)
+	static float slowly_time;		 //æ…¢é€Ÿæ®µæ—¶é—´(ms)
 };

@@ -1,39 +1,39 @@
 #include "Movement.h"
 #include "../Math/MyMath.h"
 
-#define DISATNCE_DELTA 0.3f		//µ±Êµ¼Ê×ÜÎ»ÒÆÓëÀíÂÛ×ÜÎ»ÒÆ²î¾à0.3fÊ±£¬ÈÏÎª²å²¹ÒÑÍê³É
+#define DISATNCE_DELTA 0.3f		//å½“å®é™…æ€»ä½ç§»ä¸ç†è®ºæ€»ä½ç§»å·®è·0.3fæ—¶ï¼Œè®¤ä¸ºæ’è¡¥å·²å®Œæˆ
 
-//ÒòÎªÍ¬Ò»Ê±¼äÖ»»áÖ´ĞĞÒ»ÌõÔË¶¯Ö¸Áî£¬¹ÊÎª¾²Ì¬±äÁ¿
-Velocity_Class Movement_Class::Target_Velocity_InAGV;	//Ä¿±êËÙ¶È
-Coordinate_Class Movement_Class::Target_Coor_InWorld;	//Ä¿±ê×ø±ê
+//å› ä¸ºåŒä¸€æ—¶é—´åªä¼šæ‰§è¡Œä¸€æ¡è¿åŠ¨æŒ‡ä»¤ï¼Œæ•…ä¸ºé™æ€å˜é‡
+Velocity_Class Movement_Class::Target_Velocity_InAGV;	//ç›®æ ‡é€Ÿåº¦
+Coordinate_Class Movement_Class::Target_Coor_InWorld;	//ç›®æ ‡åæ ‡
 
 float Movement_Class::X_H_mul_X = 0.0f;
 
-int Movement_Class::Distance_Symbols = 1; //Ö¸Ê¾´ı²å²¹Êı¾İµÄ·ûºÅ
+int Movement_Class::Distance_Symbols = 1; //æŒ‡ç¤ºå¾…æ’è¡¥æ•°æ®çš„ç¬¦å·
 
-float Movement_Class::acc_distance = 0.0f;	//¼ÓËÙ¶Î¾àÀë(mm)
-float Movement_Class::const_distance = 0.0f;  //ÔÈËÙ¶Î¾àÀë(mm)
-float Movement_Class::dec_distance = 0.0f;	//¼õËÙ¶Î¾àÀë(mm)
-float Movement_Class::slowly_distance = 0.0f; //ÂıËÙ¶Î¾àÀë(mm)
+float Movement_Class::acc_distance = 0.0f;	//åŠ é€Ÿæ®µè·ç¦»(mm)
+float Movement_Class::const_distance = 0.0f;  //åŒ€é€Ÿæ®µè·ç¦»(mm)
+float Movement_Class::dec_distance = 0.0f;	//å‡é€Ÿæ®µè·ç¦»(mm)
+float Movement_Class::slowly_distance = 0.0f; //æ…¢é€Ÿæ®µè·ç¦»(mm)
 
-float Movement_Class::acceleration_time = 0.0f; //¼ÓËÙ¶ÎÊ±¼ä(ms)
-float Movement_Class::const_time = 0.0f;		 //ÔÈËÙ¶ÎÊ±¼ä(ms)
-float Movement_Class::deceleration_time = 0.0f; //¼õËÙ¶ÎÊ±¼ä(ms)
-float Movement_Class::slowly_time = 0.0f;		 //ÂıËÙ¶ÎÊ±¼ä(ms)
+float Movement_Class::acceleration_time = 0.0f; //åŠ é€Ÿæ®µæ—¶é—´(ms)
+float Movement_Class::const_time = 0.0f;		 //åŒ€é€Ÿæ®µæ—¶é—´(ms)
+float Movement_Class::deceleration_time = 0.0f; //å‡é€Ÿæ®µæ—¶é—´(ms)
+float Movement_Class::slowly_time = 0.0f;		 //æ…¢é€Ÿæ®µæ—¶é—´(ms)
 
 
 //************************************
 // Method:    Get_Expectation
 // FullName:  Movement_Class::Get_Expectation
 // Access:    public 
-// Returns:   bool Èô²å²¹Íê³É£¬·µ»Øfalse
-// Parameter: const Coordinate_Class Current_Coor_InWorld µ±Ç°×ø±ê
-// Description: ¸ù¾İµ±Ç°×ø±ê£¬¼ÆËãÆÚÍûËÙ¶È£¬ÆÚÍû×ø±ê
+// Returns:   bool è‹¥æ’è¡¥å®Œæˆï¼Œè¿”å›false
+// Parameter: const Coordinate_Class Current_Coor_InWorld å½“å‰åæ ‡
+// Description: æ ¹æ®å½“å‰åæ ‡ï¼Œè®¡ç®—æœŸæœ›é€Ÿåº¦ï¼ŒæœŸæœ›åæ ‡
 //************************************
 bool Movement_Class::Get_Expectation(const Coordinate_Class Current_Coor_InWorld)
 {
-	Coordinate_Class Current_Coor_InOrigin = Current_Coor_InWorld - Origin_Coor_InWorld;	//»ñÈ¡µ±Ç°×ø±êÔÚÆğµã×ø±êÏµÖĞµÄ×ø±ê
-	Coordinate_Class Target_Coor_InOrigin;	//µ±Ç°×ø±êÏòÁ¿ÔÚÖÕµã×ø±êÏòÁ¿ÉÏµÄÍ¶Ó°£¨¼´Ä¿±ê×ø±ê£©
+	Coordinate_Class Current_Coor_InOrigin = Current_Coor_InWorld - Origin_Coor_InWorld;	//è·å–å½“å‰åæ ‡åœ¨èµ·ç‚¹åæ ‡ç³»ä¸­çš„åæ ‡
+	Coordinate_Class Target_Coor_InOrigin;	//å½“å‰åæ ‡å‘é‡åœ¨ç»ˆç‚¹åæ ‡å‘é‡ä¸Šçš„æŠ•å½±ï¼ˆå³ç›®æ ‡åæ ‡ï¼‰
 
 
 	float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
@@ -44,20 +44,20 @@ bool Movement_Class::Get_Expectation(const Coordinate_Class Current_Coor_InWorld
 
 	float k = X_H_mul_y / X_H_mul_X;
 
-	//»ñÈ¡µ±Ç°ÏòÁ¿ÔÚÖÕµãÏòÁ¿ÉÏµÄÍ¶Ó°ÏòÁ¿
+	//è·å–å½“å‰å‘é‡åœ¨ç»ˆç‚¹å‘é‡ä¸Šçš„æŠ•å½±å‘é‡
 	Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
 	Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
 	Target_Coor_InOrigin.angle_coor = k*Destination_Coor_InOrigin.angle_coor;
 
 
 
-	////¸ù¾İµ±Ç°×ø±êÇó´¹Ö±¹ì¼£µÄÄ¿±ê×ø±ê
+	////æ ¹æ®å½“å‰åæ ‡æ±‚å‚ç›´è½¨è¿¹çš„ç›®æ ‡åæ ‡
 	//MyMath::Coor coor_temp1, coor_temp2;
 
 	//coor_temp1.x = Current_Coor_InOrigin.x_coor;
 	//coor_temp1.y = Current_Coor_InOrigin.y_coor;
 
-	////»ñÈ¡Ğ±ÂÊ²»´æÔÚµÄ½»µã
+	////è·å–æ–œç‡ä¸å­˜åœ¨çš„äº¤ç‚¹
 	//if (ABS(Destination_Coor_InOrigin.x_coor) < FLOAT_DELTA)
 	//{
 	//	coor_temp2.y = coor_temp1.y;
@@ -75,30 +75,30 @@ bool Movement_Class::Get_Expectation(const Coordinate_Class Current_Coor_InWorld
 	//Target_Coor_InOrigin.angle_coor = Current_Coor_InOrigin.angle_coor;
 
 
-	float current_coor = Cal_Current_Coor_InOrigin(Target_Coor_InOrigin)*Distance_Symbols;	//»ñÈ¡ÔÚÔ´×ø±êÏµÉÏµÄÎ»ÒÆ
+	float current_coor = Cal_Current_Coor_InOrigin(Target_Coor_InOrigin)*Distance_Symbols;	//è·å–åœ¨æºåæ ‡ç³»ä¸Šçš„ä½ç§»
 	float output_velocity = 0.0f;
 
 	Interpolation_OK = false;
 
-	//»ñÈ¡²å²¹ËÙ¶È
-	if (current_coor < 0.0f)	//ÔÚ·´·½Ïò
+	//è·å–æ’è¡¥é€Ÿåº¦
+	if (current_coor < 0.0f)	//åœ¨åæ–¹å‘
 	{
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
 		Target_Coor_InOrigin.Clear();
 	}
-	else if (current_coor < acc_distance)//ÔÚ¼ÓËÙÇøÄÚ
+	else if (current_coor < acc_distance)//åœ¨åŠ é€ŸåŒºå†…
 	{
 		output_velocity = sqrtf(2 * current_coor * Input_Para.acceleration_abs + Input_Para.min_velocity_abs * Input_Para.min_velocity_abs) * Distance_Symbols;
 	}
-	else if (current_coor < (acc_distance + const_distance))//ÔÚÔÈËÙÇø
+	else if (current_coor < (acc_distance + const_distance))//åœ¨åŒ€é€ŸåŒº
 	{
 		output_velocity = Input_Para.max_velocity_abs * Distance_Symbols;
 	}
-	else if (current_coor < (acc_distance + const_distance + dec_distance))//ÔÚ¼õËÙÇø
+	else if (current_coor < (acc_distance + const_distance + dec_distance))//åœ¨å‡é€ŸåŒº
 	{
 		output_velocity = sqrtf(Input_Para.max_velocity_abs * Input_Para.max_velocity_abs - 2 * (current_coor - acc_distance - const_distance) * Input_Para.acceleration_abs) * Distance_Symbols;
 	}
-	else if (current_coor < (acc_distance + const_distance + dec_distance + slowly_distance - DISATNCE_DELTA))//ÔÚÂıËÙÇø
+	else if (current_coor < (acc_distance + const_distance + dec_distance + slowly_distance - DISATNCE_DELTA))//åœ¨æ…¢é€ŸåŒº
 	{
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
 	}
@@ -108,10 +108,10 @@ bool Movement_Class::Get_Expectation(const Coordinate_Class Current_Coor_InWorld
 		Interpolation_OK = true;
 	}
 
-	//¼ÆËãÆÚÍû×ø±êÔÚÊÀ½ç×ø±êÏµÉÏµÄ×ø±ê
+	//è®¡ç®—æœŸæœ›åæ ‡åœ¨ä¸–ç•Œåæ ‡ç³»ä¸Šçš„åæ ‡
 	Target_Coor_InWorld = Origin_Coor_InWorld + Target_Coor_InOrigin;
-	//¼ÆËãAGV×ø±êÏµÖĞµÄÆÚÍûËÙ¶È
+	//è®¡ç®—AGVåæ ‡ç³»ä¸­çš„æœŸæœ›é€Ÿåº¦
 	Target_Velocity_InAGV = Cal_Velocity(Destination_Coor_InOrigin, output_velocity);
 
-	return !Interpolation_OK;	//·µ»Ø²å²¹½á¹û
+	return !Interpolation_OK;	//è¿”å›æ’è¡¥ç»“æœ
 }
