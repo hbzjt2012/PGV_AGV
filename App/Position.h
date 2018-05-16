@@ -17,7 +17,7 @@ public:
 		{
 			float32_t velocity;			//线速度速度,mm/s
 			float32_t velocity_angle;   //线速度与x轴的夹角 °
-			float32_t angular_velocity; //旋转角速度,°/s
+			float32_t angular_velocity; //旋转角速度,rad/s
 		};
 		float32_t velocity_array[3];
 	};

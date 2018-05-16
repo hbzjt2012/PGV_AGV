@@ -16,6 +16,9 @@ public:
 	//定义电机转速
 #define MOTOR_MAX_ROTATIONL_VELOCITY_HARD 3000.0f	//硬件定义的电机最高转速
 #define MOTOR_MIN_ROTATIONL_VELOCITY_HARD 0.0f		//硬件定义的电机最低转速
+
+	static const float wheel_lx_ly_distance;	//运动学公式里的(lx+ly)
+
 	static const float wheel_max_line_velocity_hard;	//硬件定义的轮子最大线速度(mm/s)
 	static const float wheel_min_line_velocity_hard;	//硬件定义的轮子最小线速度(mm/s)
 
@@ -23,8 +26,8 @@ public:
 	static float motor_min_rotationl_velocity_soft;	//软件定义电机最低转速
 
 	//定义车轮最大速度、最小速度和最大加减速度
-	static float wheel_max_angular_velocity;	//轮子最大角速度(°/s)
-	static float wheel_min_angular_velocity;	//轮子最小角速度(°/s)
+	static float wheel_max_angular_velocity;	//轮子最大角速度(rad/s)
+	static float wheel_min_angular_velocity;	//轮子最小角速度(rad/s)
 
 	static float wheel_max_line_velocity;     //轮子最大线速度(mm/s);
 	static float wheel_min_line_velocity;      //轮子最小线速度(mm/s);
@@ -36,14 +39,39 @@ public:
 
 	static const float wheel_resolution;	//车轮分辨率
 
-	void Update_Parameter(int num, float para);
-	void Init(void);
+	static bool Is_Absolute_Coor;	//指示当前坐标是否为绝对坐标
+	static int AGV_Address_Code;	//AGV的地址码
 
 	enum Parameter_Num
 	{
-		Motor_Max_Rotationl_Velocity = 0,	//电机最大转速
-		Motor_Min_Rotationl_Velocity,	//电机最小转速
-		Wheel_Acceleration_Time,//定义车轮的最大加减速时间
-		Line_Slowest_Time	//最低速移动的时间
+		Parameter_Motor_Max_Rotationl_Velocity = 0,	//电机最大转速
+		Parameter_Motor_Min_Rotationl_Velocity,	//电机最小转速
+		Parameter_Wheel_Acceleration_Time,//定义车轮的最大加减速时间
+		Parameter_Line_Slowest_Time,	//最低速移动的时间
+		Parameter_Is_Absolute_Coor,	//指示当前是否是绝对坐标
+		Parameter_AGV_Address_Code	//AGV的地址码
 	};	//定义参数序号
+
+	//void Update_Parameter(int num, float para);
+	void Init(void);
+
+
 };
+
+namespace AGV_State
+{
+	typedef enum {
+		IDLE,	//空闲
+		BUSY,	//缓存区繁忙
+		OK,		//指令接收正常
+		ERROR	//指令错误
+	} Gcode_Command_State;
+
+	typedef enum
+	{
+		IDLE,	//空闲
+		BUSY,	//缓存区繁忙
+		OK		//指令接收正常
+	}Movement_Command_State;
+
+}

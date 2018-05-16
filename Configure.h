@@ -38,3 +38,5 @@
 
 #define CONTROL_PERIOD	10	//控制周期10ms
 
+#define Gcode_Command_Buf_SIZE	4
+#define Movement_Command_Buf_SIZE	32

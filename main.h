@@ -5,14 +5,13 @@
 #include "./Driver/C50XB.h"
 #include "./App/Queue.h"
 #include "./App/Gcode.h"
-#include <stdlib.h>
 #include "macros.h"
-#include "./App/interpolation.h"
 #include "./Math/MyMath.h"
 #include "./App/Position.h"
 #include "./Driver/PGV100.h"
 #include "./Driver/TL740D.h"
 #include "./App/Movement_Mecanum.h"
+#include "parameter_define.h"
 
 
 /*
@@ -20,21 +19,21 @@
 * TIM2 FR、FL轮子转速
 * TIM3 编码器BL
 * TIM4 编码器BR
-* TIM5 用于避障、按键等的扫描（程序还未实现）
+* TIM5 用于避障、按键等的扫描（未实现）
 * TIM6 串口4超时检测
 * TIM7 串口2超时检测
 * TIM8 编码器FR
 * TIM9 用于编码器的频率计算
-* TIM10 用于执行机构的PWM波
-* TIM11 时基，测试用，定时时间10ms
+* TIM10 用于输出执行机构的PWM波
+* TIM11 时基，定时时间10ms
 * TIM12 BR、BL轮子转速
-* TIM13
+* TIM13 
 * TIM14
 */
 
 /*
 *			中断向量						抢占优先级				响应优先级
-* TIM1_UP_TIM10_IRQHandler(用于编码器)			2						1
+* TIM1_TRG_COM_TIM11_IRQn(用于时基)				3						4
 * TIM6_DAC_IRQHandler(用于通信用串口)			2						2
 * UART4_IRQHandler(用于通信用串口)				2						3
 * UART5_IRQHandler(用于PGV)						2						4
@@ -43,43 +42,37 @@
 * TIM7_IRQHandler(用于陀螺仪)					1						2
 */
 
-namespace AGV_State
-{
-	namespace Command_State
-	{
-		typedef enum {
-			No_Action, //无动作
-			BUSY,	  //缓存区繁忙
-			OK,		  //指令接收正常
-			ERROR	  //指令错误
-		} Get_Command_State;
-	}
-}
 
-void Init_System(void);
+void Init_System(void);	//配置系统所需的硬件、外设
 void Init_System_RCC(void);		//初始化系统所需时钟
 
-Coordinate_Class Location(Coordinate_Class Current_Coor);		//对AGV当前坐标定位
-void Process_Movement_Command(void);	//处理运动指令
+void Location_AGV(void);		//AGV定位函数
+void Process_Movement_Command(void);	//获取并处理运动指令
 void Movement_Control(void);	//运动控制
-void Check_Avoidance_Buton(void);	//检查避障和按键
+void Check_Avoidance_Buton(void);	//检查避障和按键动作
 void Parse_Sensor_Data(void);	//处理传感器数据
-void Process_Gcode_Command(AGV_State::Command_State::Get_Command_State &state); //获取并处理命令指令
+void Process_Gcode_Command(AGV_State::Gcode_Command_State &state); //获取并处理Gcode命令指令
 void Update_Print_MSG(void);		//打印信息
 
-bool Get_Next_Movement_Command(Movement_Class*&command);	//获取下一条可执行的指令
-bool Run_Movement_Command(Movement_Class*movement, Coordinate_Class Target_Coor, Velocity_Class Target_Velocity);
-void Run_Gcode_Command(Gcode_Class *command, bool &IS_Parsing);
+bool Get_Next_Movement_Command(Movement_Class*&movement_command);	//获取下一条可执行的指令，返回获取结果
 
-bool Add_Movement_Command(Coordinate_Class Origin, Coordinate_Class Destination);
+//添加运动指令，返回添加结果
+AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, const float threshold, const bool Is_Linear = true);
 
-Coordinate_Class & Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld, Coordinate_Class &Target_Coor_InWorld_ByGcode, bool Is_Absolute_Coor = true);	//获取指令中的坐标
+//根据当前坐标获取目标速度和坐标（保存在movement_command中），返回执行结果（true表示执行完毕）
+bool Run_Movement_Command(Movement_Class*movement_command, const Coordinate_Class &Current_Coor);
+bool Run_Gcode_Command(Gcode_Class *gcode_command);	//执行Gcode指令，返回执行结果，true表示执行成功
 
-void Gcode_G0(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//直接插补
-void Gcode_G1(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//直线插补
+//获取指令中的坐标
+Coordinate_Class Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Base_Coor_InWorld, bool Is_Absolute_Coor = true);
 
-void Gcode_G90(void);	//设定为绝对坐标
-void Gcode_G91(void);	//设定为相对坐标
+void Gcode_G0(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//先旋转后直线运动到目标点
+void Gcode_G1(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//先直线运动后旋转到目标点
+
+void Gcode_G04(Gcode_Class *command);	//暂停一段时间(单位10ms)
+
+void Gcode_G90(void);	//设定输入为绝对坐标
+void Gcode_G91(void);	//设定输入为相对坐标
 
 void Gcode_M17(void);	//启动所有电机
 void Gcode_M18(void);	//禁用所有电机
@@ -87,5 +80,3 @@ void Gcode_M18(void);	//禁用所有电机
 void Gcode_I0(void);	//急停
 void Gcode_I30(void);	//清除指令队列
 void Gcode_I114(void);	//获取坐标
-//void Gcode_I115(void);	//获取最近一次编码器的坐标
-//void Gcode_I116(void);	//获取最近一次PGV的坐标

@@ -1,9 +1,9 @@
 #include "Encoder.h"
 #include "../parameter_define.h"
 #include <misc.h>
+#include "../macros.h"
 
 TIM_Base_Class Encoder_Class::Encoder_Fre_Tim = TIM_Base_Class(TIM9);
-volatile unsigned long Encoder_Class::time_10us_Interrupt_cnt = 0;
 
 void Encoder_Class::Init(bool dir)
 {
@@ -15,16 +15,15 @@ void Encoder_Class::Init(bool dir)
 	TIM_Base_Class::Begin();							 //开启定时器
 }
 
-void Encoder_Class::Init_Fre_TIM(void)
+void Encoder_Class::Init_Period_TIM(void)
 {
-	//NVIC_InitTypeDef NVIC_InitStructure;
-
 	//设置时基，TIM9的时钟为168Mhz，1680分频，最大计数时间为655.3ms
 	Encoder_Fre_Tim.Init((uint16_t)65530, 1680);
 
 	Encoder_Fre_Tim.Begin(); //开始计数
 }
 
+//读取脉冲
 int16_t Encoder_Class::Get_Pulse(void)
 {
 	pulse_cnt = ((TIM_Base_Class::Read()) - 0x7FFF); //在TI1、TI2边沿采样，4倍频
@@ -33,39 +32,13 @@ int16_t Encoder_Class::Get_Pulse(void)
 	return pulse_cnt;								 //4倍频
 }
 
-//************************************
-// Method:    Update_Period
-// FullName:  Encoder_Class::Update_Period
-// Access:    public static
-// Returns:   unsigned long 两次调用该函数的时间间隔，单位10us
-// Parameter: void
-// Description: 计算两次调用该函数的时间间隔，单位10us
-//************************************
-unsigned long Encoder_Class::Update_Period(void)
+//计算车轮角速度(rad/ms)
+float Encoder_Class::Cal_Angular_Velocity(float time_ms)
 {
+	float angular_velocity = 0.0f;	//角速度(rad/ms)
+	angular_velocity = pulse_cnt / Parameter_Class::wheel_resolution *M_PI_2 / time_ms;	//编码器4倍频，90°对应车轮线数
 
-	unsigned long time_temp = time_10us_Interrupt_cnt + Encoder_Fre_Tim.Read(); //保存定时器计数,单位为10us
-	//time_temp = time_10us_Interrupt_cnt;	//单位为10us
-	//time_10us_Interrupt_cnt = 0;
-	//Encoder_Class::Clear_Time_US();//重置上溢次数
-
-	return time_temp;
-}
-
-//************************************
-// Method:    Get_Palstance
-// FullName:  Encoder_Class::Get_Palstance
-// Access:    public
-// Returns:   float	角速度
-// Parameter: float 计算角速度用的时间（ms）
-// Description:	以默认频率计算车轮角速度（单位为°/ms）
-//************************************
-float Encoder_Class::Get_Palstance(float time_ms)
-{
-	//Get_Pulse();
-	float palstance = 0.0f; //角速度（单位为°/ms）
-	palstance = pulse_cnt*90.0f / Parameter_Class::wheel_resolution / time_ms;//计算角速度(°/ms)(考虑到pulse_cnt是4倍频，故90°对应车轮线数)
-	return palstance;
+	return angular_velocity;
 }
 
 //void TIM1_BRK_TIM9_IRQHandler(void)
