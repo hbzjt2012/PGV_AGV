@@ -321,6 +321,11 @@ Coordinate_Class PGV_Class::Cal_Coor(void)
 	coor.y_coor = (tag_control_num / 4) * 600.0f + y_deviation;	//测试用间隔为60cm
 	coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
 
+	//if (coor.angle_coor>180.0f)
+	//{
+	//	coor.angle_coor -= 360.0f;	//变换至-180~+180
+	//}
+
 	coor.Truncation_Coor();	
 
 	data_OK = true;	//数据正确

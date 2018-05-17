@@ -533,6 +533,7 @@ Coordinate_Class Get_Command_Coor(Gcode_Class * command, const Coordinate_Class 
 
 	Coor_temp.Truncation_Coor();
 
+
 	return Coor_temp;
 }
 

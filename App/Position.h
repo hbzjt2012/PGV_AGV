@@ -52,7 +52,7 @@ public:
 		{
 			float32_t x_coor;	//x坐标(mm)
 			float32_t y_coor;   //y坐标(mm)
-			float32_t angle_coor; //角度坐标(°)
+			float32_t angle_coor; //角度坐标(-180°~+180°)(在运动控制时会超出该范围)
 		};
 		float32_t coor_array[3];
 	};

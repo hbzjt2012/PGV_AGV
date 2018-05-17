@@ -129,6 +129,10 @@ void Coordinate_Class::Truncation_Coor(void)
 	x_coor = (long)(x_coor * 10.0f) / 10.0f;
 	y_coor = (long)(y_coor * 10.0f) / 10.0f;
 	angle_coor = ((angle_temp + 3600) % 3600) / 10.0f;
+	if (angle_coor>180.0f)
+	{
+		angle_coor -= 360.0f;	//改变范围
+	}
 }
 
 Coordinate_Class operator+(const Coordinate_Class & summand, const Coordinate_Class & addend)
@@ -186,6 +190,11 @@ Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class
 	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - x_temp) + sin_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
 	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
 	Relative_Coor.angle_coor = (Absolute_Coor.angle_coor - angle_temp);
+
+	if (Relative_Coor.angle_coor > 180.0f)
+	{
+		Relative_Coor.angle_coor -= 360.0f;	//改变范围
+	}
 
 	return Relative_Coor;
 }
