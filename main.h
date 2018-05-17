@@ -6,12 +6,12 @@
 #include "./App/Queue.h"
 #include "./App/Gcode.h"
 #include "macros.h"
-#include "./Math/MyMath.h"
 #include "./App/Position.h"
 #include "./Driver/PGV100.h"
 #include "./Driver/TL740D.h"
 #include "./App/Movement_Mecanum.h"
 #include "parameter_define.h"
+#include "./App/Kalman_filter.h"
 
 
 /*
@@ -54,22 +54,23 @@ void Parse_Sensor_Data(void);	//处理传感器数据
 void Process_Gcode_Command(AGV_State::Gcode_Command_State &state); //获取并处理Gcode命令指令
 void Update_Print_MSG(void);		//打印信息
 
-bool Get_Next_Movement_Command(Movement_Class*&movement_command);	//获取下一条可执行的指令，返回获取结果
-
 //添加运动指令，返回添加结果
-AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, const float threshold, const bool Is_Linear = true);
+//缓存区满，未做相应处理
+AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, Movement_Class *&command, const float threshold, const bool Is_Linear = true);
 
-//根据当前坐标获取目标速度和坐标（保存在movement_command中），返回执行结果（true表示执行完毕）
+//根据当前坐标获取目标速度和坐标，返回执行结果（true表示执行完毕）
 bool Run_Movement_Command(Movement_Class*movement_command, const Coordinate_Class &Current_Coor);
-bool Run_Gcode_Command(Gcode_Class *gcode_command);	//执行Gcode指令，返回执行结果，true表示执行成功
+bool Run_Gcode_Command(Gcode_Class *gcode_command);	//执行Gcode指令，返回执行结果，true表示执行完毕
+
 
 //获取指令中的坐标
 Coordinate_Class Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Base_Coor_InWorld, bool Is_Absolute_Coor = true);
 
-void Gcode_G0(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//先旋转后直线运动到目标点
-void Gcode_G1(Gcode_Class *command, const Coordinate_Class &Current_Coor_InWorld);	//先直线运动后旋转到目标点
+void Gcode_G0(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//先旋转后直线运动到目标点
+void Gcode_G1(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//先直线运动后旋转到目标点
 
-void Gcode_G04(Gcode_Class *command);	//暂停一段时间(单位10ms)
+bool Gcode_G4(unsigned long time_10ms);	//暂停一段时间(单位10ms)
+void Gcode_G4(Gcode_Class *command);	//从指令中获取暂停时间，暂停
 
 void Gcode_G90(void);	//设定输入为绝对坐标
 void Gcode_G91(void);	//设定输入为相对坐标

@@ -290,9 +290,6 @@
     <ClCompile Include="..\Math\Trigonometric.c">
       <Filter>Math\Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Math\MyMath.cpp">
-      <Filter>Math\Src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Driver\AGV_Control.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
@@ -303,6 +300,9 @@
       <Filter>App\Src</Filter>
     </ClCompile>
     <ClCompile Include="..\App\Movement_Mecanum.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Kalman_filter.cpp">
       <Filter>App\Src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -558,9 +558,6 @@
     <ClInclude Include="..\App\Queue.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\Math\MyMath.h">
-      <Filter>Math\Inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\Math\Trigonometric.h">
       <Filter>Math\Inc</Filter>
     </ClInclude>
@@ -571,6 +568,9 @@
       <Filter>App\Inc</Filter>
     </ClInclude>
     <ClInclude Include="..\App\Movement_Mecanum.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Kalman_filter.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
   </ItemGroup>

@@ -64,6 +64,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\App\Gcode.cpp" />
+    <ClCompile Include="..\App\Kalman_filter.cpp" />
     <ClCompile Include="..\App\Movement.cpp" />
     <ClCompile Include="..\App\Movement_Mecanum.cpp" />
     <ClCompile Include="..\App\Position.cpp" />
@@ -90,7 +91,6 @@
     <ClCompile Include="..\HALayer\Tim.cpp" />
     <ClCompile Include="..\HALayer\Uart.cpp" />
     <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\Math\MyMath.cpp" />
     <ClCompile Include="..\Math\Trigonometric.c" />
     <ClCompile Include="..\parameter_define.cpp" />
     <ClCompile Include="..\StartupFiles\startup_stm32f407xx.c" />
@@ -153,6 +153,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\App\Gcode.h" />
+    <ClInclude Include="..\App\Kalman_filter.h" />
     <ClInclude Include="..\App\Movement.h" />
     <ClInclude Include="..\App\Movement_Mecanum.h" />
     <ClInclude Include="..\App\Position.h" />
@@ -190,7 +191,6 @@
     <ClInclude Include="..\HALayer\Uart.h" />
     <ClInclude Include="..\macros.h" />
     <ClInclude Include="..\main.h" />
-    <ClInclude Include="..\Math\MyMath.h" />
     <ClInclude Include="..\Math\Trigonometric.h" />
     <ClInclude Include="..\parameter_define.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\misc.h" />

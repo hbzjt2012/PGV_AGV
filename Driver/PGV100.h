@@ -74,7 +74,7 @@ class PGV_Class : private Uart_Base_Class
 	bool warn_flag; //警告标志
 	uint16_t warn;
 
-	bool Coor_OK;	//表示坐标可靠
+	bool data_OK;	//表示坐标可靠
 	Coordinate_Class coor;	//实际坐标
   private:
 	DMA_Base_Class TX_DMA;

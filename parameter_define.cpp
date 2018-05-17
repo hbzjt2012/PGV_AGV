@@ -47,6 +47,9 @@ float Parameter_Class::line_slowest_time = 2.0f;	//最低速移动的时间
 bool Parameter_Class::Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
 int Parameter_Class::AGV_Address_Code = 1;
 
+float Parameter_Class::line_threshold = wheel_min_line_velocity*CONTROL_PERIOD / 1000.0f;	//直线距离插补阈值(mm)
+float Parameter_Class::rotate_threshold = line_threshold;	//旋转角度插补阈值(mm)(需转化为直线距离)
+
 //void Parameter_Class::Update_Parameter(int num, float para)
 //{
 //	switch ((Parameter_Class::Parameter_Num) num)
@@ -73,7 +76,7 @@ int Parameter_Class::AGV_Address_Code = 1;
 //	}
 //}
 
-void Parameter_Class::Init(void)
+void Parameter_Class::Init_Parameter(void)
 {
 	wheel_max_angular_velocity = Update_wheel_angular_velocity(motor_max_rotationl_velocity_soft);	//轮子最大角速度(rad/s)
 	wheel_min_angular_velocity = Update_wheel_angular_velocity(motor_min_rotationl_velocity_soft);	//轮子最小角速度(rad/s)

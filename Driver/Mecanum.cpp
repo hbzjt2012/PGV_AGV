@@ -222,7 +222,7 @@ void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 // Method:    Cal_Velocity_By_Encoder
 // FullName:  Mecanum_Wheel_Class::Cal_Velocity_By_Encoder
 // Access:    public 
-// Returns:   float	离上一次运算的时间间隔
+// Returns:   float	离上一次运算的时间间隔(ms)
 // Parameter: Velocity_Class & AGV_Velocity	车体速度
 // Description: 使用编码器计算车身速度
 //************************************
@@ -249,7 +249,7 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 	float y_velocity_temp = (line_velocity_FR + line_velocity_FL + line_velocity_BL + line_velocity_BR) / 4;
 	float angle_velocity_temp = (line_velocity_FR - line_velocity_FL - line_velocity_BL + line_velocity_BR) / 4;	//此时单位还是mm/s
 
-																													//转化为rad/s
+	//转化为rad/s
 	angle_velocity_temp = angle_velocity_temp / (Parameter_Class::wheel_lx_ly_distance);
 
 	float velocity_temp = sqrtf(x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp);	//线速度大小

@@ -322,6 +322,8 @@ Coordinate_Class PGV_Class::Cal_Coor(void)
 	coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
 
 	coor.Truncation_Coor();	
+
+	data_OK = true;	//数据正确
 }
 
 inline void PGV_Class::TX_Dir(void)

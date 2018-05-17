@@ -13,8 +13,9 @@
 // Parameter: const float threshold	阈值，若起点、终点距离值小于该阈值，则插补失败（无需插补）
 // Description: 根据插补参数以及阈值插补运动路径结果
 //************************************
-bool Movement_Mecanum_Class::Init(Interpolation_Parameter_TypedefStructure Input, const float threshold)
+bool Movement_Mecanum_Class::Init(Interpolation_Parameter_TypedefStructure Input, const Coordinate_Class &Current_Coor, const float threshold)
 {
+	Origin_Coor_InWorld = Current_Coor;
 	Destination_Coor_InOrigin = Destination_Coor_InWorld - Origin_Coor_InWorld;	//计算终点在起点坐标系上的位姿
 
 	float slowly_distance_temp = Input.min_velocity_abs*Input.slow_time_abs;	//低速段移动距离暂存
@@ -119,22 +120,36 @@ float Movement_Mecanum_Class::Cal_Displacement(const Coordinate_Class Destinatio
 //************************************
 Velocity_Class & Movement_Mecanum_Class::Assign_Velocity(const Coordinate_Class & Destination_Coor_InOrigin, const float velocity)
 {
-	float k = 0.0f;
+	//存在分配问题
+	//float k = 0.0f;
 
-	k = x_temp_InOrigin / distance_InOrigin;
-	float x_velocity = k*velocity;
-	k = y_temp_InOrigin / distance_InOrigin;
-	float y_velocity = k*velocity;
-	k = angle_equivalent_temp_InOrigin / distance_InOrigin;
-	float angle_equivalent_velocity = k*velocity;
+	//k = x_temp_InOrigin / distance_InOrigin;
+	//float x_velocity = k*velocity;
+	//k = y_temp_InOrigin / distance_InOrigin;
+	//float y_velocity = k*velocity;
+	//k = angle_equivalent_temp_InOrigin / distance_InOrigin;
+	//float angle_equivalent_velocity = k*velocity;
 
-	Target_Velocity_InAGV.velocity_angle = ArcTan_Lookup(x_velocity, y_velocity) / 10.0f;
-	x_velocity = ABS(x_velocity);
-	y_velocity = ABS(y_velocity);
+	//Target_Velocity_InAGV.velocity_angle = ArcTan_Lookup(x_velocity, y_velocity) / 10.0f;
+	//x_velocity = ABS(x_velocity);
+	//y_velocity = ABS(y_velocity);
 
-	Target_Velocity_InAGV.velocity = sqrtf(x_velocity*x_velocity + y_velocity*y_velocity);
+	//Target_Velocity_InAGV.velocity = sqrtf(x_velocity*x_velocity + y_velocity*y_velocity);
 
-	Target_Velocity_InAGV.angular_velocity = angle_equivalent_velocity / (Parameter_Class::wheel_lx_ly_distance);
+	//Target_Velocity_InAGV.angular_velocity = angle_equivalent_velocity / (Parameter_Class::wheel_lx_ly_distance);
+
+	if (ABS(angle_equivalent_temp_InOrigin) < FLOAT_DELTA)	//当前在插补XY平面
+	{
+		Target_Velocity_InAGV.velocity = velocity;
+		Target_Velocity_InAGV.velocity_angle = ArcTan_Lookup(x_temp_InOrigin, y_temp_InOrigin) / 10.0f;
+		Target_Velocity_InAGV.angular_velocity = 0.0f;
+	}
+	else
+	{
+		Target_Velocity_InAGV.velocity = 0.0f;
+		Target_Velocity_InAGV.velocity_angle = 0.0f;
+		Target_Velocity_InAGV.angular_velocity = velocity / (Parameter_Class::wheel_lx_ly_distance);
+	}
 
 	return Target_Velocity_InAGV;
 

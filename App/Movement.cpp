@@ -3,11 +3,12 @@
 
 //#define DISATNCE_DELTA 0.3f		//当实际总位移与理论总位移差距0.3f时，认为插补已完成
 
-Movement_Class::Interpolation_Parameter_TypedefStructure Movement_Class::Interpolation_Parameter = {
-	Parameter_Class::wheel_max_line_velocity ,\
-	Parameter_Class::wheel_min_line_velocity,\
-	Parameter_Class::wheel_acceleration_line_velocity,\
-	Parameter_Class::line_slowest_time };
+Movement_Class::Interpolation_Parameter_TypedefStructure Movement_Class::Interpolation_Parameter;
+//Movement_Class::Interpolation_Parameter_TypedefStructure Movement_Class::Interpolation_Parameter = {
+//	Parameter_Class::wheel_max_line_velocity ,\
+//	Parameter_Class::wheel_min_line_velocity,\
+//	Parameter_Class::wheel_acceleration_line_velocity,\
+//	Parameter_Class::line_slowest_time };
 
 //因为同一时间只会执行一条运动指令，故为静态变量
 Velocity_Class Movement_Class::Target_Velocity_InAGV;	//目标速度
@@ -27,6 +28,14 @@ float Movement_Class::const_time = 0.0f;		 //匀速段时间(s)
 float Movement_Class::deceleration_time = 0.0f; //减速段时间(s)
 float Movement_Class::slowly_time = 0.0f;		 //慢速段时间(s)
 
+
+void Movement_Class::Init_Parameter(void)
+{
+	Interpolation_Parameter.max_velocity_abs= Parameter_Class::wheel_max_line_velocity;
+	Interpolation_Parameter.min_velocity_abs= Parameter_Class::wheel_min_line_velocity;
+	Interpolation_Parameter.acceleration_abs= Parameter_Class::wheel_acceleration_line_velocity;
+	Interpolation_Parameter.slow_time_abs= Parameter_Class::line_slowest_time;
+}
 
 //************************************
 // Method:    Cal_Velocity

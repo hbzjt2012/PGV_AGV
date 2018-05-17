@@ -29,9 +29,11 @@ public:
 	void Clear_rx_flag(void) { rx_flag = false; }
 	void Clear_rx_cnt(void) { rx_cnt = 0; }
 
-	float z_rate;		 //Z轴角速率
+	float z_rate;		 //Z轴角速率(rad/s)
 	float forward_accel; //前向加速度
 	float z_heading;	 //Z轴方位角，0°~360°
+
+	float z_rate_bias;	//Z轴角速度偏置(rad/s)
 
 	bool data_OK;
 

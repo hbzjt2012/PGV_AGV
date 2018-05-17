@@ -1,4 +1,5 @@
 #include "TL740D.h"
+#include "./macros.h"
 
 bool TL740D_Class::Analyze_Data(void)
 {
@@ -22,6 +23,7 @@ bool TL740D_Class::Analyze_Data(void)
 				z_head_temp += 36000;
 			}
 			z_heading = z_head_temp / 100.0f;
+			z_rate = z_rate / 180 * M_PI;
 			return true;
 		}
 		return false;

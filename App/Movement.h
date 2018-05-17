@@ -33,13 +33,15 @@ public:
 
 	enum
 	{
-		NO_Interpolation,   //未插补
+		NO_Interpolation,  //未插补
 		IS_Interpolating, //正在插补
 		IS_Interpolated   //插补完毕
 	} Interpolation_State;	//插补状态
 
-	bool Init(void) { Init(Interpolation_Parameter, this->threshold); }	//插补运动路径
-	virtual bool Init(Interpolation_Parameter_TypedefStructure Input, const float threshold) = 0;	//根据插补参数以及阈值插补运动路径
+	static void Init_Parameter(void);	//初始化插补参数
+
+	bool Init(const Coordinate_Class &Current_Coor) { Init(Interpolation_Parameter, Current_Coor, this->threshold); }	//插补运动路径
+	virtual bool Init(Interpolation_Parameter_TypedefStructure Input, const Coordinate_Class &Current_Coor, float threshold) = 0;	//根据插补参数以及阈值插补运动路径
 	bool Cal_Velocity(const Coordinate_Class Current_Coor_InWorld);	//根据当前坐标计算目标坐标，目标速度，返回计算结果
 
 	void Set_Destination(const Coordinate_Class& Destination, const float threshold, const bool Is_Linear = true) {
@@ -47,13 +49,15 @@ public:
 		this->Is_Linear = Is_Linear;
 		this->threshold = threshold;
 	}	//设置终点
-	void Set_Origin(const Coordinate_Class& Origin) { Origin_Coor_InWorld = Origin; }	//设置起点
+	//void Set_Origin(const Coordinate_Class& Origin) { Origin_Coor_InWorld = Origin; }	//设置起点
 	static void Update_Interpolation_Parameter(const Interpolation_Parameter_TypedefStructure& Input_Para) {
 		Interpolation_Parameter = Input_Para;
 	}	//更新默认参数
 
 	static Velocity_Class Target_Velocity_InAGV;	//目标速度
 	static Coordinate_Class Target_Coor_InWorld;	//目标坐标
+
+	
 
 protected:
 

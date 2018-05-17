@@ -4,7 +4,7 @@
 class Movement_Mecanum_Class:public Movement_Class
 {
 public:
-	bool Init(Interpolation_Parameter_TypedefStructure Input, const float threshold) override;	//根据插补参数以及阈值插补运动路径
+	bool Init(Interpolation_Parameter_TypedefStructure Input, const Coordinate_Class &Current_Coor, const float threshold) override;	//根据插补参数以及阈值插补运动路径
 
 private:
 	float Cal_Displacement(const Coordinate_Class Destination_Coor_InOrigin) override;	//根据终点坐标在起点坐标中的坐标计算插补距离
