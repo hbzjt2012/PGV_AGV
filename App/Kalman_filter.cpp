@@ -81,6 +81,7 @@ void Kalman_Filter::Cal_Theta_Omega(float omega_encoder, float & theta_gyro, flo
 void Kalman_Filter::Cal_X_Y_Theta_By_Encoder_Gyro(Coordinate_Class&Coor, const Velocity_Class &Velocity, float time_s, bool theta_updated, float theta_now)
 {
 	float delta_theta = 0.0f;	//角度更新
+	theta_now = Coordinate_Class::Transform_Angle(theta_now);	//变换角度
 	if (!theta_updated)	//当前角度还未更新
 	{
 		variance_theta += Cal_Encoder_Omega_Noise(Velocity.angular_velocity * 180 / M_PI);	//更新协方差
@@ -88,9 +89,11 @@ void Kalman_Filter::Cal_X_Y_Theta_By_Encoder_Gyro(Coordinate_Class&Coor, const V
 		delta_theta = Velocity.angular_velocity*time_s * 180 / M_PI;	//一个控制周期内角度的增加量(°)
 
 		theta_now = Coor.angle_coor + delta_theta;	//计算新角度
+		theta_now = Coordinate_Class::Transform_Angle(theta_now);	//变换角度
 	}
 
 	delta_theta = theta_now - Coor.angle_coor;	//求出角度的增加值
+	delta_theta = Coordinate_Class::Transform_Angle(delta_theta);	//变换角度
 
 	float sin_last = Sin_Lookup(Coor.angle_coor + Velocity.velocity_angle);
 	float sin_current = Sin_Lookup(theta_now + Velocity.velocity_angle);

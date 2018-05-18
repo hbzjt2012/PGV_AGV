@@ -140,6 +140,22 @@ void Location_AGV(void)
 	}
 
 	//Gcode_I114();	//输出坐标，测试用
+
+	//测试程序，获取控制速度
+	My_Serial.print("\r\n  ");
+	My_Serial.print(AGV_Current_Velocity_InAGV.velocity);
+	My_Serial.print(" ");
+	My_Serial.print(AGV_Current_Velocity_InAGV.velocity_angle);
+	My_Serial.print(" ");
+	My_Serial.print(AGV_Current_Velocity_InAGV.angular_velocity);
+
+	My_Serial.print("  ");
+	My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
+	My_Serial.print(" ");
+	My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
+	My_Serial.print(" ");
+	My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+	My_Serial.print(" ");
 }
 
 //获取并处理运动指令
@@ -160,7 +176,7 @@ void Process_Movement_Command(void)
 		{
 			Movement_Queue.Init();	//初始化缓存区
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_IDLE;
-			AGV_Current_Coor_InWorld.Truncation_Coor();	//无运动指令，圆整坐标
+			//AGV_Current_Coor_InWorld.Truncation_Coor();	//无运动指令，圆整坐标
 			AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;	//期望坐标为当前坐标
 		}
 	}
@@ -198,22 +214,6 @@ void Movement_Control(void)
 	}
 	//控制小车
 	Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
-
-	//测试程序，获取控制速度
-	My_Serial.print("\r\n  ");
-	My_Serial.print(AGV_Target_Velocity_InAGV.velocity);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Target_Velocity_InAGV.velocity_angle);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Target_Velocity_InAGV.angular_velocity);
-
-	My_Serial.print("  ");
-	My_Serial.print(AGV_Target_Coor_InWorld.x_coor);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Target_Coor_InWorld.y_coor);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Target_Coor_InWorld.angle_coor);
-	My_Serial.print(" ");
 
 }
 
@@ -530,8 +530,9 @@ Coordinate_Class Get_Command_Coor(Gcode_Class * command, const Coordinate_Class 
 	//		Coor_temp.angle_coor += 360.0f;
 	//	}
 	//}
+	Coor_temp.Transform_Angle();
 
-	Coor_temp.Truncation_Coor();
+	//Coor_temp.Truncation_Coor();
 
 
 	return Coor_temp;

@@ -9,7 +9,7 @@ uint16_t Gyro_Class::rx_cnt = 0;			   //接收字节的计数
 uint8_t Gyro_Class::TX_buf[16] = {0};		   //发送数据的缓冲区，若缓冲区满，则不会发送
 volatile uint8_t Gyro_Class::RX_buf[32] = {0}; //接收数据的缓冲区
 
-uint8_t Gyro_Class::data_Buf[16] = {0};
+uint8_t Gyro_Class::data_Buf[24] = {0};
 
 //************************************
 // Method:    Init
@@ -50,7 +50,6 @@ void Gyro_Class::Init(uint32_t baudrate)
 	//定时器7的时钟频率为系统时钟的一半（APB1分配系数2，定时器频率*2）
 	TIM7_Arr = (uint16_t)(SystemCoreClock / 2 / (baudrate / 22) / 10 + 1); //设置静默时间为22个位(定时器分频系数10)
 	TIM_Base_Class::Init(TIM7, TIM7_Arr, 10,true);							//设置定时器7的中断频率，用于设置串口接收超时检测
-
 
 
 	NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
@@ -108,7 +107,7 @@ void TIM7_IRQHandler(void)
 		TIM7->SR = ~TIM_IT_Update;
 		TIM7->CR1 &= ~TIM_CR1_CEN;  //关闭定时器6
 		Gyro_Class::rx_flag = true; //接受到了一帧数据
-		memcpy(Gyro_Class::data_Buf, (uint8_t *)Gyro_Class::RX_buf, 16);
+		memcpy(Gyro_Class::data_Buf, (uint8_t *)Gyro_Class::RX_buf, 24);
 	}
 }
 

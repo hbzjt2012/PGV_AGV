@@ -25,6 +25,7 @@ public:
 
 	virtual void Read_Data(void) = 0;	//读传感器数据
 	virtual bool Analyze_Data(void) = 0; //解析数据
+	//virtual void Cal_data(void) = 0;	//解析数据
 	bool Return_rx_flag(void) { return rx_flag; }
 	void Clear_rx_flag(void) { rx_flag = false; }
 	void Clear_rx_cnt(void) { rx_cnt = 0; }
@@ -46,5 +47,5 @@ protected:
 	static volatile uint8_t RX_buf[32]; //接收数据的缓冲区
 
 	void write(const char c) override;
-	static uint8_t data_Buf[16]; //数据暂存，避免数据遭到破坏
+	static uint8_t data_Buf[24]; //数据暂存，避免数据遭到破坏
 };

@@ -123,17 +123,40 @@ void Coordinate_Class::Clear(void)
 	angle_coor = 0.0f;
 }
 
-void Coordinate_Class::Truncation_Coor(void)
+float Coordinate_Class::Transform_Angle(void)
 {
-	long angle_temp = ((long)(angle_coor * 10.0f) % 3600);
-	x_coor = (long)(x_coor * 10.0f) / 10.0f;
-	y_coor = (long)(y_coor * 10.0f) / 10.0f;
-	angle_coor = ((angle_temp + 3600) % 3600) / 10.0f;
-	if (angle_coor>180.0f)
-	{
-		angle_coor -= 360.0f;	//改变范围
-	}
+	angle_coor = Transform_Angle(angle_coor);
+	return angle_coor;
 }
+
+//将角度变换至-180~+180
+float Coordinate_Class::Transform_Angle(float angle)
+{
+	int k = (long)(angle) / 360;
+	angle = angle - k * 360;
+
+	if (angle <= -180.0f)
+	{
+		angle += 360.0f;
+	}
+	else if (angle >= 180.0f)
+	{
+		angle -= 360.0f;
+	}
+	return angle;
+}
+
+//void Coordinate_Class::Truncation_Coor(void)
+//{
+//	long angle_temp = ((long)(angle_coor * 10.0f) % 3600);
+//	x_coor = (long)(x_coor * 10.0f) / 10.0f;
+//	y_coor = (long)(y_coor * 10.0f) / 10.0f;
+//	angle_coor = ((angle_temp + 3600) % 3600) / 10.0f;
+//	if (angle_coor > 180.0f)
+//	{
+//		angle_coor -= 360.0f;	//改变范围
+//	}
+//}
 
 Coordinate_Class operator+(const Coordinate_Class & summand, const Coordinate_Class & addend)
 {
@@ -165,6 +188,8 @@ Coordinate_Class & Coordinate_Class::Relative_To_Absolute(Coordinate_Class & Abs
 	Absolute_Coor.y_coor = sin_Angle * (Relative_Coor.x_coor) + cos_Angle * (Relative_Coor.y_coor) + y_temp;
 	Absolute_Coor.angle_coor = Relative_Coor.angle_coor + angle_temp;
 
+	Absolute_Coor.Transform_Angle();
+
 	return Absolute_Coor;
 }
 
@@ -191,10 +216,12 @@ Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class
 	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
 	Relative_Coor.angle_coor = (Absolute_Coor.angle_coor - angle_temp);
 
-	if (Relative_Coor.angle_coor > 180.0f)
-	{
-		Relative_Coor.angle_coor -= 360.0f;	//改变范围
-	}
+	//if (Relative_Coor.angle_coor > 180.0f)
+	//{
+	//	Relative_Coor.angle_coor -= 360.0f;	//改变范围
+	//}
+
+	Relative_Coor.Transform_Angle();
 
 	return Relative_Coor;
 }

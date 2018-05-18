@@ -52,7 +52,7 @@ public:
 		{
 			float32_t x_coor;	//x坐标(mm)
 			float32_t y_coor;   //y坐标(mm)
-			float32_t angle_coor; //角度坐标(-180°~+180°)(在运动控制时会超出该范围)
+			float32_t angle_coor; //角度坐标(-180°~+180°)
 		};
 		float32_t coor_array[3];
 	};
@@ -63,7 +63,9 @@ public:
 	Coordinate_Class &operator/=(const float divisor);
 
 	void Clear(void);
-	void Truncation_Coor(void);	//将角度变换至0-360°，保留0.1精度
+	float Transform_Angle(void);	//将角度转换为-180~+180
+	static float Transform_Angle(float angle);//将角度转换为-180~+180
+	//void Truncation_Coor(void);	//将角度变换至-180~+180°，坐标保留0.1精度
 
 	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
 	static Coordinate_Class& Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor);	//从绝对坐标转换为相对坐标
