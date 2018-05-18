@@ -136,26 +136,27 @@ void Location_AGV(void)
 	if (PGV100.data_OK)	//表示PGV数据已更新
 	{
 		PGV100.data_OK = false;
+		//融合PGV数据和测量数据
 		//使用PGV数据更新当前坐标
 	}
 
 	//Gcode_I114();	//输出坐标，测试用
 
 	//测试程序，获取控制速度
-	My_Serial.print("\r\n  ");
-	My_Serial.print(AGV_Current_Velocity_InAGV.velocity);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Current_Velocity_InAGV.velocity_angle);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Current_Velocity_InAGV.angular_velocity);
+	//My_Serial.print("\r\n  ");
+	//My_Serial.print(AGV_Velocity_By_Encoder.velocity);
+	//My_Serial.print(" ");
+	//My_Serial.print(AGV_Velocity_By_Encoder.velocity_angle);
+	//My_Serial.print(" ");
+	//My_Serial.print(AGV_Velocity_By_Encoder.angular_velocity);
 
-	My_Serial.print("  ");
-	My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
-	My_Serial.print(" ");
-	My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
-	My_Serial.print(" ");
+	//My_Serial.print("  ");
+	//My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
+	//My_Serial.print(" ");
+	//My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
+	//My_Serial.print(" ");
+	//My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+	//My_Serial.print(" ");
 }
 
 //获取并处理运动指令
@@ -167,9 +168,12 @@ void Process_Movement_Command(void)
 	{
 		if (Movement_Queue.queue_state != Queue_Class::BUFFER_EMPTY) //缓存区不为空
 		{
-			My_Serial.print("\r\nnext move");	//测试用
 			Movement_Index_r = Movement_Buf + Movement_Queue.DEqueue();
 			Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
+			if (!Is_Parsing_Movement)
+			{
+				My_Serial.print("\r\nnext");	//测试用
+			}
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_OK;	//缓存区正常
 		}
 		else
@@ -184,6 +188,11 @@ void Process_Movement_Command(void)
 	{
 		Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
 		//movement_buf_state = AGV_State::Movement_Command_State::OK;	//缓存区正常
+
+		if (!Is_Parsing_Movement)
+		{
+			My_Serial.print("\r\nnext");	//测试用
+		}
 	}
 }
 
@@ -344,10 +353,10 @@ void Update_Print_MSG(void)
 // Parameter: const Coordinate_Class & Destination 终点
 // Parameter: Movement_Class * & command 写入的指令缓存区地址
 // Parameter: const float threshold 阈值(mm)
-// Parameter: const bool Is_Linear	直线插补
+// Parameter: const bool Is_X_Y	在xoy平面上插补插补
 // Description: 添加运动指令，返回添加结果
 //************************************
-AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & Destination, Movement_Class *&command, const float threshold, const bool Is_Linear)
+AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & Destination, Movement_Class *&command, const float threshold, const bool Is_X_Y)
 {
 	AGV_State::Movement_Command_State state = AGV_State::Movement_Command_State::Movement_Command_IDLE;
 	if (Movement_Queue.queue_state == Queue_Class::BUFFER_FULL) //指令缓存区满
@@ -357,7 +366,7 @@ AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & 
 	else
 	{
 		Movement_Index_w = Movement_Buf + Movement_Queue.ENqueue(); //入队
-		Movement_Index_w->Set_Destination(Destination, threshold);
+		Movement_Index_w->Set_Destination(Destination, threshold, Is_X_Y);
 		Movement_Index_w->Interpolation_State = Movement_Class::NO_Interpolation;
 		command = Movement_Index_w;
 		state = AGV_State::Movement_Command_State::Movement_Command_OK;	//正常
@@ -562,7 +571,7 @@ extern "C" {
 // Access:    public 
 // Returns:   void
 // Parameter: Gcode_Class * command
-// Parameter: Coordinate_Class & Virtual_Current_Coor_InWorld	当前坐标
+// Parameter: Coordinate_Class & Virtual_Current_Coor_InWorld 虚拟的当前坐标(为了消除累计误差)
 // Description: 将指令中的坐标分解成先旋转后直线运动的两个运动指令，加入到运动缓存区
 //************************************
 void Gcode_G0(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InWorld)
@@ -572,12 +581,34 @@ void Gcode_G0(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 	switch (command->Parse_State)
 	{
 	case Gcode_Class::NO_PARSE: //接收到指令，对插补做准备工作
-		Virtual_Mid_Coor = Virtual_Current_Coor_InWorld;	//获取起点坐标
+		Virtual_Mid_Coor = Virtual_Current_Coor_InWorld;	//获取中间点的x,y坐标
 		Virtual_Current_Coor_InWorld = Get_Command_Coor(command, Virtual_Current_Coor_InWorld, Is_Absolute_Coor);	//获取终点坐标
-		Virtual_Mid_Coor.angle_coor = Virtual_Current_Coor_InWorld.angle_coor;	//将起点的角度修改为终点的角度
-		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::rotate_threshold);	//旋转运动
-		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::rotate_threshold);	//直线运动
+		Virtual_Mid_Coor.angle_coor = Virtual_Current_Coor_InWorld.angle_coor;	//获取中间点的angle坐标
+		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::rotate_threshold, false);	//旋转运动
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::line_threshold, true);	//直线运动
 		command->Parse_State = Gcode_Class::IS_PARSING;
+
+		//测试用
+		My_Serial.print("\r\n");
+		My_Serial.print(Virtual_Mid_Coor.x_coor);
+		My_Serial.print(" ");
+		My_Serial.print(Virtual_Mid_Coor.y_coor);
+		My_Serial.print(" ");
+		My_Serial.print(Virtual_Mid_Coor.angle_coor);
+		My_Serial.print("   ");
+		My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
+		My_Serial.print(" ");
+		My_Serial.print(Virtual_Current_Coor_InWorld.y_coor);
+		My_Serial.print(" ");
+		My_Serial.print(Virtual_Current_Coor_InWorld.angle_coor);
+		My_Serial.print("   ");
+		My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
+		My_Serial.print(" ");
+		My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
+		My_Serial.print(" ");
+		My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+
+
 		break;
 	case Gcode_Class::IS_PARSING: //对插补的准备工作已完成，正在插补
 		if ((movement_command == Movement_Index_r) && (movement_command->Interpolation_State == Movement_Class::IS_Interpolated))	//当前指令插补完成
@@ -656,10 +687,12 @@ void Gcode_G4(Gcode_Class * command)
 
 void Gcode_G90(void)
 {
+	Is_Absolute_Coor = true;
 }
 
 void Gcode_G91(void)
 {
+	Is_Absolute_Coor = false;
 }
 
 void Gcode_M17(void)

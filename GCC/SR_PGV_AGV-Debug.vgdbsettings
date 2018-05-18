@@ -70,7 +70,7 @@
       <Entries>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.interface</Key>
-          <Value>interface/stlink-v2.cfg</Value>
+          <Value>interface/jlink.cfg</Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.cpu</Key>
@@ -90,7 +90,7 @@
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.extraargs</Key>
-          <Value>-c init -c "reset init" -c "gdb_port 56564" -c "telnet_port 56563"  </Value>
+          <Value>-c init -c "reset init" -c "gdb_port 56094" -c "telnet_port 56093"  </Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.initargs</Key>
@@ -126,11 +126,11 @@
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.transport</Key>
-          <Value />
+          <Value>-c "transport select swd"</Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.quicksetup.interface</Key>
-          <Value>stlink-v2</Value>
+          <Value>jlink</Value>
         </KeyValue>
       </Entries>
     </DebugMethodProperties>

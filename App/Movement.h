@@ -44,9 +44,9 @@ public:
 	virtual bool Init(Interpolation_Parameter_TypedefStructure Input, const Coordinate_Class &Current_Coor, float threshold) = 0;	//根据插补参数以及阈值插补运动路径
 	bool Cal_Velocity(const Coordinate_Class Current_Coor_InWorld);	//根据当前坐标计算目标坐标，目标速度，返回计算结果
 
-	void Set_Destination(const Coordinate_Class& Destination, const float threshold, const bool Is_Linear = true) {
+	void Set_Destination(const Coordinate_Class& Destination, const float threshold, const bool Is_X_Y = true) {
 		Destination_Coor_InWorld = Destination;
-		this->Is_Linear = Is_Linear;
+		this->Is_X_Y = Is_X_Y;
 		this->threshold = threshold;
 	}	//设置终点
 	//void Set_Origin(const Coordinate_Class& Origin) { Origin_Coor_InWorld = Origin; }	//设置起点
@@ -57,7 +57,7 @@ public:
 	static Velocity_Class Target_Velocity_InAGV;	//目标速度
 	static Coordinate_Class Target_Coor_InWorld;	//目标坐标
 
-	
+
 
 protected:
 
@@ -72,7 +72,7 @@ protected:
 	static Interpolation_Parameter_TypedefStructure Interpolation_Parameter;
 	Interpolation_Parameter_TypedefStructure Input_Para;
 
-	bool Is_Linear;	//指示当前插补是直线插补还是圆弧插补(未实现)
+	bool Is_X_Y;	//指示当前插补是在xoy平面上
 
 	float threshold;	//插补阈值
 

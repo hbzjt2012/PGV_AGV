@@ -31,10 +31,10 @@ float Movement_Class::slowly_time = 0.0f;		 //慢速段时间(s)
 
 void Movement_Class::Init_Parameter(void)
 {
-	Interpolation_Parameter.max_velocity_abs= Parameter_Class::wheel_max_line_velocity;
-	Interpolation_Parameter.min_velocity_abs= Parameter_Class::wheel_min_line_velocity;
-	Interpolation_Parameter.acceleration_abs= Parameter_Class::wheel_acceleration_line_velocity;
-	Interpolation_Parameter.slow_time_abs= Parameter_Class::line_slowest_time;
+	Interpolation_Parameter.max_velocity_abs = Parameter_Class::wheel_max_line_velocity;
+	Interpolation_Parameter.min_velocity_abs = Parameter_Class::wheel_min_line_velocity;
+	Interpolation_Parameter.acceleration_abs = Parameter_Class::wheel_acceleration_line_velocity;
+	Interpolation_Parameter.slow_time_abs = Parameter_Class::line_slowest_time;
 }
 
 //************************************
@@ -50,16 +50,35 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 	Coordinate_Class Current_Coor_InOrigin = Current_Coor_InWorld - Origin_Coor_InWorld;	//获取当前坐标在起点坐标系中的坐标
 	Coordinate_Class Target_Coor_InOrigin;	//当前坐标向量在终点坐标向量上的投影（即目标坐标）
 
-	float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
-		+ Destination_Coor_InOrigin.y_coor*Current_Coor_InOrigin.y_coor \
-		+ Destination_Coor_InOrigin.angle_coor*Current_Coor_InOrigin.angle_coor;
+	//float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
+	//	+ Destination_Coor_InOrigin.y_coor*Current_Coor_InOrigin.y_coor \
+	//	+ Destination_Coor_InOrigin.angle_coor*Current_Coor_InOrigin.angle_coor;
 
-	float k = X_H_mul_y / X_H_mul_X;
+	//float k = X_H_mul_y / X_H_mul_X;
 
-	//获取当前向量在终点向量上的投影向量，详情见《矩阵论》
-	Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
-	Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
-	Target_Coor_InOrigin.angle_coor = k*Destination_Coor_InOrigin.angle_coor;
+	////获取当前向量在终点向量上的投影向量，详情见《矩阵论》
+	//Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
+	//Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
+	//Target_Coor_InOrigin.angle_coor = k*Destination_Coor_InOrigin.angle_coor;
+
+	if (Is_X_Y)
+	{
+		float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
+			+ Destination_Coor_InOrigin.y_coor*Current_Coor_InOrigin.y_coor;
+		float k = X_H_mul_y / X_H_mul_X;
+
+		Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
+		Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
+		Target_Coor_InOrigin.angle_coor = 0.0f;
+
+	}
+	else
+	{
+		Target_Coor_InOrigin.x_coor = 0.0f;
+		Target_Coor_InOrigin.y_coor = 0.0f;
+		Target_Coor_InOrigin.angle_coor = Current_Coor_InOrigin.angle_coor;
+	}
+
 
 	float current_coor = Cal_Current_Coor_InOrigin(Target_Coor_InOrigin)*Distance_Symbols;	//获取在源坐标系上的位移
 	float output_velocity = 0.0f;

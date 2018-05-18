@@ -27,7 +27,7 @@
 * TIM10 用于输出执行机构的PWM波
 * TIM11 时基，定时时间10ms
 * TIM12 BR、BL轮子转速
-* TIM13 
+* TIM13
 * TIM14
 */
 
@@ -56,7 +56,7 @@ void Update_Print_MSG(void);		//打印信息
 
 //添加运动指令，返回添加结果
 //缓存区满，未做相应处理
-AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, Movement_Class *&command, const float threshold, const bool Is_Linear = true);
+AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, Movement_Class *&command, const float threshold, const bool Is_X_Y);
 
 //根据当前坐标获取目标速度和坐标，返回执行结果（true表示执行完毕）
 bool Run_Movement_Command(Movement_Class*movement_command, const Coordinate_Class &Current_Coor);
