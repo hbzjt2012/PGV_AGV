@@ -68,8 +68,6 @@ void Init_System(void)
 	Led.Init(GPIO_Mode_OUT);
 	My_Serial.Init(115200);
 	Mecanum_AGV.Init();
-	PGV100.Init(115200);
-	TL740.Init(115200);
 
 	Parameter_Class::Init_Parameter();	//初始化参数
 	Movement_Class::Init_Parameter();	//初始化参数
@@ -86,6 +84,13 @@ void Init_System(void)
 
 	TIM_Base_Class::Init(TIM11, 2000, 840, true);	//设置定时器11的中断频率为100Hz，时基--10ms	
 	TIM_Base_Class::Begin(TIM11);
+
+	while (!Gcode_G4(1000));	//延时10s
+	Led.Set();
+	PGV100.Init(115200);
+	TL740.Init(115200);
+	while (!Gcode_G4(1000));	//延时10s
+
 }
 
 void Init_System_RCC(void)
@@ -113,34 +118,51 @@ void Init_System_RCC(void)
 //使用编码器、陀螺仪、PGV传感器的数据对AGV定位
 void Location_AGV(void)
 {
-	Velocity_Class AGV_Velocity_By_Encoder;
-	float time_ms = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Velocity_By_Encoder);	//获取由编码器计算得到的速度
-	float angle_temp = 0.0f;
-	float time_s = time_ms / 1000.0f;
-	if (TL740.data_OK)	//表示陀螺仪数据已更新
-	{
-		float omega_TL740 = TL740.z_rate - TL740.z_rate_bias;
-		float theta_TL74 = TL740.z_heading;
-		Kalman_Filter::Cal_Theta_Omega(AGV_Velocity_By_Encoder.angular_velocity, theta_TL74, omega_TL740, time_s, AGV_Current_Coor_InWorld.angle_coor);
-		//更新角速度，角度
-		AGV_Velocity_By_Encoder.angular_velocity = omega_TL740;
-		angle_temp = theta_TL74;
-		TL740.data_OK = false;
-		Kalman_Filter::Cal_X_Y_Theta_By_Encoder_Gyro(AGV_Current_Coor_InWorld, AGV_Velocity_By_Encoder, theta_TL74, time_s, true);
-	}
-	else
-	{
-		Kalman_Filter::Cal_X_Y_Theta_By_Encoder_Gyro(AGV_Current_Coor_InWorld, AGV_Velocity_By_Encoder, time_s, false);
-	}
+	float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_InAGV) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
 
-	if (PGV100.data_OK)	//表示PGV数据已更新
+	if (time_s > FLOAT_DELTA)
 	{
-		PGV100.data_OK = false;
-		//融合PGV数据和测量数据
-		//使用PGV数据更新当前坐标
+		AGV_Current_Coor_InWorld = Mecanum_AGV.Update_Coor_demo(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, time_s);
+		//if (TL740.data_OK)	//表示陀螺仪数据已更新
+		//{
+		//	float omega_TL740 = TL740.z_rate;	//陀螺仪测量得到的角速度
+		//	float theta_TL740 = TL740.z_heading;	//陀螺仪测量得到的角度
+		//	float omega = 0.0;
+		//	//获得更新后的角度，角速度
+		//	Kalman_Filter::Cal_Theta_Omega(AGV_Current_Velocity_InAGV.angular_velocity * 180 / M_PI, omega_TL740, theta_TL740, omega, time_s, AGV_Current_Coor_InWorld.angle_coor);
+
+		//	AGV_Current_Velocity_InAGV.angular_velocity = omega / 180 * M_PI;	//一次更新后的角速度
+
+		//	Kalman_Filter::Cal_XY_By_Gyro_Encoder(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, theta_TL740, time_s);	//更新坐标
+
+		//	TL740.data_OK = false;
+		//}
+		//else
+		//{
+		//	//Kalman_Filter::Cal_X_Y_Theta_By_Encoder_Gyro(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, time_s);
+		//}
+
+		if (PGV100.data_OK)	//表示PGV数据已更新
+		{
+			PGV100.data_OK = false;
+			AGV_Current_Coor_InWorld = PGV100.coor;
+			//AGV_Current_Coor_InWorld = Kalman_Filter::Cal_Coor_By_PGV(AGV_Current_Coor_InWorld, PGV100.coor);
+			//融合PGV数据和测量数据
+			//使用PGV数据更新当前坐标
+
+			//TL740.Set_Bias(AGV_Current_Coor_InWorld.angle_coor);	//更新陀螺仪偏置
+		}
 	}
+	AGV_Current_Coor_InWorld.Transform_Angle();
+
+	//float current_x = AGV_Current_Coor_InWorld.x_coor;
 
 	//Gcode_I114();	//输出坐标，测试用
+
+	//if (ABS(current_x-last_x)>500)
+	//{
+	//	asm("nop");
+	//}
 
 	//测试程序，获取控制速度
 	//My_Serial.print("\r\n  ");
@@ -170,10 +192,10 @@ void Process_Movement_Command(void)
 		{
 			Movement_Index_r = Movement_Buf + Movement_Queue.DEqueue();
 			Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
-			if (!Is_Parsing_Movement)
-			{
-				My_Serial.print("\r\nnext");	//测试用
-			}
+			//if (!Is_Parsing_Movement)
+			//{
+			//	My_Serial.print("\r\nnext");	//测试用
+			//}
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_OK;	//缓存区正常
 		}
 		else
@@ -181,7 +203,7 @@ void Process_Movement_Command(void)
 			Movement_Queue.Init();	//初始化缓存区
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_IDLE;
 			//AGV_Current_Coor_InWorld.Truncation_Coor();	//无运动指令，圆整坐标
-			AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;	//期望坐标为当前坐标
+			//AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;	//期望坐标为当前坐标
 		}
 	}
 	else
@@ -189,10 +211,10 @@ void Process_Movement_Command(void)
 		Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
 		//movement_buf_state = AGV_State::Movement_Command_State::OK;	//缓存区正常
 
-		if (!Is_Parsing_Movement)
-		{
-			My_Serial.print("\r\nnext");	//测试用
-		}
+		//if (!Is_Parsing_Movement)
+		//{
+		//	My_Serial.print("\r\nnext");	//测试用
+		//}
 	}
 }
 
@@ -222,6 +244,7 @@ void Movement_Control(void)
 		AGV_Target_Velocity_InAGV *= 0.0f;
 	}
 	//控制小车
+	//Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
 	Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
 
 }
@@ -588,25 +611,25 @@ void Gcode_G0(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::line_threshold, true);	//直线运动
 		command->Parse_State = Gcode_Class::IS_PARSING;
 
-		//测试用
-		My_Serial.print("\r\n");
-		My_Serial.print(Virtual_Mid_Coor.x_coor);
-		My_Serial.print(" ");
-		My_Serial.print(Virtual_Mid_Coor.y_coor);
-		My_Serial.print(" ");
-		My_Serial.print(Virtual_Mid_Coor.angle_coor);
-		My_Serial.print("   ");
-		My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
-		My_Serial.print(" ");
-		My_Serial.print(Virtual_Current_Coor_InWorld.y_coor);
-		My_Serial.print(" ");
-		My_Serial.print(Virtual_Current_Coor_InWorld.angle_coor);
-		My_Serial.print("   ");
-		My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
-		My_Serial.print(" ");
-		My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
-		My_Serial.print(" ");
-		My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+		////测试用
+		//My_Serial.print("\r\n");
+		//My_Serial.print(Virtual_Mid_Coor.x_coor);
+		//My_Serial.print(" ");
+		//My_Serial.print(Virtual_Mid_Coor.y_coor);
+		//My_Serial.print(" ");
+		//My_Serial.print(Virtual_Mid_Coor.angle_coor);
+		//My_Serial.print("   ");
+		//My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
+		//My_Serial.print(" ");
+		//My_Serial.print(Virtual_Current_Coor_InWorld.y_coor);
+		//My_Serial.print(" ");
+		//My_Serial.print(Virtual_Current_Coor_InWorld.angle_coor);
+		//My_Serial.print("   ");
+		//My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
+		//My_Serial.print(" ");
+		//My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
+		//My_Serial.print(" ");
+		//My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
 
 
 		break;
@@ -680,6 +703,10 @@ void Gcode_G4(Gcode_Class * command)
 	else
 	{
 		no_time = Gcode_G4(time_10ms);
+		if (no_time)
+		{
+			command->Parse_State == Gcode_Class::IS_PARSED;	//指令完成
+		}
 	}
 
 

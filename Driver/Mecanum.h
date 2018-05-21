@@ -29,10 +29,13 @@ public:
 	//由编码器计算AGV车体速度
 	float Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity) override;
 
+	//测试程序，随便写的一个计算坐标方法
+	Coordinate_Class &Update_Coor_demo(Coordinate_Class &Coor_Current, Velocity_Class&Velocity, float time_s);
+
 private:
 	float Get_Time_ms(void);
 	//根据跟踪误差更新期望速度
-	void Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class Target_Velocity) override;
+	void Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class &Target_Velocity) override;
 
 	static Motor_Class Front_Left_Wheel, Front_Right_Wheel;			//左、右前轮
 	static Motor_Class Behind_Left_Wheel, Behind_Right_Wheel;		//左、右后轮

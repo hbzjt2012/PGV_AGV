@@ -18,7 +18,7 @@ public:
 	//根据AGV的跟踪误差与期望速度，更新速度
 	void Write_Velocity(const Coordinate_Class&AGV_Current_Coor_InWorld, const Coordinate_Class&AGV_Target_Coor_InWorld, Velocity_Class &AGV_Target_Velocity_InAGV);
 	//根据跟踪误差更新期望速度
-	virtual void Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class Target_Velocity) = 0;
+	virtual void Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class& Target_Velocity) = 0;
 	//根据物理约束限幅速度,将车体速度转换为轮速，控制电机
 	virtual void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV) = 0;
 

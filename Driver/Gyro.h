@@ -2,6 +2,7 @@
 #include "../HALayer/Uart.h"
 #include "../HALayer/DMA.h"
 #include "../HALayer/Tim.h"
+#include "../App/Position.h"
 
 /*
 * 该串口（串口2）用于和陀螺仪通信
@@ -18,7 +19,7 @@ class Gyro_Class : protected Uart_Base_Class
 	friend void TIM7_IRQHandler(void);
 
 public:
-	Gyro_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6), data_OK(false) {}
+	Gyro_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6), data_OK(false), z_heading_bias(0.0f) {}
 	virtual ~Gyro_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口
@@ -29,16 +30,17 @@ public:
 	bool Return_rx_flag(void) { return rx_flag; }
 	void Clear_rx_flag(void) { rx_flag = false; }
 	void Clear_rx_cnt(void) { rx_cnt = 0; }
+	void Set_Bias(float bias) { z_heading_bias = bias;}	//设置角度偏置
 
-	float z_rate;		 //Z轴角速率(rad/s)
-	float forward_accel; //前向加速度
-	float z_heading;	 //Z轴方位角，0°~360°
-
-	float z_rate_bias;	//Z轴角速度偏置(rad/s)
+	float z_rate;		 //Z轴角速率(°/s)
+	float forward_accel; //前向加速度(g)
+	float z_heading;	 //Z轴方位角，-180°~+180°
 
 	bool data_OK;
 
 protected:
+	float z_heading_bias;	//Z轴角度偏置(°)
+
 	DMA_Base_Class TX_DMA;
 	static bool rx_flag;				//表明收到了一帧数据
 	static uint16_t tx_cnt;				//发送字节的计数

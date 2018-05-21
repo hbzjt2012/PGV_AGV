@@ -5,9 +5,9 @@ bool TL740D_Class::Analyze_Data(void)
 {
 	int length = rx_cnt;
 	Clear_rx_cnt();
-	for (int j=0;j+14<= length;j++)
+	for (int j = 0; j + 14 <= length; j++)
 	{
-		if (data_Buf[j]!=(uint8_t)0x68)	
+		if (data_Buf[j] != (uint8_t)0x68)
 		{
 			continue;//寻找帧头
 		}
@@ -16,21 +16,27 @@ bool TL740D_Class::Analyze_Data(void)
 
 		for (int i = 1; i < 13; i++)
 		{
-			bc += data_Buf[i+j];
+			bc += data_Buf[i + j];
 		}
 
-		if (bc == data_Buf[j+13])
+		if (bc == data_Buf[j + 13])
 		{
 			int32_t z_head_temp = 0;
-			z_rate = BCD2DEC((uint8_t *)(&data_Buf[j+4])) / 100.0f;
-			forward_accel = BCD2DEC((uint8_t *)(&data_Buf[j+7])) / 1000.0f;
-			z_head_temp = BCD2DEC((uint8_t *)(&data_Buf[j+10]));
+			z_rate = BCD2DEC((uint8_t *)(&data_Buf[j + 4])) / 100.0f;
+			forward_accel = BCD2DEC((uint8_t *)(&data_Buf[j + 7])) / 1000.0f;
+			z_head_temp = BCD2DEC((uint8_t *)(&data_Buf[j + 10]));
 			//if (z_head_temp < 0)
 			//{
 			//	z_head_temp += 36000;
 			//}
 			z_heading = z_head_temp / 100.0f;
-			z_rate = z_rate / 180 * M_PI;
+			//z_rate = z_rate / 180 * M_PI;
+
+			z_heading = z_heading - z_heading_bias;
+			z_heading = Coordinate_Class::Transform_Angle(z_heading);
+
+			//z_heading_bias = z_heading;	//设置基准
+
 			return true;
 		}
 

@@ -13,7 +13,6 @@ class TL740D_Class : public Gyro_Class
 
 	void Read_Data(void) override;	//读传感器数据
 
-	//该方法不完善，无法纠错，以后再改
 	bool Analyze_Data(void) override; //解析数据
 	//void Cal_data(void) override;	//解析数据
 	char *Return_RX_buf(void) { return (char *)RX_buf; }
