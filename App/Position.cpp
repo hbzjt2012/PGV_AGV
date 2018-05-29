@@ -10,17 +10,28 @@
 //************************************
 Velocity_Class &Velocity_Class::operator+=(const Velocity_Class &addend)
 {
-	float32_t x_velocity_source = velocity*Cos_Lookup(this->velocity_angle);	//源向量的x轴速度
-	float32_t y_velocity_source = velocity*Sin_Lookup(this->velocity_angle);	//源向量的y轴速度
-	float32_t x_velocity_addend = velocity*Cos_Lookup(addend.velocity_angle);	//加数的x轴速度
-	float32_t y_velocity_addend = velocity*Sin_Lookup(addend.velocity_angle);	//加数的y轴速度
-	float32_t x_velocity_temp = x_velocity_source + x_velocity_addend;	//新的x轴速度
-	float32_t y_velocity_temp = y_velocity_source + y_velocity_addend;	//新的y轴速度
+	//float32_t x_velocity_source = velocity*Cos_Lookup(this->velocity_angle);	//源向量的x轴速度
+	//float32_t y_velocity_source = velocity*Sin_Lookup(this->velocity_angle);	//源向量的y轴速度
+	//float32_t x_velocity_addend = velocity*Cos_Lookup(addend.velocity_angle);	//加数的x轴速度
+	//float32_t y_velocity_addend = velocity*Sin_Lookup(addend.velocity_angle);	//加数的y轴速度
+	//float32_t x_velocity_temp = x_velocity_source + x_velocity_addend;	//新的x轴速度
+	//float32_t y_velocity_temp = y_velocity_source + y_velocity_addend;	//新的y轴速度
 
-	float32_t velocity_temp = x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp;
+	velocity_x += addend.velocity_x;
+	velocity_y += addend.velocity_y;
+
+	float velocity_temp = velocity_x*velocity_x + velocity_y*velocity_y;
 	arm_sqrt_f32(velocity_temp, &(this->velocity));	//计算速度大小
-	this->velocity_angle = ArcTan_Lookup(x_velocity_temp, y_velocity_temp) / 10.0f;	//计算速度方向
-	this->angular_velocity += addend.angular_velocity;	//角速度大小
+	this->velocity_angle = ArcTan_Lookup(velocity_x, velocity_y) / 10.0f;	//计算速度方向
+	angular_velocity_rad += addend.angular_velocity_rad;
+	angular_velocity_angle += addend.angular_velocity_angle;
+	angular_velocity_mm += addend.angular_velocity_mm;
+
+
+	//float32_t velocity_temp = x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp;
+	//arm_sqrt_f32(velocity_temp, &(this->velocity));	//计算速度大小
+	//this->velocity_angle = ArcTan_Lookup(x_velocity_temp, y_velocity_temp) / 10.0f;	//计算速度方向
+	//this->angular_velocity += addend.angular_velocity;	//角速度大小
 	return *this;
 }
 
@@ -36,11 +47,21 @@ Velocity_Class &Velocity_Class::operator-=(const Velocity_Class &subtrahend)
 {
 	//转化为加法
 	//大小相反，角度不变，角速度不变
-	Velocity_Class addend_temp = subtrahend;
-	//addend_temp.angular_velocity = addend_temp.angular_velocity;
-	addend_temp.velocity = -addend_temp.velocity;
-	this->operator+=(addend_temp);	//转换为加法
-	return *this;
+	//Velocity_Class addend_temp = subtrahend;
+	////addend_temp.angular_velocity = addend_temp.angular_velocity;
+	//addend_temp.velocity = -addend_temp.velocity;
+	//this->operator+=(addend_temp);	//转换为加法
+	//return *this;
+
+	velocity_x -= subtrahend.velocity_x;
+	velocity_y -= subtrahend.velocity_y;
+
+	float velocity_temp = velocity_x*velocity_x + velocity_y*velocity_y;
+	arm_sqrt_f32(velocity_temp, &(this->velocity));	//计算速度大小
+	this->velocity_angle = ArcTan_Lookup(velocity_x, velocity_y) / 10.0f;	//计算速度方向
+	angular_velocity_rad -= subtrahend.angular_velocity_rad;
+	angular_velocity_angle -= subtrahend.angular_velocity_angle;
+	angular_velocity_mm -= subtrahend.angular_velocity_mm;
 }
 
 //************************************
@@ -54,8 +75,12 @@ Velocity_Class &Velocity_Class::operator-=(const Velocity_Class &subtrahend)
 Velocity_Class&Velocity_Class::operator*=(const float factor)
 {
 	//线速度、角速度乘因子
-	this->angular_velocity *= factor;
-	this->velocity *= factor;
+	velocity_x *= factor;
+	velocity_y *= factor;
+	velocity *= factor;
+	angular_velocity_rad *= factor;
+	angular_velocity_angle *= factor;
+	angular_velocity_mm *= factor;
 	return *this;
 }
 
@@ -73,6 +98,35 @@ Velocity_Class &Velocity_Class::operator/=(const float divisor)
 	return *this;
 }
 
+Velocity_Class & Velocity_Class::Relative_To_Absolute(Velocity_Class & Absolute_Velocity, const Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
+{
+	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
+	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
+	const float x_temp = Base_Coor.x_coor;
+	const float y_temp = Base_Coor.y_coor;
+	const float angle_temp = Base_Coor.angle_coor;
+
+	Absolute_Velocity.velocity_x = cos_Angle * (Relative_Velocity.velocity_x) - sin_Angle * (Relative_Velocity.velocity_y);
+	Absolute_Velocity.velocity_y = sin_Angle * (Relative_Velocity.velocity_x) + cos_Angle * (Relative_Velocity.velocity_y);
+	Absolute_Velocity.angular_velocity_angle = Relative_Velocity.angular_velocity_angle;
+
+
+
+	return Absolute_Velocity;
+	// TODO: 在此处插入 return 语句
+}
+
+Velocity_Class & Velocity_Class::Absolute_To_Relative(const Velocity_Class & Absolute_Velocity, Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
+{
+	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
+	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
+
+	Relative_Velocity.velocity_x = cos_Angle * (Absolute_Velocity.velocity_x) + sin_Angle * (Absolute_Velocity.velocity_y);
+	Relative_Velocity.velocity_y = (-sin_Angle) * (Absolute_Velocity.velocity_x) + cos_Angle * (Absolute_Velocity.velocity_y);
+	Relative_Velocity.angular_velocity_angle = (Absolute_Velocity.angular_velocity_angle);
+	// TODO: 在此处插入 return 语句
+}
+
 Velocity_Class operator+(const Velocity_Class & summand, const Velocity_Class & addend)
 {
 	Velocity_Class temp = summand;
@@ -87,46 +141,48 @@ Velocity_Class operator-(const Velocity_Class & minuend, const Velocity_Class & 
 	return temp;
 }
 
-//************************************
-// Method:    operator*=
-// FullName:  Coordinate_Class::operator*=
-// Access:    public 
-// Returns:   Coordinate_Class &
-// Parameter: const float factor
-// Description: 重载*=运算符，只放大x，y
-//************************************
-Coordinate_Class &Coordinate_Class::operator*=(const float factor)
-{
-	this->x_coor *= factor;
-	this->y_coor *= factor;
-	return *this;
-}
+////************************************
+//// Method:    operator*=
+//// FullName:  Coordinate_Class::operator*=
+//// Access:    public 
+//// Returns:   Coordinate_Class &
+//// Parameter: const float factor
+//// Description: 重载*=运算符，只放大x，y
+////************************************
+//Coordinate_Class &Coordinate_Class::operator*=(const float factor)
+//{
+//	this->x_coor *= factor;
+//	this->y_coor *= factor;
+//	return *this;
+//}
+//
+////************************************
+//// Method:    operator/=
+//// FullName:  Coordinate_Class::operator/=
+//// Access:    public 
+//// Returns:   Coordinate_Class &
+//// Parameter: const float divisor
+//// Description: 重载/=运算符，映射为*=
+////************************************
+//Coordinate_Class &Coordinate_Class::operator/=(const float divisor)
+//{
+//	this->operator*=(1.0f / divisor);
+//	return *this;
+//}
 
-//************************************
-// Method:    operator/=
-// FullName:  Coordinate_Class::operator/=
-// Access:    public 
-// Returns:   Coordinate_Class &
-// Parameter: const float divisor
-// Description: 重载/=运算符，映射为*=
-//************************************
-Coordinate_Class &Coordinate_Class::operator/=(const float divisor)
-{
-	this->operator*=(1.0f / divisor);
-	return *this;
-}
 
 void Coordinate_Class::Clear(void)
 {
 	x_coor = 0.0f;
 	y_coor = 0.0f;
 	angle_coor = 0.0f;
+	angle_rad = 0.0f;
 }
 
-float Coordinate_Class::Transform_Angle(void)
+void Coordinate_Class::Transform_Angle(void)
 {
 	angle_coor = Transform_Angle(angle_coor);
-	return angle_coor;
+	angle_rad = angle_coor / 180.0f*M_PI;
 }
 
 //将角度变换至-180~+180
@@ -158,11 +214,12 @@ float Coordinate_Class::Transform_Angle(float angle)
 //	}
 //}
 
+//不符合交换律
 Coordinate_Class operator+(const Coordinate_Class & summand, const Coordinate_Class & addend)
 {
 	Coordinate_Class temp = summand;
 
-	temp = Coordinate_Class::Relative_To_Absolute(temp, addend, temp);
+	temp = Coordinate_Class::Relative_To_Absolute(temp, addend, summand);
 
 	return temp;
 }
@@ -173,6 +230,16 @@ Coordinate_Class operator-(const Coordinate_Class & minuend, const Coordinate_Cl
 
 	Coordinate_Class::Absolute_To_Relative(minuend, temp, subtrahend);
 
+	return temp;
+}
+
+Coordinate_Class operator*(const Coordinate_Class & source, const float factor)
+{
+	Coordinate_Class temp;
+	temp.x_coor = source.x_coor*factor;
+	temp.y_coor = source.y_coor*factor;
+	temp.angle_coor = source.angle_coor*factor;
+	temp.angle_rad = source.angle_rad*factor;
 	return temp;
 }
 
@@ -212,8 +279,8 @@ Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class
 	const float y_temp = Base_Coor.y_coor;
 	const float angle_temp = Base_Coor.angle_coor;
 
-	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - x_temp) + sin_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
-	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
+	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - x_temp) + sin_Angle * (Absolute_Coor.y_coor - y_temp);
+	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - y_temp);
 	Relative_Coor.angle_coor = (Absolute_Coor.angle_coor - angle_temp);
 
 	//if (Relative_Coor.angle_coor > 180.0f)

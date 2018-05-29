@@ -166,11 +166,11 @@ void Location_AGV(void)
 
 	//测试程序，获取控制速度
 	//My_Serial.print("\r\n  ");
-	//My_Serial.print(AGV_Velocity_By_Encoder.velocity);
+	//My_Serial.print(AGV_Current_Velocity_InAGV.velocity_x);
 	//My_Serial.print(" ");
-	//My_Serial.print(AGV_Velocity_By_Encoder.velocity_angle);
+	//My_Serial.print(AGV_Current_Velocity_InAGV.velocity_y);
 	//My_Serial.print(" ");
-	//My_Serial.print(AGV_Velocity_By_Encoder.angular_velocity);
+	//My_Serial.print(AGV_Current_Velocity_InAGV.angular_velocity_angle);
 
 	//My_Serial.print("  ");
 	//My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
@@ -192,47 +192,23 @@ void Process_Movement_Command(void)
 		{
 			Movement_Index_r = Movement_Buf + Movement_Queue.DEqueue();
 			Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
-			//if (!Is_Parsing_Movement)
-			//{
-			//	My_Serial.print("\r\nnext");	//测试用
-			//}
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_OK;	//缓存区正常
 		}
 		else
 		{
 			Movement_Queue.Init();	//初始化缓存区
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_IDLE;
-			//AGV_Current_Coor_InWorld.Truncation_Coor();	//无运动指令，圆整坐标
-			//AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;	//期望坐标为当前坐标
 		}
 	}
 	else
 	{
 		Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
-		//movement_buf_state = AGV_State::Movement_Command_State::OK;	//缓存区正常
-
-		//if (!Is_Parsing_Movement)
-		//{
-		//	My_Serial.print("\r\nnext");	//测试用
-		//}
 	}
 }
 
 //运动控制
 void Movement_Control(void)
 {
-	////从当前正在执行的运动指令中获取到期望速度和期望坐标
-	//if (Movement_Queue.queue_state != Queue_Class::BUFFER_EMPTY)	//指令缓存区不为空
-	//{
-	//	AGV_Target_Coor_InWorld = Movement_Index_r->Target_Coor_InWorld;
-	//	AGV_Target_Velocity_InAGV = Movement_Index_r->Target_Velocity_InAGV;
-	//}
-	//else
-	//{
-	//	AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;
-	//	AGV_Target_Velocity_InAGV *= 0.0f;
-	//}
-
 	if (movement_buf_state != AGV_State::Movement_Command_State::Movement_Command_IDLE)	//指令缓存区存在数据
 	{
 		AGV_Target_Coor_InWorld = Movement_Index_r->Target_Coor_InWorld;
@@ -246,7 +222,6 @@ void Movement_Control(void)
 	//控制小车
 	//Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
 	Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
-
 }
 
 //检查避障和按键动作，生成避障信息
@@ -265,7 +240,6 @@ void Parse_Sensor_Data(void)
 			PGV100.Cal_Coor();	//处理数据
 		}
 	}
-
 	if (!(time11_cnt % 5))	//50ms时间到
 	{
 		PGV100.Send(PGV_Class::Read_PGV_Data);	//读取PGV传感器数据
@@ -379,7 +353,7 @@ void Update_Print_MSG(void)
 // Parameter: const bool Is_X_Y	在xoy平面上插补插补
 // Description: 添加运动指令，返回添加结果
 //************************************
-AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & Destination, Movement_Class *&command, const float threshold, const bool Is_X_Y)
+AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & Destination, Movement_Class *&command, const float threshold)
 {
 	AGV_State::Movement_Command_State state = AGV_State::Movement_Command_State::Movement_Command_IDLE;
 	if (Movement_Queue.queue_state == Queue_Class::BUFFER_FULL) //指令缓存区满
@@ -389,7 +363,7 @@ AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & 
 	else
 	{
 		Movement_Index_w = Movement_Buf + Movement_Queue.ENqueue(); //入队
-		Movement_Index_w->Set_Destination(Destination, threshold, Is_X_Y);
+		Movement_Index_w->Set_Destination(Destination, threshold);
 		Movement_Index_w->Interpolation_State = Movement_Class::NO_Interpolation;
 		command = Movement_Index_w;
 		state = AGV_State::Movement_Command_State::Movement_Command_OK;	//正常
@@ -427,19 +401,6 @@ bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Cl
 		{
 			movement_command->Interpolation_State = Movement_Class::IS_Interpolated;	//插补完成
 		}
-		//AGV_Target_Coor_InWorld = movement_command->Target_Coor_InWorld;	//获取目标坐标
-		//AGV_Target_Velocity_InAGV = movement_command->Target_Velocity_InAGV;	//获取目标速度
-	//if (movement_command->Cal_Velocity(Current_Coor))	//还在插补
-	//{
-	//	//AGV_Target_Coor_InWorld = movement_command->Target_Coor_InWorld;	//获取目标坐标
-	//	//AGV_Target_Velocity_InAGV = movement_command->Target_Velocity_InAGV;	//获取目标速度
-	//}
-	//else
-	//{
-	//	//AGV_Target_Coor_InWorld = movement_command->Target_Coor_InWorld;	//获取目标坐标
-	//	//AGV_Target_Velocity_InAGV = movement_command->Target_Velocity_InAGV;	//获取目标速度
-	//	movement_command->Interpolation_State = Movement_Class::IS_Interpolated;	//插补完成
-	//}
 		break;
 	case Movement_Class::IS_Interpolated://插补完毕
 		AGV_Target_Coor_InWorld = Current_Coor;	//获取目标坐标
@@ -474,6 +435,9 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 			break;
 		case 1:
 			Gcode_G1(gcode_command, Virtual_AGV_Coor_InWorld);	//先直线运动后旋转到目标点,使用虚拟坐标可以降低累计误差
+			break;
+		case 2:
+			Gcode_G2(gcode_command, Virtual_AGV_Coor_InWorld);	//直接运动到目标点
 			break;
 		case 4:
 			Gcode_G4(gcode_command);
@@ -607,31 +571,10 @@ void Gcode_G0(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 		Virtual_Mid_Coor = Virtual_Current_Coor_InWorld;	//获取中间点的x,y坐标
 		Virtual_Current_Coor_InWorld = Get_Command_Coor(command, Virtual_Current_Coor_InWorld, Is_Absolute_Coor);	//获取终点坐标
 		Virtual_Mid_Coor.angle_coor = Virtual_Current_Coor_InWorld.angle_coor;	//获取中间点的angle坐标
-		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::rotate_threshold, false);	//旋转运动
-		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::line_threshold, true);	//直线运动
+		Virtual_Mid_Coor.angle_rad = Virtual_Mid_Coor.angle_coor / 180 * M_PI;
+		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::movement_threshold);	//旋转运动
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//直线运动
 		command->Parse_State = Gcode_Class::IS_PARSING;
-
-		////测试用
-		//My_Serial.print("\r\n");
-		//My_Serial.print(Virtual_Mid_Coor.x_coor);
-		//My_Serial.print(" ");
-		//My_Serial.print(Virtual_Mid_Coor.y_coor);
-		//My_Serial.print(" ");
-		//My_Serial.print(Virtual_Mid_Coor.angle_coor);
-		//My_Serial.print("   ");
-		//My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
-		//My_Serial.print(" ");
-		//My_Serial.print(Virtual_Current_Coor_InWorld.y_coor);
-		//My_Serial.print(" ");
-		//My_Serial.print(Virtual_Current_Coor_InWorld.angle_coor);
-		//My_Serial.print("   ");
-		//My_Serial.print(Virtual_Current_Coor_InWorld.x_coor);
-		//My_Serial.print(" ");
-		//My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
-		//My_Serial.print(" ");
-		//My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
-
-
 		break;
 	case Gcode_Class::IS_PARSING: //对插补的准备工作已完成，正在插补
 		if ((movement_command == Movement_Index_r) && (movement_command->Interpolation_State == Movement_Class::IS_Interpolated))	//当前指令插补完成
@@ -648,6 +591,55 @@ void Gcode_G0(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 
 void Gcode_G1(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InWorld)
 {
+	static Movement_Class *movement_command = 0;
+	Coordinate_Class Virtual_Mid_Coor;
+	switch (command->Parse_State)
+	{
+	case Gcode_Class::NO_PARSE: //接收到指令，对插补做准备工作
+		Virtual_Mid_Coor = Virtual_Current_Coor_InWorld;	//获取中间点的angle坐标
+		Virtual_Current_Coor_InWorld = Get_Command_Coor(command, Virtual_Current_Coor_InWorld, Is_Absolute_Coor);	//获取终点坐标
+		Virtual_Mid_Coor.x_coor = Virtual_Current_Coor_InWorld.x_coor;	//获取中间点的x,y坐标
+		Virtual_Mid_Coor.y_coor = Virtual_Current_Coor_InWorld.y_coor;
+		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::movement_threshold);	//直线运动
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//旋转运动
+		command->Parse_State = Gcode_Class::IS_PARSING;
+		break;
+	case Gcode_Class::IS_PARSING: //对插补的准备工作已完成，正在插补
+		if ((movement_command == Movement_Index_r) && (movement_command->Interpolation_State == Movement_Class::IS_Interpolated))	//当前指令插补完成
+		{
+			command->Parse_State = Gcode_Class::IS_PARSED;
+		}
+		break;
+	case Gcode_Class::IS_PARSED: //插补完成
+		break;
+	default:
+		break;
+	}
+}
+
+void Gcode_G2(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InWorld)
+{
+	static Movement_Class *movement_command = 0;
+	Coordinate_Class Virtual_Mid_Coor;
+	switch (command->Parse_State)
+	{
+	case Gcode_Class::NO_PARSE: //接收到指令，对插补做准备工作
+		Virtual_Current_Coor_InWorld = Get_Command_Coor(command, Virtual_Current_Coor_InWorld, Is_Absolute_Coor);	//获取终点坐标
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//直线运动
+		command->Parse_State = Gcode_Class::IS_PARSING;
+
+		break;
+	case Gcode_Class::IS_PARSING: //对插补的准备工作已完成，正在插补
+		if ((movement_command == Movement_Index_r) && (movement_command->Interpolation_State == Movement_Class::IS_Interpolated))	//当前指令插补完成
+		{
+			command->Parse_State = Gcode_Class::IS_PARSED;
+		}
+		break;
+	case Gcode_Class::IS_PARSED: //插补完成
+		break;
+	default:
+		break;
+	}
 }
 
 //************************************

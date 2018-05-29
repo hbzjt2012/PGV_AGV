@@ -42,8 +42,9 @@ public:
 	static bool Is_Absolute_Coor;	//指示当前坐标是否为绝对坐标
 	static int AGV_Address_Code;	//AGV的地址码
 
-	static float line_threshold;	//直线距离插补阈值(mm)
-	static float rotate_threshold;	//旋转角度插补阈值(mm)(需转化为直线距离)
+	static float movement_threshold;	//运动阈值(mm)
+	//static float line_threshold;	//直线距离插补阈值(mm)
+	//static float rotate_threshold;	//旋转角度插补阈值(mm)(需转化为直线距离)
 
 	enum Parameter_Num
 	{
@@ -52,7 +53,8 @@ public:
 		Parameter_Wheel_Acceleration_Time,//定义车轮的最大加减速时间
 		Parameter_Line_Slowest_Time,	//最低速移动的时间
 		Parameter_Is_Absolute_Coor,	//指示当前是否是绝对坐标
-		Parameter_AGV_Address_Code	//AGV的地址码
+		Parameter_AGV_Address_Code,	//AGV的地址码
+		Parameter_Movement_Threshold	//运动阈值
 	};	//定义参数序号
 
 	//void Update_Parameter(int num, float para);

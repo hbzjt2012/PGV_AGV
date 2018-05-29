@@ -21,5 +21,6 @@ R=[2 0 0
     0 1 0
     0 0 1];
 
+V=[time*cos(theta + velocity_angle) 
 end
 

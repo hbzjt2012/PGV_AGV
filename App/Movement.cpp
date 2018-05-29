@@ -1,14 +1,6 @@
 #include "Movement.h"
-//#include "../Math/MyMath.h"
-
-//#define DISATNCE_DELTA 0.3f		//当实际总位移与理论总位移差距0.3f时，认为插补已完成
 
 Movement_Class::Interpolation_Parameter_TypedefStructure Movement_Class::Interpolation_Parameter;
-//Movement_Class::Interpolation_Parameter_TypedefStructure Movement_Class::Interpolation_Parameter = {
-//	Parameter_Class::wheel_max_line_velocity ,\
-//	Parameter_Class::wheel_min_line_velocity,\
-//	Parameter_Class::wheel_acceleration_line_velocity,\
-//	Parameter_Class::line_slowest_time };
 
 //因为同一时间只会执行一条运动指令，故为静态变量
 Velocity_Class Movement_Class::Target_Velocity_InAGV;	//目标速度
@@ -49,36 +41,20 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 {
 	Coordinate_Class Current_Coor_InOrigin = Current_Coor_InWorld - Origin_Coor_InWorld;	//获取当前坐标在起点坐标系中的坐标
 	Coordinate_Class Target_Coor_InOrigin;	//当前坐标向量在终点坐标向量上的投影（即目标坐标）
+	Velocity_Class Target_Velocity_InTarget;	//期望坐标坐标系中的速度
 
-	//float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
-	//	+ Destination_Coor_InOrigin.y_coor*Current_Coor_InOrigin.y_coor \
-	//	+ Destination_Coor_InOrigin.angle_coor*Current_Coor_InOrigin.angle_coor;
+	float X_H_mul_y = x_temp_InOrigin*Current_Coor_InOrigin.x_coor \
+		+ y_temp_InOrigin*Current_Coor_InOrigin.y_coor \
+		+ angle_equivalent_temp_InOrigin*(Current_Coor_InOrigin.angle_rad*Parameter_Class::wheel_lx_ly_distance);
 
-	//float k = X_H_mul_y / X_H_mul_X;
+	float k = X_H_mul_y / X_H_mul_X;
 
-	////获取当前向量在终点向量上的投影向量，详情见《矩阵论》
+	//获取当前向量在终点向量上的投影向量，详情见《矩阵论》
+	Target_Coor_InOrigin = Destination_Coor_InOrigin*k;
 	//Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
 	//Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
 	//Target_Coor_InOrigin.angle_coor = k*Destination_Coor_InOrigin.angle_coor;
-
-	if (Is_X_Y)
-	{
-		float X_H_mul_y = Destination_Coor_InOrigin.x_coor*Current_Coor_InOrigin.x_coor \
-			+ Destination_Coor_InOrigin.y_coor*Current_Coor_InOrigin.y_coor;
-		float k = X_H_mul_y / X_H_mul_X;
-
-		Target_Coor_InOrigin.x_coor = k*Destination_Coor_InOrigin.x_coor;
-		Target_Coor_InOrigin.y_coor = k*Destination_Coor_InOrigin.y_coor;
-		Target_Coor_InOrigin.angle_coor = 0.0f;
-
-	}
-	else
-	{
-		Target_Coor_InOrigin.x_coor = 0.0f;
-		Target_Coor_InOrigin.y_coor = 0.0f;
-		Target_Coor_InOrigin.angle_coor = Current_Coor_InOrigin.angle_coor;
-	}
-
+	//Target_Coor_InOrigin.angle_rad = k*Destination_Coor_InOrigin.angle_rad;
 
 	float current_coor = Cal_Current_Coor_InOrigin(Target_Coor_InOrigin)*Distance_Symbols;	//获取在源坐标系上的位移
 	float output_velocity = 0.0f;
@@ -107,17 +83,19 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 	{
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
 	}
-	else
+	else    //超出了范围
 	{
 		output_velocity = 0.0f;
 		Target_Coor_InOrigin = Destination_Coor_InOrigin;
 		Interpolation_State = IS_Interpolated;
 	}
 
+	//分配速度给各个轴
+	Target_Velocity_InTarget = Assign_Velocity(Destination_Coor_InOrigin, output_velocity);
+	//将起点坐标系中的速度旋转至AGV坐标系
+	Target_Velocity_InAGV = Velocity_Class::Absolute_To_Relative(Target_Velocity_InTarget, Target_Velocity_InAGV, Target_Coor_InOrigin);
+
 	//计算期望坐标在世界坐标系上的坐标
 	Target_Coor_InWorld = Origin_Coor_InWorld + Target_Coor_InOrigin;
-	//计算AGV坐标系中的期望速度
-	Target_Velocity_InAGV = Assign_Velocity(Destination_Coor_InOrigin, output_velocity);
-
 	return (Interpolation_State != IS_Interpolated);	//返回插补结果，若插补完成，返回false
 }

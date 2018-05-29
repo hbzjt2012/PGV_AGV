@@ -56,7 +56,7 @@ void Update_Print_MSG(void);		//打印信息
 
 //添加运动指令，返回添加结果
 //缓存区满，未做相应处理
-AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, Movement_Class *&command, const float threshold, const bool Is_X_Y);
+AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class &Destination, Movement_Class *&command, const float threshold);
 
 //根据当前坐标获取目标速度和坐标，返回执行结果（true表示执行完毕）
 bool Run_Movement_Command(Movement_Class*movement_command, const Coordinate_Class &Current_Coor);
@@ -68,6 +68,7 @@ Coordinate_Class Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &
 
 void Gcode_G0(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//先旋转后直线运动到目标点
 void Gcode_G1(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//先直线运动后旋转到目标点
+void Gcode_G2(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//直接运动到目标点
 
 bool Gcode_G4(unsigned long time_10ms);	//暂停一段时间(单位10ms)
 void Gcode_G4(Gcode_Class *command);	//从指令中获取暂停时间，暂停
