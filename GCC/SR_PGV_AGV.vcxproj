@@ -76,7 +76,6 @@
     <ClCompile Include="..\Driver\EEPROM.cpp" />
     <ClCompile Include="..\Driver\Encoder.cpp" />
     <ClCompile Include="..\Driver\FM24CL64B.cpp" />
-    <ClCompile Include="..\Driver\Gyro.cpp" />
     <ClCompile Include="..\Driver\Key_Scan.cpp" />
     <ClCompile Include="..\Driver\Mecanum.cpp" />
     <ClCompile Include="..\Driver\Motor.cpp" />
@@ -166,6 +165,7 @@
     <ClInclude Include="..\CMSIS_StdPeriph\system_stm32f4xx.h" />
     <ClInclude Include="..\Configure.h" />
     <ClInclude Include="..\delay.h" />
+    <ClInclude Include="..\Driver\Accelerometer.h" />
     <ClInclude Include="..\Driver\AGV_Control.h" />
     <ClInclude Include="..\Driver\AS62.h" />
     <ClInclude Include="..\Driver\C50XB.h" />

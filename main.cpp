@@ -52,7 +52,6 @@ int main(void)
 		Process_Gcode_Command(command_buf_state); //获取处理当前指令(已完成)                                                                                          
 
 		Update_Print_MSG();	//打印信息
-
 	}
 }
 

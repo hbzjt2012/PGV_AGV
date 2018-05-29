@@ -1,53 +1,20 @@
 #pragma once
-#include "../HALayer/Uart.h"
-#include "../HALayer/DMA.h"
-#include "../HALayer/Tim.h"
-#include "../App/Position.h"
 
-/*
-* 该串口（串口2）用于和陀螺仪通信
-* 通过陀螺仪获取角度、角速度、前向加速度
-* 使用DMA发送，使用定时器7超时检测接收数据帧
-*/
-
-extern "C" void USART2_IRQHandler(void);
-extern "C" void TIM7_IRQHandler(void);
-
-class Gyro_Class : protected Uart_Base_Class
+//平面陀螺仪
+//获取偏航角，偏航角速度
+class Gyro_Class
 {
-	friend void USART2_IRQHandler(void);
-	friend void TIM7_IRQHandler(void);
-
 public:
-	Gyro_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6), data_OK(false), z_heading_bias(0.0f) {}
+	Gyro_Class() = default;
+	//Gyro_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6), data_OK(false), z_heading_bias(0.0f) {}
 	virtual ~Gyro_Class() = default;
 
-	void Init(uint32_t baudrate); //根据波特率初始化串口
-
-	virtual void Read_Data(void) = 0;	//读传感器数据
-	virtual bool Analyze_Data(void) = 0; //解析数据
-	//virtual void Cal_data(void) = 0;	//解析数据
-	bool Return_rx_flag(void) { return rx_flag; }
-	void Clear_rx_flag(void) { rx_flag = false; }
-	void Clear_rx_cnt(void) { rx_cnt = 0; }
-	void Set_Bias(float bias) { z_heading_bias = bias;}	//设置角度偏置
+	virtual void Cal_Gyro_Data(void) = 0;	//计算陀螺仪数据
+	void Set_Bias(float bias) { z_heading_bias = bias; }	//设置陀螺仪角度
 
 	float z_rate;		 //Z轴角速率(°/s)
-	float forward_accel; //前向加速度(g)
 	float z_heading;	 //Z轴方位角，-180°~+180°
-
-	bool data_OK;
 
 protected:
 	float z_heading_bias;	//Z轴角度偏置(°)
-
-	DMA_Base_Class TX_DMA;
-	static bool rx_flag;				//表明收到了一帧数据
-	static uint16_t tx_cnt;				//发送字节的计数
-	static uint16_t rx_cnt;				//接收字节的计数
-	static uint8_t TX_buf[16];			//发送数据的缓冲区，若缓冲区满，则不会发送
-	static volatile uint8_t RX_buf[32]; //接收数据的缓冲区
-
-	void write(const char c) override;
-	static uint8_t data_Buf[24]; //数据暂存，避免数据遭到破坏
 };

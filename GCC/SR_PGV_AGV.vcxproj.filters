@@ -251,9 +251,6 @@
     <ClCompile Include="..\Driver\FM24CL64B.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Driver\Gyro.cpp">
-      <Filter>Driver\Src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Driver\Key_Scan.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
@@ -572,6 +569,9 @@
     </ClInclude>
     <ClInclude Include="..\App\Kalman_filter.h">
       <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Accelerometer.h">
+      <Filter>Driver\Inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
