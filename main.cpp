@@ -34,10 +34,10 @@ inline void Gcode_Commond_Over(Gcode_Class *gcode_command);
 int main(void)
 {
 	Init_System();//配置系统所需的硬件、外设
-	TL740.Bias_Init();
+	//TL740.Bias_Init();
 
 	Encoder_Class::Clear_Time_US();
-	My_Serial.print(TL740.forward_accel_bias, 3);
+	//My_Serial.print(TL740.forward_accel_bias, 3);
 	while (1)
 	{
 		if (time11_flag)	//表示控制周期到
@@ -301,25 +301,25 @@ void Process_Gcode_Command(AGV_State::Gcode_Command_State & state)
 //打印信息
 void Update_Print_MSG(void)
 {
-	//switch (command_buf_state)
-	//{
-	//case AGV_State::Gcode_Command_State::Gcode_Command_BUSY:
-	//	My_Serial.print("\r\nBusy"); //状态繁忙
-	//	break;
-	//case AGV_State::Gcode_Command_State::Gcode_Command_OK:
-	//	My_Serial.print("\r\nOK"); //状态正常
-	//	My_Serial.print("  Next Line:");
-	//	My_Serial.print(gcode_command_line_received + 1);
-	//	break;
-	//case AGV_State::Gcode_Command_State::Gcode_Command_ERROR:
-	//	My_Serial.print("\r\nCommand Error:");
-	//	My_Serial.print(My_Serial.Return_RX_buf());
-	//	My_Serial.print("  Next Line:N");
-	//	My_Serial.print(gcode_command_line_received + 1); //指令错误
-	//	break;
-	//default:
-	//	break;
-	//}
+	switch (command_buf_state)
+	{
+	case AGV_State::Gcode_Command_State::Gcode_Command_BUSY:
+		My_Serial.print("\r\nBusy"); //状态繁忙
+		break;
+	case AGV_State::Gcode_Command_State::Gcode_Command_OK:
+		My_Serial.print("\r\nOK"); //状态正常
+		My_Serial.print("  Next Line:");
+		My_Serial.print(gcode_command_line_received + 1);
+		break;
+	case AGV_State::Gcode_Command_State::Gcode_Command_ERROR:
+		My_Serial.print("\r\nCommand Error:");
+		My_Serial.print(My_Serial.Return_RX_buf());
+		My_Serial.print("  Next Line:N");
+		My_Serial.print(gcode_command_line_received + 1); //指令错误
+		break;
+	default:
+		break;
+	}
 	My_Serial.flush();
 }
 
