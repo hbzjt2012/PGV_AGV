@@ -302,6 +302,9 @@
     <ClCompile Include="..\App\Kalman_filter.cpp">
       <Filter>App\Src</Filter>
     </ClCompile>
+    <ClCompile Include="..\Math\My_Math.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -572,6 +575,9 @@
     </ClInclude>
     <ClInclude Include="..\Driver\Accelerometer.h">
       <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\My_Math.h">
+      <Filter>Math\Inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

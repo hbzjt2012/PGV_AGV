@@ -34,9 +34,10 @@ inline void Gcode_Commond_Over(Gcode_Class *gcode_command);
 int main(void)
 {
 	Init_System();//配置系统所需的硬件、外设
+	TL740.Bias_Init();
 
 	Encoder_Class::Clear_Time_US();
-
+	My_Serial.print(TL740.forward_accel_bias, 3);
 	while (1)
 	{
 		if (time11_flag)	//表示控制周期到
@@ -122,20 +123,26 @@ void Location_AGV(void)
 	if (time_s > FLOAT_DELTA)
 	{
 		AGV_Current_Coor_InWorld = Mecanum_AGV.Update_Coor_demo(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, time_s);
-		//if (TL740.data_OK)	//表示陀螺仪数据已更新
-		//{
-		//	float omega_TL740 = TL740.z_rate;	//陀螺仪测量得到的角速度
-		//	float theta_TL740 = TL740.z_heading;	//陀螺仪测量得到的角度
-		//	float omega = 0.0;
-		//	//获得更新后的角度，角速度
-		//	Kalman_Filter::Cal_Theta_Omega(AGV_Current_Velocity_InAGV.angular_velocity * 180 / M_PI, omega_TL740, theta_TL740, omega, time_s, AGV_Current_Coor_InWorld.angle_coor);
+		if (TL740.data_OK)	//表示陀螺仪数据已更新
+		{
+			//	float omega_TL740 = TL740.z_rate;	//陀螺仪测量得到的角速度
+			//	float theta_TL740 = TL740.z_heading;	//陀螺仪测量得到的角度
+			//	float omega = 0.0;
+			//	//获得更新后的角度，角速度
+			//	Kalman_Filter::Cal_Theta_Omega(AGV_Current_Velocity_InAGV.angular_velocity * 180 / M_PI, omega_TL740, theta_TL740, omega, time_s, AGV_Current_Coor_InWorld.angle_coor);
 
-		//	AGV_Current_Velocity_InAGV.angular_velocity = omega / 180 * M_PI;	//一次更新后的角速度
+			//	AGV_Current_Velocity_InAGV.angular_velocity = omega / 180 * M_PI;	//一次更新后的角速度
 
-		//	Kalman_Filter::Cal_XY_By_Gyro_Encoder(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, theta_TL740, time_s);	//更新坐标
+			//	Kalman_Filter::Cal_XY_By_Gyro_Encoder(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, theta_TL740, time_s);	//更新坐标
+			//static float velocity;
+			//velocity += (TL740.Return_Forward_Accel()*time_s);
+			//My_Serial << "\r\n ";
+			////My_Serial.print(TL740.forward_accel - TL740.forward_accel_bias, 3);
+			//My_Serial << " " << TL740.z_heading << " " << AGV_Current_Coor_InWorld.angle_coor;
+			//My_Serial << " " << TL740.z_rate << " " << AGV_Current_Velocity_InAGV.angular_velocity_angle;
+			TL740.data_OK = false;
 
-		//	TL740.data_OK = false;
-		//}
+		}
 		//else
 		//{
 		//	//Kalman_Filter::Cal_X_Y_Theta_By_Encoder_Gyro(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, time_s);
@@ -153,31 +160,6 @@ void Location_AGV(void)
 		}
 	}
 	AGV_Current_Coor_InWorld.Transform_Angle();
-
-	//float current_x = AGV_Current_Coor_InWorld.x_coor;
-
-	//Gcode_I114();	//输出坐标，测试用
-
-	//if (ABS(current_x-last_x)>500)
-	//{
-	//	asm("nop");
-	//}
-
-	//测试程序，获取控制速度
-	//My_Serial.print("\r\n  ");
-	//My_Serial.print(AGV_Current_Velocity_InAGV.velocity_x);
-	//My_Serial.print(" ");
-	//My_Serial.print(AGV_Current_Velocity_InAGV.velocity_y);
-	//My_Serial.print(" ");
-	//My_Serial.print(AGV_Current_Velocity_InAGV.angular_velocity_angle);
-
-	//My_Serial.print("  ");
-	//My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
-	//My_Serial.print(" ");
-	//My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
-	//My_Serial.print(" ");
-	//My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
-	//My_Serial.print(" ");
 }
 
 //获取并处理运动指令
@@ -319,25 +301,25 @@ void Process_Gcode_Command(AGV_State::Gcode_Command_State & state)
 //打印信息
 void Update_Print_MSG(void)
 {
-	switch (command_buf_state)
-	{
-	case AGV_State::Gcode_Command_State::Gcode_Command_BUSY:
-		My_Serial.print("\r\nBusy"); //状态繁忙
-		break;
-	case AGV_State::Gcode_Command_State::Gcode_Command_OK:
-		My_Serial.print("\r\nOK"); //状态正常
-		My_Serial.print("  Next Line:");
-		My_Serial.print(gcode_command_line_received + 1);
-		break;
-	case AGV_State::Gcode_Command_State::Gcode_Command_ERROR:
-		My_Serial.print("\r\nCommand Error:");
-		My_Serial.print(My_Serial.Return_RX_buf());
-		My_Serial.print("  Next Line:N");
-		My_Serial.print(gcode_command_line_received + 1); //指令错误
-		break;
-	default:
-		break;
-	}
+	//switch (command_buf_state)
+	//{
+	//case AGV_State::Gcode_Command_State::Gcode_Command_BUSY:
+	//	My_Serial.print("\r\nBusy"); //状态繁忙
+	//	break;
+	//case AGV_State::Gcode_Command_State::Gcode_Command_OK:
+	//	My_Serial.print("\r\nOK"); //状态正常
+	//	My_Serial.print("  Next Line:");
+	//	My_Serial.print(gcode_command_line_received + 1);
+	//	break;
+	//case AGV_State::Gcode_Command_State::Gcode_Command_ERROR:
+	//	My_Serial.print("\r\nCommand Error:");
+	//	My_Serial.print(My_Serial.Return_RX_buf());
+	//	My_Serial.print("  Next Line:N");
+	//	My_Serial.print(gcode_command_line_received + 1); //指令错误
+	//	break;
+	//default:
+	//	break;
+	//}
 	My_Serial.flush();
 }
 

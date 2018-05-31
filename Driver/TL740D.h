@@ -24,8 +24,11 @@ public:
 	~TL740D_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口
+	void Bias_Init(void);	//用于设定数据偏置
 	bool Analyze_Data(void); //解析数据
 	void Read_Data(void);	//读传感器数据
+
+	float Return_Forward_Accel(void) { return (forward_accel - forward_accel_bias)*9806.65f; }	//单位转化为mm/s2
 
 	static char *Return_RX_buf(void) { return (char *)RX_buf; }
 	static bool Return_rx_flag(void) { return rx_flag; }

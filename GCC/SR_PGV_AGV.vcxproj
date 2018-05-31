@@ -90,6 +90,7 @@
     <ClCompile Include="..\HALayer\Tim.cpp" />
     <ClCompile Include="..\HALayer\Uart.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\Math\My_Math.cpp" />
     <ClCompile Include="..\Math\Trigonometric.c" />
     <ClCompile Include="..\parameter_define.cpp" />
     <ClCompile Include="..\StartupFiles\startup_stm32f407xx.c" />
@@ -191,6 +192,7 @@
     <ClInclude Include="..\HALayer\Uart.h" />
     <ClInclude Include="..\macros.h" />
     <ClInclude Include="..\main.h" />
+    <ClInclude Include="..\Math\My_Math.h" />
     <ClInclude Include="..\Math\Trigonometric.h" />
     <ClInclude Include="..\parameter_define.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\misc.h" />

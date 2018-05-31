@@ -44,12 +44,6 @@ void Mecanum_Wheel_Class::Init(void)
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource14, GPIO_AF_TIM12);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource15, GPIO_AF_TIM12);
 
-	//Front_Left_Wheel.Init(84000, Velocity_RES, FRONT_LEFT_MOTOR_TIM_CHANNEL);
-	//Front_Right_Wheel.Init(84000, Velocity_RES, FRONT_RIGHT_MOTOR_TIM_CHANNEL);
-	//Behind_Left_Wheel.Init(84000, Velocity_RES, BEHIND_LEFT_MOTOR_TIM_CHANNEL);
-	//Behind_Right_Wheel.Init(84000, Velocity_RES, BEHIND_RIGHT_MOTOR_TIM_CHANNEL);
-
-	//测试用，PWM频率2K
 	Front_Left_Wheel.Init(2000, Velocity_RES, FRONT_LEFT_MOTOR_TIM_CHANNEL);
 	Front_Right_Wheel.Init(2000, Velocity_RES, FRONT_RIGHT_MOTOR_TIM_CHANNEL);
 	Behind_Left_Wheel.Init(2000, Velocity_RES, BEHIND_LEFT_MOTOR_TIM_CHANNEL);
@@ -123,22 +117,6 @@ void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 		k = (Parameter_Class::wheel_max_line_velocity / velocity_temp);
 		AGV_Velocity_InAGV *= k;
 	}
-	//float angle_velocity = AGV_Velocity_InAGV.angular_velocity*Parameter_Class::wheel_lx_ly_distance;
-
-	//float x_velocity = AGV_Velocity_InAGV.velocity*Cos_Lookup(AGV_Velocity_InAGV.velocity_angle);
-	//float y_velocity = AGV_Velocity_InAGV.velocity*Sin_Lookup(AGV_Velocity_InAGV.velocity_angle);
-
-	//float velocity = ABS(x_velocity) + ABS(y_velocity) + ABS(angle_velocity);
-
-	//if (velocity > Parameter_Class::wheel_max_line_velocity)
-	//{
-	//	k = (Parameter_Class::wheel_max_line_velocity / velocity);
-	//	AGV_Velocity_InAGV *= k;
-	//}
-
-	//x_velocity *= k;
-	//y_velocity *= k;
-	//angle_velocity *= k;
 
 	duty_FR = (-AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y + AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
 	duty_FL = (AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y - AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
@@ -170,6 +148,7 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 
 	float time_ms = Get_Time_ms(); //获取时间间隔，清除计数器
 
+	//此处可利用脉冲数直接计算车体的速度，可简化
 	Front_Left_Encoder.Get_Pulse(); //读取编码器旋转的脉冲数
 	Front_Right_Encoder.Get_Pulse();
 	Behind_Left_Encoder.Get_Pulse();
@@ -213,7 +192,6 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 
 Coordinate_Class & Mecanum_Wheel_Class::Update_Coor_demo(Coordinate_Class & Coor_Current, Velocity_Class & Velocity, float time_s)
 {
-
 	//float omega_temp = Velocity.angular_velocity * 180 / M_PI;	//将角速度转化为°/s
 
 	//float velocity_theta_last = Coor_Current.angle_coor + Velocity.velocity_angle;	//上一时刻速度夹角

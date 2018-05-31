@@ -3,6 +3,7 @@
 #include <cstring>
 #include <stm32f4xx_gpio.h>
 #include <misc.h>
+#include "../Math/My_Math.h"
 
 bool TL740D_Class::rx_flag = false;
 uint16_t TL740D_Class::tx_cnt = 0;			   //发送字节的计数
@@ -84,6 +85,26 @@ void TL740D_Class::Init(uint32_t baudrate)
 	enable(); //开启串口
 }
 
+void TL740D_Class::Bias_Init(void)
+{
+	int cnt = 1000;
+	float forward_accel_bias_temp[1000];
+	for (int i = 0; i < cnt; i++)
+	{
+		while (!rx_flag);	//等到数据接收
+		Analyze_Data();	//解析数据
+		if (ABS(forward_accel) > 0.02f)
+		{
+			cnt--;
+			continue;
+		}
+		forward_accel_bias_temp[i] = forward_accel;
+	}
+	My_Math_Class::HeapSort(forward_accel_bias_temp, cnt);
+	forward_accel_bias = forward_accel_bias_temp[(int)(cnt / 2)];
+	//forward_accel_bias = 0.01f;
+}
+
 bool TL740D_Class::Analyze_Data(void)
 {
 	int length = rx_cnt;
@@ -118,6 +139,7 @@ bool TL740D_Class::Analyze_Data(void)
 			z_heading = z_heading - z_heading_bias;
 			z_heading = Coordinate_Class::Transform_Angle(z_heading);
 
+			//forward_accel = forward_accel*9806.65f;	//单位转化为mm/s2
 			//z_heading_bias = z_heading;	//设置基准
 
 			return true;

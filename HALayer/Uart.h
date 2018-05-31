@@ -50,6 +50,16 @@ public:
 	void print(unsigned long n, int base = 10);
 	inline void print(float n, int digits = 2) { printFloat(n, digits); }
 
+	Uart_Base_Class& operator<<(const char *str) { print(str); return *this; }
+	Uart_Base_Class& operator<<(const std::string &s) { print(s); return *this; }
+	Uart_Base_Class& operator<<(char c) { print(c); return *this; }
+	Uart_Base_Class& operator<<(unsigned char b) { print(b); return *this; }
+	Uart_Base_Class& operator<<(int n) { print(n); return *this; }
+	Uart_Base_Class& operator<<(unsigned int n) { print(n); return *this; }
+	Uart_Base_Class& operator<<(long n) { print(n); return *this; }
+	Uart_Base_Class& operator<<(unsigned long n) { print(n); return *this; }
+	Uart_Base_Class& operator<<(float n) { print(n); return *this; }
+
 protected:
 	void Init(USART_InitTypeDef *Usart_InitStructure) { USART_Init(Uart, Usart_InitStructure); }; //初始化串口
 
