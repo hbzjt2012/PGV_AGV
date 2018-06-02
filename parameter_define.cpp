@@ -48,9 +48,6 @@ bool Parameter_Class::Is_Absolute_Coor = true; //指示当前坐标是否为绝�
 int Parameter_Class::AGV_Address_Code = 1;
 
 float Parameter_Class::movement_threshold = 1.0f;	//运动阈值(mm)
-//float Parameter_Class::line_threshold = 1.414f;	//直线距离插补阈值(mm)(1*sqrt(2))
-////float Parameter_Class::line_threshold = wheel_min_line_velocity*CONTROL_PERIOD / 1000.0f;	//直线距离插补阈值(mm)
-//float Parameter_Class::rotate_threshold = 2.0f;	//旋转角度插补阈值(mm)(需转化为直线距离,0.2°*PI/180*wheel_lx_ly_distance)
 
 //void Parameter_Class::Update_Parameter(int num, float para)
 //{
@@ -88,3 +85,4 @@ void Parameter_Class::Init_Parameter(void)
 
 	wheel_acceleration_line_velocity = Update_wheel_acceleration_line(wheel_acceleration_time);
 }
+

@@ -171,21 +171,6 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 	arm_sqrt_f32(velocity_temp, &(AGV_Velocity.velocity));	//计算速度大小
 	AGV_Velocity.velocity_angle = ArcTan_Lookup(AGV_Velocity.velocity_x, AGV_Velocity.velocity_y) / 10.0f;
 
-	////将轮子的线速度转化为车身的速度
-	//float x_velocity_temp = (-line_velocity_FR + line_velocity_FL - line_velocity_BL + line_velocity_BR) / 4;
-	//float y_velocity_temp = (line_velocity_FR + line_velocity_FL + line_velocity_BL + line_velocity_BR) / 4;
-	//float angle_velocity_temp = (line_velocity_FR - line_velocity_FL - line_velocity_BL + line_velocity_BR) / 4;	//此时单位还是mm/s
-
-	////转化为rad/s
-	//angle_velocity_temp = angle_velocity_temp / (Parameter_Class::wheel_lx_ly_distance);
-
-	//float velocity_temp = sqrtf(x_velocity_temp*x_velocity_temp + y_velocity_temp*y_velocity_temp);	//线速度大小
-	//float angle_temp = ArcTan_Lookup(x_velocity_temp, y_velocity_temp) / 10.0f;	//线速度方向
-
-	//AGV_Velocity.velocity = velocity_temp;
-	//AGV_Velocity.velocity_angle = angle_temp;
-	//AGV_Velocity.angular_velocity = angle_velocity_temp;
-
 	GPIOA->ODR ^= 1 << 15;
 	return time_ms;
 }

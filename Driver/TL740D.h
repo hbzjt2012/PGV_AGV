@@ -24,7 +24,7 @@ public:
 	~TL740D_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口
-	void Bias_Init(void);	//用于设定数据偏置
+	void Forward_Accel_Bias_Init(void);	//用于设定数据偏置
 	bool Analyze_Data(void); //解析数据
 	void Read_Data(void);	//读传感器数据
 

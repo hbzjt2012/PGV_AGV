@@ -299,10 +299,16 @@
     <ClCompile Include="..\App\Movement_Mecanum.cpp">
       <Filter>App\Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\App\Kalman_filter.cpp">
-      <Filter>App\Src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Math\My_Math.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Kalman_Filter_Angle.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Kalman_Filter_Coor.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Kalman_Filter_Line.cpp">
       <Filter>Math\Src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -570,13 +576,22 @@
     <ClInclude Include="..\App\Movement_Mecanum.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\App\Kalman_filter.h">
-      <Filter>App\Inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\Driver\Accelerometer.h">
       <Filter>Driver\Inc</Filter>
     </ClInclude>
     <ClInclude Include="..\Math\My_Math.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter_Angle.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter_Coor.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter_Line.h">
       <Filter>Math\Inc</Filter>
     </ClInclude>
   </ItemGroup>

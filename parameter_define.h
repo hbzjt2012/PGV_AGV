@@ -1,5 +1,6 @@
 #pragma once
 
+#include "./DSP_Lib/arm_math.h"
 class Parameter_Class
 {
 public:
@@ -59,8 +60,6 @@ public:
 
 	//void Update_Parameter(int num, float para);
 	static void Init_Parameter(void);
-
-
 };
 
 namespace AGV_State

@@ -85,24 +85,35 @@ void TL740D_Class::Init(uint32_t baudrate)
 	enable(); //开启串口
 }
 
-void TL740D_Class::Bias_Init(void)
+void TL740D_Class::Forward_Accel_Bias_Init(void)
 {
-	int cnt = 1000;
-	float forward_accel_bias_temp[1000];
+	int cnt = 2000;
+	float forward_accel_bias_temp[2000];
 	for (int i = 0; i < cnt; i++)
 	{
 		while (!rx_flag);	//等到数据接收
 		Analyze_Data();	//解析数据
-		if (ABS(forward_accel) > 0.02f)
-		{
-			cnt--;
-			continue;
-		}
+		//if (ABS(forward_accel) > 0.02f)
+		//{
+		//	cnt--;
+		//	continue;
+		//}
 		forward_accel_bias_temp[i] = forward_accel;
 	}
-	My_Math_Class::HeapSort(forward_accel_bias_temp, cnt);
-	forward_accel_bias = forward_accel_bias_temp[(int)(cnt / 2)];
-	//forward_accel_bias = 0.01f;
+	My_Math_Class::HeapSort(forward_accel_bias_temp, cnt);	//排序
+	int mid = cnt / 2;
+
+	int min = mid - 499;
+	int max = mid + 500;
+
+	float sum = 0.0f;
+	for (int i = min; i < max; i++)
+	{
+		sum += forward_accel_bias_temp[i];
+	}
+	forward_accel_bias = sum / (max - min + 1);
+
+	//forward_accel_bias = forward_accel_bias_temp[(int)(cnt / 2)];
 }
 
 bool TL740D_Class::Analyze_Data(void)
