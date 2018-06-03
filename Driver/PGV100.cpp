@@ -39,7 +39,7 @@ void PGV_Class::Init(uint32_t baudrate)
 	DMA_InitStructure.DMA_BufferSize = 21;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
 	RX_DMA.Init(&DMA_InitStructure);
 
 	RX_DMA.ITConfig(DMA_IT_TC, ENABLE); //接收用DMA的完成中断
@@ -67,7 +67,7 @@ void PGV_Class::Init(uint32_t baudrate)
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx; //收发模式
 	USART_InitStructure.USART_Parity = USART_Parity_Even;			//偶校验位;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;			//一个停止位;
-	USART_InitStructure.USART_WordLength = USART_WordLength_9b;		//字长为8位数据格式;
+	USART_InitStructure.USART_WordLength = USART_WordLength_9b;		//字长为9位数据格式;
 	Uart_Base_Class::Init(&USART_InitStructure);
 
 	Uart->CR3 |= (USART_DMAReq_Tx | USART_DMAReq_Rx); //打开DMA_TX、DMA_RX请求
@@ -77,7 +77,7 @@ void PGV_Class::Init(uint32_t baudrate)
 	//配置中断
 	NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
 	NVIC_Init(&NVIC_InitStructure);
 
@@ -362,6 +362,10 @@ void UART5_IRQHandler(void)
 	{
 		UART5->SR &= ~(1 << 6); //清除TC位
 		PGV_Class::RX_Dir();	//设置方向为接收
+		//清除溢出错误
+		//和TL740的接收方式共同使用会产生接收溢出，未解决，故只好直接清除溢出标志，丢掉该数据包
+		uint32_t temp = UART5->SR;
+		temp = UART5->DR;
 	}
 }
 

@@ -39,7 +39,7 @@
 * TIM1_TRG_COM_TIM11_IRQn(用于时基)				3						4
 * TIM6_DAC_IRQHandler(用于通信用串口)			2						2
 * UART4_IRQHandler(用于通信用串口)				2						3
-* UART5_IRQHandler(用于PGV)						2						4
+* UART5_IRQHandler(用于PGV)						1						4
 * DMA1_Stream0_IRQHandler(用于PGV)				1						1
 * USART2_IRQHandler	(用于陀螺仪)				1						3
 * TIM7_IRQHandler(用于陀螺仪)					1						2

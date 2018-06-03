@@ -6,7 +6,7 @@ class Kalman_Line_Class :public Kalman_Class
 {
 public:
 	//噪声需由实验测量获取
-	Kalman_Line_Class() :noise_process_acc(963.0f), noise_measurement_velocity(0.001f) {}
+	Kalman_Line_Class() :noise_process_acc(963.0f), noise_measurement_velocity(0.000434f) {}
 	~Kalman_Line_Class() = default;
 
 	union

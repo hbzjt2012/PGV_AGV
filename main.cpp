@@ -43,19 +43,20 @@ int main(void)
 	while (!Gcode_G4(1500));	//延时15s
 	TL740.Forward_Accel_Bias_Init();
 
-
 	Encoder_Class::Clear_Time_US();
 	Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder);	//清空编码器的误差
 	//My_Serial.print(TL740.forward_accel_bias, 3);
 	while (1)
 	{
-		//if (time11_flag)	//表示控制周期到
-		//{
-		//	time11_flag = false;
-		//	Location_AGV();	//AGV定位函数
-		//	Process_Movement_Command();	//获取并处理运动指令
-		//	Movement_Control();	//运动控制
-		//}
+		if (time11_flag)	//表示控制周期到
+		{
+			time11_flag = false;
+
+			//My_Serial << "\r\n" << Error_Coor_InAGV.x_coor << " " << Error_Coor_InAGV.y_coor << " " << Error_Coor_InAGV.angle_coor;
+			//	Location_AGV();	//AGV定位函数
+			//	Process_Movement_Command();	//获取并处理运动指令
+			//	Movement_Control();	//运动控制
+		}
 
 		Location_AGV();	//AGV定位函数
 		Process_Movement_Command();	//获取并处理运动指令
@@ -135,10 +136,12 @@ void Init_System_RCC(void)
 }
 
 //使用编码器、陀螺仪、PGV传感器的数据对AGV定位
+//以TL740的数据更新作为定位更新事件
 void Location_AGV(void)
 {
 	if (TL740.data_OK)	//以陀螺仪数据更新作为定位控制周期的判断点
 	{
+		Led.Toggle();
 		TL740.data_OK = false;
 		static float TL740_angle_previous = 0.0f;
 
@@ -167,21 +170,21 @@ void Location_AGV(void)
 		Line_X_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_x;
 		Line_X_Kalman.Update_Stae_Variable_No_Process(Line_X_Kalman.measurement_matrix, time_s);
 
-		//计算y轴位移增量，线速度
-		Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
-		Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
-		Line_Y_Kalman.Update_Stae_Variable_No_Process(Line_Y_Kalman.measurement_matrix, time_s);
-
-
 		////计算y轴位移增量，线速度
-		//float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
-		//Line_Y_Kalman.process_data[0] = accel_temp;
-		//Line_Y_Kalman.process_data[1] = TL740_forward_accel_previous;
-		//TL740_forward_accel_previous = accel_temp;
 		//Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
 		//Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
-		//Line_Y_Kalman.Set_Noise(time_s, angle_delta);
-		//Line_Y_Kalman.Kalman_Filter();
+		//Line_Y_Kalman.Update_Stae_Variable_No_Process(Line_Y_Kalman.measurement_matrix, time_s);
+
+
+		//计算y轴位移增量，线速度
+		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
+		Line_Y_Kalman.process_data[0] = accel_temp;
+		Line_Y_Kalman.process_data[1] = TL740_forward_accel_previous;
+		TL740_forward_accel_previous = accel_temp;
+		Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
+		Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
+		Line_Y_Kalman.Set_Noise(time_s, angle_delta / time_s);
+		Line_Y_Kalman.Kalman_Filter();
 
 		//My_Serial << "\r\n";
 		//My_Serial.print(TL740.forward_accel, 3);
@@ -204,6 +207,7 @@ void Location_AGV(void)
 		coor_noise_data[8] = Angle_Kalman.vcovariance_data[0];
 
 		Coor_Kalman.Update_Process_Noise(coor_noise);	//更新执行噪声
+
 		if (PGV100.data_OK)	//读取到了地标
 		{
 			PGV100.data_OK = false;
@@ -268,10 +272,12 @@ void Movement_Control(void)
 	else
 	{
 		AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;
-		AGV_Target_Velocity_InAGV *= 0.0f;
+		//AGV_Target_Velocity_InAGV *= 0.0f;
 	}
 	//控制小车
+	//到达目标点后仍然运动，存在问题
 	//Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
+
 	Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
 }
 
@@ -289,6 +295,7 @@ void Parse_Sensor_Data(void)
 		if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
 		{
 			PGV100.Cal_Coor();	//处理数据
+			My_Serial << "\r\n" << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor;
 		}
 	}
 	if (!(time11_cnt % 5))	//50ms时间到
@@ -371,25 +378,25 @@ void Process_Gcode_Command(AGV_State::Gcode_Command_State & state)
 //打印信息
 void Update_Print_MSG(void)
 {
-	//switch (command_buf_state)
-	//{
-	//case AGV_State::Gcode_Command_State::Gcode_Command_BUSY:
-	//	My_Serial.print("\r\nBusy"); //状态繁忙
-	//	break;
-	//case AGV_State::Gcode_Command_State::Gcode_Command_OK:
-	//	My_Serial.print("\r\nOK"); //状态正常
-	//	My_Serial.print("  Next Line:");
-	//	My_Serial.print(gcode_command_line_received + 1);
-	//	break;
-	//case AGV_State::Gcode_Command_State::Gcode_Command_ERROR:
-	//	My_Serial.print("\r\nCommand Error:");
-	//	My_Serial.print(My_Serial.Return_RX_buf());
-	//	My_Serial.print("  Next Line:N");
-	//	My_Serial.print(gcode_command_line_received + 1); //指令错误
-	//	break;
-	//default:
-	//	break;
-	//}
+	switch (command_buf_state)
+	{
+	case AGV_State::Gcode_Command_State::Gcode_Command_BUSY:
+		My_Serial.print("\r\nBusy"); //状态繁忙
+		break;
+	case AGV_State::Gcode_Command_State::Gcode_Command_OK:
+		My_Serial.print("\r\nOK"); //状态正常
+		My_Serial.print("  Next Line:");
+		My_Serial.print(gcode_command_line_received + 1);
+		break;
+	case AGV_State::Gcode_Command_State::Gcode_Command_ERROR:
+		My_Serial.print("\r\nCommand Error:");
+		My_Serial.print(My_Serial.Return_RX_buf());
+		My_Serial.print("  Next Line:N");
+		My_Serial.print(gcode_command_line_received + 1); //指令错误
+		break;
+	default:
+		break;
+	}
 	My_Serial.flush();
 }
 

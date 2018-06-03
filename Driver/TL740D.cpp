@@ -37,7 +37,7 @@ void TL740D_Class::Init(uint32_t baudrate)
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
 	TX_DMA.Init(&DMA_InitStructure);
 
 	//配置TIM7中断时间
@@ -75,7 +75,7 @@ void TL740D_Class::Init(uint32_t baudrate)
 	Uart->CR3 |= USART_DMAReq_Tx; //打开DMA_TX请求
 	Uart->CR1 |= (1 << 5);		  //开启RXNE中断
 
-								  //配置中断
+	//配置中断
 	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
@@ -200,7 +200,7 @@ void TIM7_IRQHandler(void)
 	if (TIM7->SR & TIM_IT_Update) //更新中断
 	{
 		TIM7->SR = ~TIM_IT_Update;
-		TIM7->CR1 &= ~TIM_CR1_CEN;  //关闭定时器6
+		TIM7->CR1 &= ~TIM_CR1_CEN;  //关闭定时器7
 		TL740D_Class::rx_flag = true; //接受到了一帧数据
 		memcpy(TL740D_Class::data_Buf, (uint8_t *)TL740D_Class::RX_buf, 24);
 	}

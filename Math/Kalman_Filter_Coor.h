@@ -6,7 +6,7 @@ class Kalman_Coor_Class :public Kalman_Class
 {
 public:
 	//噪声需由实验测量获取
-	Kalman_Coor_Class() :noise_measurement_coor(0.00004f) {}
+	Kalman_Coor_Class() :noise_measurement_coor(0.0f) {}
 	~Kalman_Coor_Class() = default;
 
 	union

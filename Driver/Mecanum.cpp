@@ -177,33 +177,6 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 
 Coordinate_Class & Mecanum_Wheel_Class::Update_Coor_demo(Coordinate_Class & Coor_Current, Velocity_Class & Velocity, float time_s)
 {
-	//float omega_temp = Velocity.angular_velocity * 180 / M_PI;	//将角速度转化为°/s
-
-	//float velocity_theta_last = Coor_Current.angle_coor + Velocity.velocity_angle;	//上一时刻速度夹角
-	//float delta_theta = omega_temp*time_s;	//偏转角差值，用于判断当前是直线运动还是圆弧运动
-	//float velocity_theta_current = velocity_theta_last + delta_theta;	//这一时刻速度夹角
-
-	//float sin_last = Sin_Lookup(velocity_theta_last);
-	//float sin_current = Sin_Lookup(velocity_theta_current);
-	//float cos_last = Cos_Lookup(velocity_theta_last);
-	//float cos_current = Cos_Lookup(velocity_theta_current);
-
-
-	//if ((ABS(delta_theta) < 0.1f))	//直线运动 角度增加值小于0.1°，认为是直线运动
-	//{
-	//	//更新坐标
-	//	Coor_Current.x_coor += Velocity.velocity*cos_last*time_s;
-	//	Coor_Current.y_coor += Velocity.velocity*sin_last*time_s;
-	//}
-	//else
-	//{
-	//	//更新坐标
-	//	float radius = Velocity.velocity / Velocity.angular_velocity;	//半径
-	//	Coor_Current.x_coor += Coor_Current.x_coor - radius*(sin_last - sin_current);
-	//	Coor_Current.y_coor += Coor_Current.y_coor + radius*(cos_last - cos_current);
-	//	Coor_Current.angle_coor += delta_theta;
-	//}
-
 	Coordinate_Class Coor_Delta;
 	Coor_Delta.x_coor = Velocity.velocity_x*time_s;
 	Coor_Delta.y_coor = Velocity.velocity_y*time_s;
@@ -212,7 +185,6 @@ Coordinate_Class & Mecanum_Wheel_Class::Update_Coor_demo(Coordinate_Class & Coor
 	Coor_Current = Coor_Current + Coor_Delta;
 
 	return Coor_Current;
-	// TODO: 在此处插入 return 语句
 }
 
 
@@ -229,28 +201,26 @@ void Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & 
 #define C2 C1
 #define C3 5.0f
 
+	//此处算法应改进，修改为和打滑系数相关的C1 C2 C3
+	if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
+	{
+		Target_Velocity.velocity_x += C1*Error_Coor_InAGV.x_coor;
+	}
+	if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
+	{
+		Target_Velocity.velocity_y += C2*Error_Coor_InAGV.y_coor;
+	}
+	if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
+	{
+		AGV_Velocity_InAGV.angular_velocity_angle += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+	}
 
-	//float velocity_x = Target_Velocity.velocity*Cos_Lookup(Target_Velocity.velocity_angle);
-	//float velocity_y = Target_Velocity.velocity*Sin_Lookup(Target_Velocity.velocity_angle);
+	Target_Velocity.velocity = sqrtf(Target_Velocity.velocity_x*Target_Velocity.velocity_x + Target_Velocity.velocity_y*Target_Velocity.velocity_y);
+	Target_Velocity.velocity_angle = ArcTan_Lookup(Target_Velocity.velocity_x, Target_Velocity.velocity_y);
 
-	////此处算法应改进
-	//if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
-	//{
-	//	velocity_x += C1*Error_Coor_InAGV.x_coor;
-	//}
-	//if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
-	//{
-	//	velocity_y += C2*Error_Coor_InAGV.y_coor;
-	//}
-	//if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
-	//{
-	//	AGV_Velocity_InAGV.angular_velocity += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
-	//}
+	AGV_Velocity_InAGV.angular_velocity_rad = AGV_Velocity_InAGV.angular_velocity_angle / 180.0f*M_PI;
+	AGV_Velocity_InAGV.angular_velocity_mm = AGV_Velocity_InAGV.angular_velocity_rad*Parameter_Class::wheel_lx_ly_distance;
 
-	//Target_Velocity.velocity = sqrtf(velocity_x*velocity_x + velocity_y*velocity_y);
-	//Target_Velocity.velocity_angle = ArcTan_Lookup(velocity_x, velocity_y);
-
-	//使用Lyapunov方法根据误差更新速度，未完成
 #undef C1
 #undef C2
 #undef C3
