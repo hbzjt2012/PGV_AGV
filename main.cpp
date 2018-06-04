@@ -14,7 +14,7 @@ Gcode_Class *Gcode_Index_w = Gcode_Buf, *Gcode_Index_r = Gcode_Buf;	//指令暂�
 AGV_State::Gcode_Command_State command_buf_state;					//Gcode指令缓存区的状态
 
 Queue_Class Movement_Queue = Queue_Class(Movement_Command_Buf_SIZE);//存放运动指令用的队列
-Movement_Mecanum_Class Movement_Buf[Movement_Command_Buf_SIZE];		//运动指令暂存区
+Movement_Mecanum_Class Movement_Buf[Movement_Command_Buf_SIZE], Movement_Inject;		//运动指令暂存区，插入指令暂存区(用于执行避障传感器的减速指令)
 Movement_Class *Movement_Index_w = Movement_Buf, *Movement_Index_r = Movement_Buf;	//运动指令暂存区读写下标
 AGV_State::Movement_Command_State movement_buf_state;				//指令缓存区的状态
 
@@ -170,21 +170,21 @@ void Location_AGV(void)
 		Line_X_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_x;
 		Line_X_Kalman.Update_Stae_Variable_No_Process(Line_X_Kalman.measurement_matrix, time_s);
 
-		////计算y轴位移增量，线速度
-		//Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
-		//Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
-		//Line_Y_Kalman.Update_Stae_Variable_No_Process(Line_Y_Kalman.measurement_matrix, time_s);
-
-
 		//计算y轴位移增量，线速度
-		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
-		Line_Y_Kalman.process_data[0] = accel_temp;
-		Line_Y_Kalman.process_data[1] = TL740_forward_accel_previous;
-		TL740_forward_accel_previous = accel_temp;
 		Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
 		Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
-		Line_Y_Kalman.Set_Noise(time_s, angle_delta / time_s);
-		Line_Y_Kalman.Kalman_Filter();
+		Line_Y_Kalman.Update_Stae_Variable_No_Process(Line_Y_Kalman.measurement_matrix, time_s);
+
+
+		////计算y轴位移增量，线速度
+		//float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
+		//Line_Y_Kalman.process_data[0] = accel_temp;
+		//Line_Y_Kalman.process_data[1] = TL740_forward_accel_previous;
+		//TL740_forward_accel_previous = accel_temp;
+		//Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
+		//Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
+		//Line_Y_Kalman.Set_Noise(time_s, angle_delta / time_s);
+		//Line_Y_Kalman.Kalman_Filter();
 
 		//My_Serial << "\r\n";
 		//My_Serial.print(TL740.forward_accel, 3);
@@ -229,9 +229,6 @@ void Location_AGV(void)
 		AGV_Current_Coor_InWorld.x_coor = Coor_Kalman.state_variable_data[0];
 		AGV_Current_Coor_InWorld.y_coor = Coor_Kalman.state_variable_data[1];
 		AGV_Current_Coor_InWorld.angle_coor = Coor_Kalman.state_variable_data[2];
-
-		//My_Serial << " " << AGV_Current_Coor_InWorld.angle_coor;
-		//Gcode_I114();
 	}
 	AGV_Current_Coor_InWorld.Transform_Angle();
 }
@@ -269,16 +266,14 @@ void Movement_Control(void)
 		AGV_Target_Coor_InWorld = Movement_Index_r->Target_Coor_InWorld;
 		AGV_Target_Velocity_InAGV = Movement_Index_r->Target_Velocity_InAGV;
 	}
-	else
+	else    //当前无运动指令
 	{
 		AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;
-		//AGV_Target_Velocity_InAGV *= 0.0f;
+		AGV_Target_Velocity_InAGV *= 0.0f;
 	}
 	//控制小车
-	//到达目标点后仍然运动，存在问题
-	//Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
-
-	Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
+	Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
+	//Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
 }
 
 //检查避障和按键动作，生成避障信息
@@ -295,10 +290,10 @@ void Parse_Sensor_Data(void)
 		if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
 		{
 			PGV100.Cal_Coor();	//处理数据
-			My_Serial << "\r\n" << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor;
+			//My_Serial << "\r\n" << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor;
 		}
 	}
-	if (!(time11_cnt % 5))	//50ms时间到
+	if (!(time11_cnt % 6))	//60ms时间到
 	{
 		PGV100.Send(PGV_Class::Read_PGV_Data);	//读取PGV传感器数据
 	}
@@ -363,6 +358,7 @@ void Process_Gcode_Command(AGV_State::Gcode_Command_State & state)
 		{
 			Gcode_Index_r = Gcode_Buf + Gcode_Queue.DEqueue();  //获取队头
 			Is_Parsing_Command = !Run_Gcode_Command(Gcode_Index_r); //处理指令
+
 		}
 		else//缓存区空
 		{
@@ -453,7 +449,7 @@ bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Cl
 			movement_command->Interpolation_State = Movement_Class::IS_Interpolated;
 			return true;
 		}
-		//break;
+		break;
 	case Movement_Class::IS_Interpolating://正在插补
 		if (!(movement_command->Cal_Velocity(Current_Coor)))	//插补完成
 		{
@@ -462,7 +458,8 @@ bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Cl
 		break;
 	case Movement_Class::IS_Interpolated://插补完毕
 		AGV_Target_Coor_InWorld = Current_Coor;	//获取目标坐标
-		AGV_Target_Velocity_InAGV *= 0.0f;	//清空目标速度
+		AGV_Target_Velocity_InAGV.Clear();
+		//AGV_Target_Velocity_InAGV *= 0.0f;	//清空目标速度
 		return true;
 		break;
 	default:
@@ -632,6 +629,7 @@ void Gcode_G0(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 		Virtual_Mid_Coor.angle_rad = Virtual_Mid_Coor.angle_coor / 180 * M_PI;
 		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::movement_threshold);	//旋转运动
 		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//直线运动
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//直线运动
 		command->Parse_State = Gcode_Class::IS_PARSING;
 		break;
 	case Gcode_Class::IS_PARSING: //对插补的准备工作已完成，正在插补
@@ -660,6 +658,7 @@ void Gcode_G1(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 		Virtual_Mid_Coor.y_coor = Virtual_Current_Coor_InWorld.y_coor;
 		Add_Movement_Command(Virtual_Mid_Coor, movement_command, Parameter_Class::movement_threshold);	//直线运动
 		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//旋转运动
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//旋转运动
 		command->Parse_State = Gcode_Class::IS_PARSING;
 		break;
 	case Gcode_Class::IS_PARSING: //对插补的准备工作已完成，正在插补
@@ -683,6 +682,7 @@ void Gcode_G2(Gcode_Class * command, Coordinate_Class & Virtual_Current_Coor_InW
 	{
 	case Gcode_Class::NO_PARSE: //接收到指令，对插补做准备工作
 		Virtual_Current_Coor_InWorld = Get_Command_Coor(command, Virtual_Current_Coor_InWorld, Is_Absolute_Coor);	//获取终点坐标
+		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//直线运动
 		Add_Movement_Command(Virtual_Current_Coor_InWorld, movement_command, Parameter_Class::movement_threshold);	//直线运动
 		command->Parse_State = Gcode_Class::IS_PARSING;
 

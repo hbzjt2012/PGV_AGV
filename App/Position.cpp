@@ -98,6 +98,17 @@ Velocity_Class &Velocity_Class::operator/=(const float divisor)
 	return *this;
 }
 
+void Velocity_Class::Clear(void)
+{
+	velocity_x = 0.0f;
+	velocity_y = 0.0f;
+	velocity = 0.0f;
+	velocity_angle = 0.0f;
+	angular_velocity_angle = 0.0f;
+	angular_velocity_mm = 0.0f;
+	angular_velocity_rad = 0.0f;
+}
+
 Velocity_Class & Velocity_Class::Relative_To_Absolute(Velocity_Class & Absolute_Velocity, const Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
 {
 	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);

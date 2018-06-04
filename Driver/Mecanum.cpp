@@ -117,6 +117,11 @@ void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 		k = (Parameter_Class::wheel_max_line_velocity / velocity_temp);
 		AGV_Velocity_InAGV *= k;
 	}
+	else if ((velocity_temp < Parameter_Class::wheel_min_line_velocity) && (velocity_temp > Parameter_Class::wheel_min_line_velocity / 10.0f))	//确实存在速度，且速度小于电机响应
+	{
+		k = (Parameter_Class::wheel_min_line_velocity / velocity_temp);
+		AGV_Velocity_InAGV *= k;
+	}
 
 	duty_FR = (-AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y + AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
 	duty_FL = (AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y - AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
@@ -195,31 +200,38 @@ float Mecanum_Wheel_Class::Get_Time_ms(void)
 	return  time_10us / 100.0f;
 }
 
-void Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & Error_Coor_InAGV, Velocity_Class& Target_Velocity)
+void Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & Error_Coor_InAGV, Velocity_Class& Target_Velocity, const Coordinate_Class& Base)
 {
-#define C1 10.0f
+#define C1 5.0f	
 #define C2 C1
-#define C3 5.0f
+#define C3 10.0f
+
+	Velocity_Class Target_Velocity_InWorld;
+
+	//使用绝对坐标容易计算
+	Target_Velocity_InWorld = Velocity_Class::Relative_To_Absolute(Target_Velocity_InWorld, Target_Velocity, Base);
 
 	//此处算法应改进，修改为和打滑系数相关的C1 C2 C3
 	if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
 	{
-		Target_Velocity.velocity_x += C1*Error_Coor_InAGV.x_coor;
+		Target_Velocity_InWorld.velocity_x += C1*Error_Coor_InAGV.x_coor;
 	}
 	if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
 	{
-		Target_Velocity.velocity_y += C2*Error_Coor_InAGV.y_coor;
+		Target_Velocity_InWorld.velocity_y += C2*Error_Coor_InAGV.y_coor;
 	}
 	if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
 	{
-		AGV_Velocity_InAGV.angular_velocity_angle += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+		Target_Velocity_InWorld.angular_velocity_angle += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
 	}
 
-	Target_Velocity.velocity = sqrtf(Target_Velocity.velocity_x*Target_Velocity.velocity_x + Target_Velocity.velocity_y*Target_Velocity.velocity_y);
-	Target_Velocity.velocity_angle = ArcTan_Lookup(Target_Velocity.velocity_x, Target_Velocity.velocity_y);
+	Target_Velocity = Velocity_Class::Absolute_To_Relative(Target_Velocity_InWorld, Target_Velocity, Base);
 
-	AGV_Velocity_InAGV.angular_velocity_rad = AGV_Velocity_InAGV.angular_velocity_angle / 180.0f*M_PI;
-	AGV_Velocity_InAGV.angular_velocity_mm = AGV_Velocity_InAGV.angular_velocity_rad*Parameter_Class::wheel_lx_ly_distance;
+	Target_Velocity.velocity = sqrtf(Target_Velocity.velocity_x*Target_Velocity.velocity_x + Target_Velocity.velocity_y*Target_Velocity.velocity_y);
+	Target_Velocity.velocity_angle = ArcTan_Lookup(Target_Velocity.velocity_x, Target_Velocity.velocity_y) / 10.0f;
+
+	Target_Velocity.angular_velocity_rad = Target_Velocity.angular_velocity_angle / 180.0f*M_PI;
+	Target_Velocity.angular_velocity_mm = Target_Velocity.angular_velocity_rad*Parameter_Class::wheel_lx_ly_distance;
 
 #undef C1
 #undef C2

@@ -35,7 +35,7 @@ public:
 private:
 	float Get_Time_ms(void);
 	//根据跟踪误差更新期望速度
-	void Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class &Target_Velocity) override;
+	void Update_Velocity_By_ErrorCoor(const Coordinate_Class&Error_Coor_InAGV, Velocity_Class &Target_Velocity, const Coordinate_Class& Base) override;
 
 	static Motor_Class Front_Left_Wheel, Front_Right_Wheel;			//左、右前轮
 	static Motor_Class Behind_Left_Wheel, Behind_Right_Wheel;		//左、右后轮

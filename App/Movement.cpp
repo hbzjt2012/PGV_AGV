@@ -82,9 +82,15 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 	else if (current_coor < (acc_distance + const_distance + dec_distance + slowly_distance - threshold))//在慢速区
 	{
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
+		//Target_Coor_InOrigin = Destination_Coor_InOrigin;
 	}
-	else    //超出了范围
+	else if (current_coor > (acc_distance + const_distance + dec_distance + slowly_distance + threshold))//在慢速区
 	{
+		output_velocity = -Input_Para.min_velocity_abs * Distance_Symbols;
+	}
+	else    //在误差范围内
+	{
+		float temp = ABS(acc_distance + const_distance + dec_distance + slowly_distance - current_coor);
 		output_velocity = 0.0f;
 		Target_Coor_InOrigin = Destination_Coor_InOrigin;
 		Interpolation_State = IS_Interpolated;

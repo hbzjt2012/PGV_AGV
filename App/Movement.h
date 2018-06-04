@@ -66,6 +66,7 @@ protected:
 	Coordinate_Class Destination_Coor_InOrigin;	//起点坐标系中的终点坐标
 
 	static Interpolation_Parameter_TypedefStructure Interpolation_Parameter;
+	static Interpolation_Parameter_TypedefStructure Avoidance_Interpolation_Parameter;	//用于从当前速度减速至0
 	Interpolation_Parameter_TypedefStructure Input_Para;
 
 	float threshold;	//插补阈值
