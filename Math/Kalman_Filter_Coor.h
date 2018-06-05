@@ -36,6 +36,7 @@ public:
 	arm_matrix_instance_f32 &Update_Stae_Variable_No_Measurement(const arm_matrix_instance_f32 & input);
 
 private:
+	void Init_Data(void) override {};
 	void Set_Noise(float noise) override;	//设置卡尔曼滤波器的执行噪声、测量噪声
 
 	//根据上一时刻的状态量和控制量预测这一时刻的状态量

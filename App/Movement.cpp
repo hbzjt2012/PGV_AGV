@@ -65,7 +65,7 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 	if (current_coor < 0.0f)	//在反方向
 	{
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
-		Target_Coor_InOrigin.Clear();
+		//Target_Coor_InOrigin.Clear();
 	}
 	else if (current_coor < acc_distance)//在加速区内
 	{
@@ -84,10 +84,10 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
 		//Target_Coor_InOrigin = Destination_Coor_InOrigin;
 	}
-	else if (current_coor > (acc_distance + const_distance + dec_distance + slowly_distance + threshold))//在慢速区
-	{
-		output_velocity = -Input_Para.min_velocity_abs * Distance_Symbols;
-	}
+	//else if (current_coor > (acc_distance + const_distance + dec_distance + slowly_distance + threshold))//在慢速区
+	//{
+	//	output_velocity = -Input_Para.min_velocity_abs * Distance_Symbols;
+	//}
 	else    //在误差范围内
 	{
 		float temp = ABS(acc_distance + const_distance + dec_distance + slowly_distance - current_coor);

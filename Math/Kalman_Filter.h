@@ -8,6 +8,7 @@ public:
 	virtual ~Kalman_Class() = default;
 
 	virtual void Init(void) = 0;
+	virtual void Init_Data(void) = 0;;
 	virtual void Set_Noise(float noise) = 0;	//设置卡尔曼滤波器的执行噪声、测量噪声
 	//根据控制量和测量量输出新的状态量
 	virtual arm_matrix_instance_f32 &Kalman_Filter(const arm_matrix_instance_f32& input, const arm_matrix_instance_f32& measurement) = 0;

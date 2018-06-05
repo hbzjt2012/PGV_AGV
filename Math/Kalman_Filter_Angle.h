@@ -6,7 +6,7 @@ class Kalman_Angle_Class :public Kalman_Class
 {
 public:
 	//噪声需由实验测量获取
-	Kalman_Angle_Class() :noise_process_omega(0.00001f), noise_measurement_omega(0.0031f) {}
+	Kalman_Angle_Class() :noise_process_omega(0.001f), noise_measurement_omega(0.31f) {}
 	~Kalman_Angle_Class() = default;
 
 	union
@@ -28,6 +28,7 @@ public:
 	arm_matrix_instance_f32 measurement_matrix;
 
 	void Init(void) override;
+	void Init_Data(void) override;
 	void Set_Noise(float noise) override;	//设置卡尔曼滤波器的执行噪声、测量噪声
 	//根据控制量和测量量输出新的状态量
 	void Kalman_Filter() { Kalman_Filter(process_matrix, measurement_matrix); }

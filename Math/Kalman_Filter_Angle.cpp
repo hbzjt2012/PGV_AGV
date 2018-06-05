@@ -23,12 +23,17 @@ void Kalman_Angle_Class::Init(void)
 
 	B_data[1] = 2.0f;
 
-	//初始置信度
+	Init_Data();
+}
+
+void Kalman_Angle_Class::Init_Data(void)
+{
+	//清空置信度
 	for (int i = 0; i < 4; i++)
 	{
 		vcovariance_data[i] = 0.0f;
 	}
-
+	//清空状态量
 	state_variable_data[0] = state_variable_data[1] = 0.0f;
 }
 

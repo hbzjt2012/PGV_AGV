@@ -28,6 +28,7 @@ public:
 	arm_matrix_instance_f32 measurement_matrix;
 
 	void Init(void) override;
+	void Init_Data(void) override;
 	//设置噪声，更新执行噪声、测量噪声，状态转移矩阵等
 	void Set_Noise(float time_s, float noise_encoder_theta);
 	//根据控制量和测量量输出新的状态量

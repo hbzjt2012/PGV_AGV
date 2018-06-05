@@ -20,15 +20,17 @@ void Kalman_Line_Class::Init(void)
 	A_data[2] = 0.0f;
 	A_data[3] = 1.0f;
 
+	Init_Data();
+}
 
+void Kalman_Line_Class::Init_Data(void)
+{
 	//初始置信度
 	for (int i = 0; i < 4; i++)
 	{
 		vcovariance_data[i] = 0.0f;
 	}
-
 	state_variable_data[0] = state_variable_data[1] = 0.0f;
-
 }
 
 

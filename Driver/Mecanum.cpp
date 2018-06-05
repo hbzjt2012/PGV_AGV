@@ -117,11 +117,11 @@ void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 		k = (Parameter_Class::wheel_max_line_velocity / velocity_temp);
 		AGV_Velocity_InAGV *= k;
 	}
-	else if ((velocity_temp < Parameter_Class::wheel_min_line_velocity) && (velocity_temp > Parameter_Class::wheel_min_line_velocity / 10.0f))	//确实存在速度，且速度小于电机响应
-	{
-		k = (Parameter_Class::wheel_min_line_velocity / velocity_temp);
-		AGV_Velocity_InAGV *= k;
-	}
+	//else if ((velocity_temp < Parameter_Class::wheel_min_line_velocity) && (velocity_temp > Parameter_Class::wheel_min_line_velocity / 10.0f))	//确实存在速度，且速度小于电机响应
+	//{
+	//	k = (Parameter_Class::wheel_min_line_velocity / velocity_temp);
+	//	AGV_Velocity_InAGV *= k;
+	//}
 
 	duty_FR = (-AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y + AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
 	duty_FL = (AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y - AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
@@ -202,9 +202,9 @@ float Mecanum_Wheel_Class::Get_Time_ms(void)
 
 void Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & Error_Coor_InAGV, Velocity_Class& Target_Velocity, const Coordinate_Class& Base)
 {
-#define C1 5.0f	
+#define C1 2.0f	
 #define C2 C1
-#define C3 10.0f
+#define C3 5.0f
 
 	Velocity_Class Target_Velocity_InWorld;
 

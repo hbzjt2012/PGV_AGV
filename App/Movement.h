@@ -43,7 +43,7 @@ public:
 	bool Init(const Coordinate_Class &Current_Coor) { Init(Interpolation_Parameter, Current_Coor, this->threshold); }	//插补运动路径
 	virtual bool Init(Interpolation_Parameter_TypedefStructure Input, const Coordinate_Class &Current_Coor, float threshold) = 0;	//根据插补参数以及阈值插补运动路径
 	bool Cal_Velocity(const Coordinate_Class Current_Coor_InWorld);	//根据当前坐标计算目标坐标，目标速度，返回计算结果
-
+	Coordinate_Class& Read_Destination(void) { return Destination_Coor_InWorld; }
 	void Set_Destination(const Coordinate_Class& Destination, const float threshold) {
 		Destination_Coor_InWorld = Destination;
 		this->threshold = threshold;
