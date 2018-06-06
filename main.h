@@ -85,3 +85,4 @@ void Gcode_M18(void);	//禁用所有电机
 void Gcode_I0(void);	//急停
 void Gcode_I30(void);	//清除指令队列
 void Gcode_I114(void);	//获取坐标
+void Gcode_I114(const Coordinate_Class &Coor);

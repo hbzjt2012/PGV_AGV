@@ -18,7 +18,7 @@ Movement_Mecanum_Class Movement_Buf[Movement_Command_Buf_SIZE], Movement_Inject;
 Movement_Class *Movement_Index_w = Movement_Buf, *Movement_Index_r = Movement_Buf;	//运动指令暂存区读写下标
 AGV_State::Movement_Command_State movement_buf_state;				//指令缓存区的状态
 
-Coordinate_Class Virtual_AGV_Coor_InWorld;	//虚拟的AGV坐标，获取指令坐标时，避免累计误差
+Coordinate_Class Virtual_AGV_Target_Coor_InWorld;	//虚拟的AGV坐标，获取指令坐标时，避免累计误差
 Coordinate_Class AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld;	//AGV在世界坐标系下的当前坐标和目标坐标
 Velocity_Class AGV_Current_Velocity_InAGV, AGV_Target_Velocity_InAGV;	//AGV在小车坐标系下的当前速度和目标速度
 
@@ -67,7 +67,8 @@ int main(void)
 
 		Process_Gcode_Command(command_buf_state); //获取处理当前指令(已完成)                                                                                          
 
-		Update_Print_MSG();	//打印信息
+		//Update_Print_MSG();	//打印信息
+		My_Serial.flush();
 	}
 }
 
@@ -229,6 +230,9 @@ void Location_AGV(void)
 		AGV_Current_Coor_InWorld.x_coor = Coor_Kalman.state_variable_data[0];
 		AGV_Current_Coor_InWorld.y_coor = Coor_Kalman.state_variable_data[1];
 		AGV_Current_Coor_InWorld.angle_coor = Coor_Kalman.state_variable_data[2];
+
+		My_Serial << "\r\n";
+		Gcode_I114(AGV_Current_Coor_InWorld);
 	}
 	AGV_Current_Coor_InWorld.Transform_Angle();
 }
@@ -393,7 +397,6 @@ void Update_Print_MSG(void)
 	default:
 		break;
 	}
-	My_Serial.flush();
 }
 
 //************************************
@@ -486,13 +489,13 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 		switch (codenum)
 		{
 		case 0:
-			Gcode_G0(gcode_command, Virtual_AGV_Coor_InWorld);	//先旋转后直线运动到目标点,使用虚拟坐标可以降低累计误差
+			Gcode_G0(gcode_command, Virtual_AGV_Target_Coor_InWorld);	//先旋转后直线运动到目标点,使用虚拟坐标可以降低累计误差
 			break;
 		case 1:
-			Gcode_G1(gcode_command, Virtual_AGV_Coor_InWorld);	//先直线运动后旋转到目标点,使用虚拟坐标可以降低累计误差
+			Gcode_G1(gcode_command, Virtual_AGV_Target_Coor_InWorld);	//先直线运动后旋转到目标点,使用虚拟坐标可以降低累计误差
 			break;
 		case 2:
-			Gcode_G2(gcode_command, Virtual_AGV_Coor_InWorld);	//直接运动到目标点
+			Gcode_G2(gcode_command, Virtual_AGV_Target_Coor_InWorld);	//直接运动到目标点
 			break;
 		case 4:
 			Gcode_G4(gcode_command);
@@ -798,6 +801,11 @@ void Gcode_I114(void)
 	My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
 	My_Serial.print("  angle:");
 	My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+}
+
+void Gcode_I114(const Coordinate_Class & Coor)
+{
+	My_Serial << " " << Coor.x_coor << " " << Coor.y_coor << " " << Coor.angle_coor;
 }
 
 

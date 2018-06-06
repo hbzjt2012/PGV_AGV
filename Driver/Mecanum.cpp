@@ -117,11 +117,11 @@ void Mecanum_Wheel_Class::Write_Velocity(Velocity_Class &AGV_Velocity_InAGV)
 		k = (Parameter_Class::wheel_max_line_velocity / velocity_temp);
 		AGV_Velocity_InAGV *= k;
 	}
-	else if ((velocity_temp < Parameter_Class::wheel_min_line_velocity) && (velocity_temp > Parameter_Class::wheel_min_line_velocity / 10.0f))	//确实存在速度，且速度小于电机响应
-	{
-		k = (Parameter_Class::wheel_min_line_velocity / velocity_temp);
-		AGV_Velocity_InAGV *= k;
-	}
+	//else if ((velocity_temp < Parameter_Class::wheel_min_line_velocity) && (velocity_temp > Parameter_Class::wheel_min_line_velocity / 10.0f))	//确实存在速度，且速度小于电机响应
+	//{
+	//	k = (Parameter_Class::wheel_min_line_velocity / velocity_temp);
+	//	AGV_Velocity_InAGV *= k;
+	//}
 
 	duty_FR = (-AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y + AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
 	duty_FL = (AGV_Velocity_InAGV.velocity_x + AGV_Velocity_InAGV.velocity_y - AGV_Velocity_InAGV.angular_velocity_mm) / Parameter_Class::wheel_max_line_velocity_hard;
