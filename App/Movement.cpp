@@ -43,9 +43,26 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 	Coordinate_Class Target_Coor_InOrigin;	//当前坐标向量在终点坐标向量上的投影（即目标坐标）
 	Velocity_Class Target_Velocity_InTarget;	//期望坐标坐标系中的速度
 
+	float current_angle_temp = Current_Coor_InOrigin.angle_coor;	//当前角度坐标
+
+	float angle_delta = ABS(current_angle_temp - Destination_Coor_InOrigin.angle_coor);	//当前角度和终点差值绝对值
+
+	if (angle_delta <= 370.0f&&angle_delta >= 350.0f)	//角度差值在360°的某个邻域内
+	{
+		if (current_angle_temp - Destination_Coor_InOrigin.angle_coor > 180.0f)
+		{
+			current_angle_temp -= 360.0f;
+		}
+		else if (current_angle_temp - Destination_Coor_InOrigin.angle_coor <= -180.0f)
+		{
+			current_angle_temp += 360.0f;
+		}
+	}
+
+	//注意角度正负(需注意)
 	float X_H_mul_y = x_temp_InOrigin*Current_Coor_InOrigin.x_coor \
 		+ y_temp_InOrigin*Current_Coor_InOrigin.y_coor \
-		+ angle_equivalent_temp_InOrigin*(Current_Coor_InOrigin.angle_rad*Parameter_Class::wheel_lx_ly_distance);
+		+ angle_equivalent_temp_InOrigin*(current_angle_temp / 180.0f*M_PI*Parameter_Class::wheel_lx_ly_distance);
 
 	float k = X_H_mul_y / X_H_mul_X;
 
@@ -84,18 +101,19 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
 		//Target_Coor_InOrigin = Destination_Coor_InOrigin;
 	}
-	//else if (current_coor > (acc_distance + const_distance + dec_distance + slowly_distance + threshold))//在慢速区
-	//{
-	//	output_velocity = -Input_Para.min_velocity_abs * Distance_Symbols;
-	//}
+	else if (current_coor > (acc_distance + const_distance + dec_distance + slowly_distance + threshold))//在慢速区
+	{
+		output_velocity = -Input_Para.min_velocity_abs * Distance_Symbols;
+	}
 	else    //在误差范围内
 	{
 		float temp = ABS(acc_distance + const_distance + dec_distance + slowly_distance - current_coor);
 		output_velocity = 0.0f;
 		Target_Coor_InOrigin = Destination_Coor_InOrigin;
 		Interpolation_State = IS_Interpolated;
-	}
 
+
+	}
 	//分配速度给各个轴
 	Target_Velocity_InTarget = Assign_Velocity(Destination_Coor_InOrigin, output_velocity);
 	//将起点坐标系中的速度旋转至AGV坐标系

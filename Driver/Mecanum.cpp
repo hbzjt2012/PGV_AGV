@@ -176,7 +176,6 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 	arm_sqrt_f32(velocity_temp, &(AGV_Velocity.velocity));	//计算速度大小
 	AGV_Velocity.velocity_angle = ArcTan_Lookup(AGV_Velocity.velocity_x, AGV_Velocity.velocity_y) / 10.0f;
 
-	GPIOA->ODR ^= 1 << 15;
 	return time_ms;
 }
 

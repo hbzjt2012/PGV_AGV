@@ -292,7 +292,7 @@ Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class
 
 	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - x_temp) + sin_Angle * (Absolute_Coor.y_coor - y_temp);
 	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - y_temp);
-	Relative_Coor.angle_coor = (Absolute_Coor.angle_coor - angle_temp);
+	Relative_Coor.angle_coor = Coordinate_Class::Transform_Angle(Absolute_Coor.angle_coor - angle_temp);
 
 	//if (Relative_Coor.angle_coor > 180.0f)
 	//{

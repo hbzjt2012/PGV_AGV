@@ -7,7 +7,7 @@ class Gcode_Class
 	Gcode_Class() = default;
 	~Gcode_Class() = default;
 
-	int parse(const char *p, const int agv_add = 1, const int command_next_line = 0); //解析当前指令
+	int parse(const char *p, const unsigned int agv_add = 1, const int command_next_line = 0); //解析当前指令
 	char *Return_Command(void) { return command; }
 	char command_letter; // 指令码，如G, M, or I（见指令表格）
 	int codenum;		 // 指令号，如123

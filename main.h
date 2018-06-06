@@ -45,6 +45,8 @@
 * TIM7_IRQHandler(用于陀螺仪)					1						2
 */
 
+//若之后仍出现到达目标点之后，速度突变(目标坐标突变)
+//则修改插补路径中的坐标投影方式，将角度剔除，使用xy计算因子，再计算投影坐标
 
 void Init_System(void);	//配置系统所需的硬件、外设
 void Init_System_RCC(void);		//初始化系统所需时钟
@@ -56,6 +58,8 @@ void Check_Avoidance_Buton(void);	//检查避障和按键动作
 void Parse_Sensor_Data(void);	//处理传感器数据
 void Process_Gcode_Command(AGV_State::Gcode_Command_State &state); //获取并处理Gcode命令指令
 void Update_Print_MSG(void);		//打印信息
+
+void Location_AGV_demo(void);	//去除了TL740的定位测试程序
 
 //添加运动指令，返回添加结果
 //缓存区满，未做相应处理
@@ -69,9 +73,9 @@ bool Run_Gcode_Command(Gcode_Class *gcode_command);	//执行Gcode指令，返回
 //获取指令中的坐标
 Coordinate_Class Get_Command_Coor(Gcode_Class *command, const Coordinate_Class &Base_Coor_InWorld, bool Is_Absolute_Coor = true);
 
-void Gcode_G0(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//先旋转后直线运动到目标点
-void Gcode_G1(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//先直线运动后旋转到目标点
-void Gcode_G2(Gcode_Class *command, Coordinate_Class &Virtual_Current_Coor_InWorld);	//直接运动到目标点
+void Gcode_G0(Gcode_Class *command);	//先旋转后直线运动到目标点
+void Gcode_G1(Gcode_Class *command);	//先直线运动后旋转到目标点
+void Gcode_G2(Gcode_Class *command);	//直接运动到目标点
 
 bool Gcode_G4(unsigned long time_10ms);	//暂停一段时间(单位10ms)
 void Gcode_G4(Gcode_Class *command);	//从指令中获取暂停时间，暂停

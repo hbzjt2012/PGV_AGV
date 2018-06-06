@@ -45,7 +45,7 @@ float Parameter_Class::wheel_acceleration_line_velocity = Update_wheel_accelerat
 float Parameter_Class::line_slowest_time = 2.0f;	//最低速移动的时间
 
 bool Parameter_Class::Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
-int Parameter_Class::AGV_Address_Code = 1;
+unsigned int Parameter_Class::AGV_Address_NUM = 1;
 
 float Parameter_Class::movement_threshold = 1.0f;	//运动阈值(mm)
 

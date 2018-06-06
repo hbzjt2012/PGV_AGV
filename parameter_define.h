@@ -41,7 +41,7 @@ public:
 	static const float wheel_resolution;	//车轮分辨率
 
 	static bool Is_Absolute_Coor;	//指示当前坐标是否为绝对坐标
-	static int AGV_Address_Code;	//AGV的地址码
+	static unsigned int AGV_Address_NUM;	//AGV的地址码
 
 	static float movement_threshold;	//运动阈值(mm)
 	//static float line_threshold;	//直线距离插补阈值(mm)
