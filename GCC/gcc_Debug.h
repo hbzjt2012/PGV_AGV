@@ -705,9 +705,6 @@
 #ifndef __GCC_ATOMIC_INT_LOCK_FREE
 #define __GCC_ATOMIC_INT_LOCK_FREE 2
 #endif
-#ifndef DEBUG_DEFAULT_INTERRUPT_HANDLERS
-#define DEBUG_DEFAULT_INTERRUPT_HANDLERS 1
-#endif
 #ifndef __FLT32_MANT_DIG__
 #define __FLT32_MANT_DIG__ 24
 #endif
@@ -1392,7 +1389,6 @@
 //../CMSIS_StdPeriph
 //../DSP_Lib
 //../STM32F4xx_StdPeriph_Driver/inc
-//../Eigen
 // --- Include directories end --- //
 
 

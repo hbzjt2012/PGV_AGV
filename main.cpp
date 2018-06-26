@@ -45,8 +45,8 @@ inline void Gcode_Commond_Over(Gcode_Class *gcode_command);
 int main(void)
 {
 	Init_System();//配置系统所需的硬件、外设
-	//while (!Gcode_G4(1500));	//延时15s
-	//TL740.Forward_Accel_Bias_Init();
+	while (!Gcode_G4(1500));	//延时15s
+	TL740.Forward_Accel_Bias_Init();
 
 	Encoder_Class::Clear_Time_US();
 	Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder);	//清空编码器的误差
@@ -56,7 +56,7 @@ int main(void)
 		if (time11_flag)	//表示控制周期到
 		{
 			time11_flag = false;
-			control_period_flag = true;
+			//control_period_flag = true;
 			//My_Serial << "\r\n" << Error_Coor_InAGV.x_coor << " " << Error_Coor_InAGV.y_coor << " " << Error_Coor_InAGV.angle_coor;
 		//Location_AGV();	//AGV定位函数
 		//Process_Movement_Command();	//获取并处理运动指令
@@ -66,12 +66,12 @@ int main(void)
 		if (control_period_flag)
 		{
 			control_period_flag = false;
-			Location_AGV_demo();
+			Led.Toggle();
+			Location_AGV();	//AGV定位函数
+			//Location_AGV_demo();
 			Process_Movement_Command();	//获取并处理运动指令
 			Movement_Control();	//运动控制
 		}
-
-		//Location_AGV();	//AGV定位函数
 		Check_Avoidance_Buton();	//检查避障和按键动作
 		Parse_Sensor_Data();	//解析传感器数据
 
@@ -155,21 +155,20 @@ void Location_AGV(void)
 
 	if (TL740.data_OK)	//以陀螺仪数据更新作为定位控制周期的判断点
 	{
-		Led.Toggle();
 		TL740.data_OK = false;
 		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
 		float z_measurement = Coordinate_Class::Transform_Angle(TL740.z_heading - TL740_angle_previous);
 		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
-		//if (movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE)//运动缓存区空闲,表示小车停止运动
-		//{
-		//	TL740_angle_previous = TL740.z_heading;
-		//	Angle_Kalman.Init_Data();	//AGV静止，故重置状态量和协方差
+		if (movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE)//运动缓存区空闲,表示小车停止运动
+		{
+			TL740_angle_previous = TL740.z_heading;
+			Angle_Kalman.Init_Data();	//AGV静止，故重置状态量和协方差
 
-		//	TL740_forward_accel_previous = accel_temp;
-		//	Line_X_Kalman.Init_Data();
-		//	Line_Y_Kalman.Init_Data();//AGV静止，故重置状态量和协方差
-		//}
-		//else
+			TL740_forward_accel_previous = accel_temp;
+			Line_X_Kalman.Init_Data();
+			Line_Y_Kalman.Init_Data();//AGV静止，故重置状态量和协方差
+		}
+		else
 		{
 			//计算角度增量、角速度
 			Angle_Kalman.process_data = AGV_Current_Velocity_By_Encoder.angular_velocity_angle;
@@ -208,12 +207,6 @@ void Location_AGV(void)
 			//Line_Y_Kalman.Set_Noise(time_s, angle_delta / time_s);
 			//Line_Y_Kalman.Kalman_Filter();
 		}
-
-		//My_Serial << "\r\n";
-		//My_Serial.print(TL740.forward_accel, 3);
-		//My_Serial << " ";
-		//My_Serial.print(TL740.forward_accel_bias, 3);
-
 		AGV_Current_Velocity_InAGV.velocity_x = Line_X_Kalman.state_variable_data[1];
 		AGV_Current_Velocity_InAGV.velocity_y = Line_Y_Kalman.state_variable_data[1];
 		AGV_Current_Velocity_InAGV.angular_velocity_angle = Angle_Kalman.state_variable_data[1];
@@ -259,18 +252,18 @@ void Location_AGV(void)
 
 		AGV_Current_Coor_InWorld.Transform_Angle();	//角度缩放
 
-		Gcode_I114(Virtual_AGV_Current_Coor_InWorld);	//输出上一周期的期望坐标
-		//Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Target_Velocity_InAGV, AGV_Target_Coor_InWorld);
-		//Gcode_I114(AGV_Velocity);	//输出上一周期的期望速度
+		//Gcode_I114(Virtual_AGV_Current_Coor_InWorld);	//输出上一周期的期望坐标
+		////Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Target_Velocity_InAGV, AGV_Target_Coor_InWorld);
+		////Gcode_I114(AGV_Velocity);	//输出上一周期的期望速度
 
-		My_Serial << "\r\n";
-		Gcode_I114(Movement_Class::Target_Coor_InWorld);	//输出当前坐标
+		//My_Serial << "\r\n";
+		//Gcode_I114(Movement_Class::Target_Coor_InWorld);	//输出当前坐标
 
-		//Gcode_I114(AGV_Current_Coor_InWorld);	//输出当前坐标
-		Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Current_Velocity_InAGV, AGV_Current_Coor_InWorld);
-		Gcode_I114(AGV_Velocity);	//输出当前速度
+		////Gcode_I114(AGV_Current_Coor_InWorld);	//输出当前坐标
+		//Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Current_Velocity_InAGV, AGV_Current_Coor_InWorld);
+		//Gcode_I114(AGV_Velocity);	//输出当前速度
 
-		My_Serial << " " << Coor_Kalman.process_data[0] << " " << Coor_Kalman.process_data[1] << " " << Coor_Kalman.process_data[2];
+		//My_Serial << " " << Coor_Kalman.process_data[0] << " " << Coor_Kalman.process_data[1] << " " << Coor_Kalman.process_data[2];
 
 	}
 }
@@ -319,7 +312,7 @@ void Movement_Control(void)
 		//}
 		//My_Serial.print("\r\n");
 		//Gcode_I114(AGV_Target_Coor_InWorld);
-		
+
 	}
 	else    //当前无运动指令
 	{
@@ -365,6 +358,7 @@ void Parse_Sensor_Data(void)
 		if (TL740.Analyze_Data())
 		{
 			TL740.data_OK = true;	//表示接收到了新的陀螺仪数据
+			control_period_flag = true;
 		}
 	}
 

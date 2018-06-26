@@ -4,7 +4,7 @@
   <BspID>com.visualgdb.bsp.in-place</BspID>
   <BspVersion>1.0</BspVersion>
   <McuID>STM32F407VE</McuID>
-  <MCUDefinitionFile>..\..\..\Users\zhang\Documents\SR_PGV_AGV\stm32f407xx.xml</MCUDefinitionFile>
+  <MCUDefinitionFile>..\stm32f407xx.xml</MCUDefinitionFile>
   <MCUProperties>
     <Entries />
   </MCUProperties>
@@ -18,7 +18,6 @@
         <string>STM32F407VE</string>
         <string>flash_layout</string>
         <string>STM32F40_41xxx</string>
-        <string>DEBUG_DEFAULT_INTERRUPT_HANDLERS</string>
         <string>__FPU_PRESENT</string>
         <string>__FPU_USED</string>
       </PreprocessorMacros>
@@ -28,7 +27,6 @@
         <string>../CMSIS_StdPeriph</string>
         <string>../DSP_Lib</string>
         <string>../STM32F4xx_StdPeriph_Driver/inc</string>
-        <string>../Eigen</string>
       </IncludeDirectories>
       <CFLAGS />
       <CXXFLAGS />
@@ -172,7 +170,7 @@
     <RAMSize>196608</RAMSize>
     <FLASHBase>134217728</FLASHBase>
     <RAMBase>536870912</RAMBase>
-    <MCUDefinitionFile>..\..\..\Users\zhang\Documents\SR_PGV_AGV\stm32f407xx.xml</MCUDefinitionFile>
+    <MCUDefinitionFile>..\stm32f407xx.xml</MCUDefinitionFile>
     <AdditionalSourcesRequiredForTesting>false</AdditionalSourcesRequiredForTesting>
   </InPlaceMCU>
   <MCUMakFile>stm32.mak</MCUMakFile>
