@@ -43,7 +43,7 @@ void PGV_Class::Init(uint32_t baudrate)
 	DMA_InitStructure.DMA_Channel = PGV_RX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
 	RX_DMA.Init(&DMA_InitStructure);
 
 	RX_DMA.Open();
@@ -72,7 +72,7 @@ void PGV_Class::Init(uint32_t baudrate)
 	NVIC_InitStructure.NVIC_IRQChannel = PGV_Uart_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		  //响应优先级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		  //响应优先级
 	NVIC_Init(&NVIC_InitStructure);
 
 	asm("nop");
@@ -95,39 +95,39 @@ void PGV_Class::Send(PGV_CMD_Mode _cmd)
 	{
 	case Read_PGV_Data: //读取数据
 		print((uint8_t *)"\xC8\x37", 2);
-		rx_cnt = 21;
+		//rx_cnt = 21;
 		break;
 	case Set_Color_B: //设置色带颜色蓝色
 		print((uint8_t *)"\xC4\x7B", 2);
-		rx_cnt = 2;
+		//rx_cnt = 2;
 		break;
 	case Set_Color_G: //设置色带颜色绿色
 		print((uint8_t *)"\x88\x77", 2);
-		rx_cnt = 2;
+		//rx_cnt = 2;
 		break;
 	case Set_Color_R: //设置色带颜色红色
 		print((uint8_t *)"\x90\x6F", 2);
-		rx_cnt = 2;
+		//rx_cnt = 2;
 		break;
 	case Set_Dir_Best: //设置选择最优的轨道
 		print((uint8_t *)"\xEC\x13", 2);
-		rx_cnt = 3;
+		//rx_cnt = 3;
 		break;
 	case Set_Dir_L: //设置选择左边的轨道
 		print((uint8_t *)"\xE8\x17", 2);
-		rx_cnt = 3;
+		//rx_cnt = 3;
 		break;
 	case Set_Dir_R: //设置选择右边的轨道
 		print((uint8_t *)"\xE4\x1B", 2);
-		rx_cnt = 3;
+		//rx_cnt = 3;
 		break;
 	default:
 		break;
 	}
 
-	RX_DMA.ITConfig(DMA_IT_TC, DISABLE); //重新设置DMA接收数目前先关闭接受完成中断
-	RX_DMA.Set_Data_Num(rx_cnt);		 //设置DMA通道需接受数据的数量
-	RX_DMA.ITConfig(DMA_IT_TC, ENABLE);  //开启接收用DMA的完成中断
+	//RX_DMA.ITConfig(DMA_IT_TC, DISABLE); //重新设置DMA接收数目前先关闭接受完成中断
+	//RX_DMA.Set_Data_Num(rx_cnt);		 //设置DMA通道需接受数据的数量
+	//RX_DMA.ITConfig(DMA_IT_TC, ENABLE);  //开启接收用DMA的完成中断
 
 	flush();
 }
@@ -370,7 +370,7 @@ void PGV_Uart_IRQHandler(void)
 		//软件序列清空中断标志
 		uint16_t temp = PGV_Uart_Port->SR;
 		temp = PGV_Uart_Port->DR;
-		PGV_Class::rx_flag = true;
 		PGV_Class::rx_cnt = 64 - PGV_Class::RX_DMA.Set_Data_Num(64);
+		PGV_Class::rx_flag = true;
 	}
 }

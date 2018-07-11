@@ -26,10 +26,10 @@
 * TIM3 编码器FR
 * TIM4 编码器BL
 * TIM5 编码器FL
-* TIM6 
-* TIM7 
+* TIM6
+* TIM7
 * TIM8 编码器BR
-* TIM9 电机FL、FR转速 
+* TIM9 电机FL、FR转速
 * TIM10
 * TIM11 用于获取编码器计算周期
 * TIM12 BR、BL轮子转速
@@ -40,18 +40,18 @@
 /*
 *			中断向量						抢占优先级				响应优先级
 * Serial_Uart_IRQIRQHandler(通信用串口)			3						1
-* PGV_Uart_IRQHandler(用于PGV串口)				2						1
-* Gyrp_Uart_IRQHandler	(用于陀螺仪串口)		1						1
+* PGV_Uart_IRQHandler(用于PGV串口)				1						1
+* Gyro_Uart_IRQHandler	(用于陀螺仪串口)		2						1
 */
 
 /*
 *	  DMA_Channel				优先级
 * Gyro_TX_DMA_Channel			  低
-* Gyro_RX_DMA_Channel			非常高
+* Gyro_RX_DMA_Channel			  高
 * Serial_TX_DMA_Channel			  低
 * Serial_RX_DMA_Channel			 中等
 * PGV_TX_DMA_Channel			  高
-* PGV_RX_DMA_Channel			  低
+* PGV_RX_DMA_Channel			非常高
 */
 
 
@@ -87,17 +87,41 @@ void Gcode_G0(Gcode_Class *command);	//先旋转后直线运动到目标点
 void Gcode_G1(Gcode_Class *command);	//先直线运动后旋转到目标点
 void Gcode_G2(Gcode_Class *command);	//直接运动到目标点
 
-bool Gcode_G4(unsigned long time_10ms);	//暂停一段时间(单位10ms)
-void Gcode_G4(Gcode_Class *command);	//从指令中获取暂停时间，暂停
+void Gcode_G3(Gcode_Class *command);	//以AGV的x轴逆时针角度C，距离为R的点为圆心，顺时针运动角度Z
+void Gcode_G4(Gcode_Class *command);	//以AGV的x轴逆时针角度C，距离为R的点为圆心，逆时针运动角度Z
+
+bool Gcode_G5(unsigned long time_10ms);	//暂停一段时间(单位10ms)
+void Gcode_G5(Gcode_Class *command);	//从指令中获取暂停时间，暂停
+
+void Gcode_G6(Gcode_Class *command);	//快速移动到坐标
+void Gcode_G10(Gcode_Class *command);	//设定原点坐标在世界坐标系中的坐标(设定坐标偏置)
+void Gcode_G10(const Coordinate_Class &Base_Coor);	//设定原点坐标偏置
+
+void Gcode_G28(Gcode_Class *command);	//移动到原点
+void Gcode_G28(void);	//移动到原点
 
 void Gcode_G90(void);	//设定输入为绝对坐标
 void Gcode_G91(void);	//设定输入为相对坐标
 
-void Gcode_M17(void);	//启动所有电机
-void Gcode_M18(void);	//禁用所有电机
+void Gcode_G92(Gcode_Class *command);	//设定当前坐标
+void Gcode_G92(const Coordinate_Class &Coor);	//设置当前坐标为Coor
+
+
+void Gcode_M15(void);	//失能所有电机
+void Gcode_M16(void);	//使能所有电机
+void Gcode_M17(void);	//所有电机刹车
+void Gcode_M18(void);	//所有电机刹车解除
+
+void Gcode_M72(Gcode_Class *command);	//播放指定曲目
+void Gcode_M132(Gcode_Class *command);	//设置参数值
+void Gcode_M133(Gcode_Class *command);	//返回参数值
+void Gcode_M134(Gcode_Class *command);	//设置参数值，并写入EEPROM
 
 void Gcode_I0(void);	//急停
 void Gcode_I30(void);	//清除指令队列
-void Gcode_I114(void);	//获取坐标
+void Gcode_I17(void);	//所有电机刹车，同M17
+void Gcode_I18(void);	//所有电机刹车解除，同M18
+void Gcode_I114(void);	//获取当前坐标
 void Gcode_I114(const Coordinate_Class &Coor);
-void Gcode_I114(const Velocity_Class &Velocity);
+void Gcode_I115(void);	//获取当前速度
+void Gcode_I115(const Velocity_Class &Velocity);

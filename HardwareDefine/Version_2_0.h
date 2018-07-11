@@ -93,8 +93,8 @@
 #define PGV_Uart_IRQHandler			UART5_IRQHandler
 
 #define PGV_TX_DMA_Channel				UART5_TX_DMA_Channel
-#define PGV_TX_DMA_Stream				UART5_RX_DMA_Stream
-#define PGV_RX_DMA_Channel				UART5_TX_DMA_Channel
+#define PGV_TX_DMA_Stream				UART5_TX_DMA_Stream
+#define PGV_RX_DMA_Channel				UART5_RX_DMA_Channel
 #define PGV_RX_DMA_Stream				UART5_RX_DMA_Stream
 
 //定义了车轮的默认前进方向
@@ -246,12 +246,12 @@
 //串口4用DMA
 #define UART4_TX_DMA_Channel	DMA_Channel_4
 #define UART4_TX_DMA_Stream		DMA1_Stream4
-#define UART4_TX_DMA_Channel	DMA_Channel_4
+#define UART4_RX_DMA_Channel	DMA_Channel_4
 #define UART4_RX_DMA_Stream		DMA1_Stream2
 
 //串口5用DMA
 #define UART5_TX_DMA_Channel	DMA_Channel_4
 #define UART5_TX_DMA_Stream		DMA1_Stream7
-#define UART5_TX_DMA_Channel	DMA_Channel_4
+#define UART5_RX_DMA_Channel	DMA_Channel_4
 #define UART5_RX_DMA_Stream		DMA1_Stream0
 

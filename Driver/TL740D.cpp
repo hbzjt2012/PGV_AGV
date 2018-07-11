@@ -43,11 +43,11 @@ void TL740D_Class::Init(uint32_t baudrate)
 	TX_DMA.Init(&DMA_InitStructure);
 
 	//配置接收中断
-	DMA_InitStructure.DMA_BufferSize = 1024;
+	DMA_InitStructure.DMA_BufferSize = 64;
 	DMA_InitStructure.DMA_Channel = Gyro_RX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 	RX_DMA.Init(&DMA_InitStructure);
 
 	RX_DMA.Open();	//开启DMA接收
@@ -73,7 +73,7 @@ void TL740D_Class::Init(uint32_t baudrate)
 	NVIC_InitStructure.NVIC_IRQChannel = Gyro_Uart_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		  //响应优先级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		  //响应优先级
 	NVIC_Init(&NVIC_InitStructure);
 
 	asm("nop");
@@ -81,7 +81,7 @@ void TL740D_Class::Init(uint32_t baudrate)
 	Clear_IDLE_Flag();
 
 	Uart->CR3 |= USART_DMAReq_Tx | USART_DMAReq_Rx; //打开DMA_TX、DMA_RX请求
-													//USART_ITConfig(Uart, USART_IT_IDLE, ENABLE);//开启空闲线路中断
+	//USART_ITConfig(Uart, USART_IT_IDLE, ENABLE);//开启空闲线路中断
 	Uart->CR1 |= _BV(4);	//开启空闲中断
 }
 

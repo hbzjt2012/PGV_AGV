@@ -29,8 +29,8 @@ uint32_t DMA_Base_Class::Set_Data_Num(uint32_t number)
 	//temp = (0x3D << (6 * (x & 0x01)))<<((x&0x02)<<3);
 	//*(uint32_t*)add_temp = temp;
 	temp = (0x3D << (6 * (x & 0x01))) << ((x & 0x02) << 3);
-	*(uint32_t *)add_temp = temp;
-	//*(uint32_t*)add_temp = (0x3D << (6 * (x & 0x01))) << ((x & 0x02) << 3);	//清除所有中断标志
+	*(uint32_t *)add_temp = temp;//清除所有中断标志
+	//*(uint32_t*)add_temp = (0x3D << (6 * (x & 0x01))) << ((x & 0x02) << 3);	
 
 	uint32_t remaining = dma_stream->NDTR;
 	dma_stream->NDTR = number;

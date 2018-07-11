@@ -102,7 +102,8 @@ void Init_System(void)
 	Parameter_Class::Init_Parameter();	//初始化参数
 	Movement_Class::Init_Parameter();	//初始化参数
 
-	Gcode_M17();	//启动电机
+	Gcode_M16();	//使能电机
+	Gcode_M18();	//刹车解除
 
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = TIM8_UP_TIM13_IRQn;
@@ -116,8 +117,8 @@ void Init_System(void)
 
 	//while (!Gcode_G4(1000));	//延时10s
 	//Led.Set();
-	//PGV100.Init(115200);
-	//TL740.Init(115200);
+	PGV100.Init(115200);
+	TL740.Init(115200);
 	//while (!Gcode_G4(1000));	//延时10s
 
 	//Angle_Kalman.Init();
@@ -575,8 +576,23 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 		case 2:
 			Gcode_G2(gcode_command);	//直接运动到目标点
 			break;
+		case 3:
+			Gcode_G3(gcode_command);	//圆弧运动(顺时针)
+			break;
 		case 4:
-			Gcode_G4(gcode_command);
+			Gcode_G4(gcode_command);	//圆弧运动(逆时针)
+			break;
+		case 5:
+			Gcode_G5(gcode_command);	//暂停一段时间
+			break;
+		case 6:
+			Gcode_G6(gcode_command);	//快速移动到序号为P的坐标处
+			break;
+		case 10:
+			Gcode_G10(gcode_command);	//设定原点坐标偏置
+			break;
+		case 28:
+			Gcode_G28(gcode_command);	//移动到原点
 			break;
 		case 90:
 			Gcode_G90();	//设定输入为绝对坐标
@@ -586,6 +602,9 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 			Gcode_G91();
 			Gcode_Commond_Over(gcode_command);
 			break;
+		case 92:
+			Gcode_G92(gcode_command);	//设置当前坐标
+			break;
 		default:
 			Gcode_Commond_Over(gcode_command);
 			break;
@@ -594,12 +613,20 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 	case 'M':
 		switch (codenum)
 		{
+		case 15:
+			Gcode_M15();	//失能所有电机
+			Gcode_Commond_Over(gcode_command);
+			break;
+		case 16:
+			Gcode_M16();	//使能所有电机
+			Gcode_Commond_Over(gcode_command);
+			break;
 		case 17:
-			Gcode_M17();
+			Gcode_M17();	//所有电机刹车
 			Gcode_Commond_Over(gcode_command);
 			break;
 		case 18:
-			Gcode_M18();
+			Gcode_M18();	//所有电机解除刹车
 			Gcode_Commond_Over(gcode_command);
 			break;
 		default:
@@ -611,14 +638,22 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 		switch (codenum)
 		{
 		case 0:
-			Gcode_I0();
+			Gcode_I0();	//立即停止
 			break;
 		case 30:
-			Gcode_I30();
+			Gcode_I30();	//清除指令队列
+			break;
+		case 17:
+			Gcode_I17();	//所有电机刹车
+			break;
+		case 18:
+			Gcode_I18();	//所有电机解除刹车
 			break;
 		case 114:
-			Gcode_I114();
+			Gcode_I114();	//获取当前坐标
 			break;
+		case 115:
+			Gcode_I115();	//获取当前速度
 		default:
 			break;
 		}
@@ -782,15 +817,23 @@ void Gcode_G2(Gcode_Class * command)
 	}
 }
 
+void Gcode_G3(Gcode_Class * command)
+{
+}
+
+void Gcode_G4(Gcode_Class * command)
+{
+}
+
 //************************************
-// Method:    Gcode_G4
-// FullName:  Gcode_G4
+// Method:    Gcode_G5
+// FullName:  Gcode_G5
 // Access:    public 
 // Returns:   bool true表示延时时间到
 // Parameter: unsigned long time_10ms 延时时间，单位10ms
 // Description: 延时一段时间
 //************************************
-bool Gcode_G4(unsigned long time_10ms)
+bool Gcode_G5(unsigned long time_10ms)
 {
 	static bool first_run = true;
 	static unsigned long time_init = 0;
@@ -812,7 +855,7 @@ bool Gcode_G4(unsigned long time_10ms)
 	}
 }
 
-void Gcode_G4(Gcode_Class * command)
+void Gcode_G5(Gcode_Class * command)
 {
 	char *add = 0;
 	const char *command_add = command->Return_Command();
@@ -834,7 +877,7 @@ void Gcode_G4(Gcode_Class * command)
 	}
 	else
 	{
-		no_time = Gcode_G4(time_10ms);
+		no_time = Gcode_G5(time_10ms);
 		if (no_time)
 		{
 			command->Parse_State == Gcode_Class::IS_PARSED;	//指令完成
@@ -842,6 +885,26 @@ void Gcode_G4(Gcode_Class * command)
 	}
 
 
+}
+
+void Gcode_G6(Gcode_Class * command)
+{
+}
+
+void Gcode_G10(Gcode_Class * command)
+{
+}
+
+void Gcode_G10(const Coordinate_Class & Base_Coor)
+{
+}
+
+void Gcode_G28(Gcode_Class * command)
+{
+}
+
+void Gcode_G28(void)
+{
 }
 
 void Gcode_G90(void)
@@ -854,14 +917,48 @@ void Gcode_G91(void)
 	Is_Absolute_Coor = false;
 }
 
+void Gcode_G92(Gcode_Class * command)
+{
+}
+
+void Gcode_G92(const Coordinate_Class & Coor)
+{
+}
+
+void Gcode_M15(void)
+{
+	Mecanum_AGV.Run(false);
+}
+
+void Gcode_M16(void)
+{
+	Mecanum_AGV.Run(true);
+}
+
 void Gcode_M17(void)
 {
-	Mecanum_AGV.Brake(false);
+	Mecanum_AGV.Brake(true);
 }
 
 void Gcode_M18(void)
 {
-	Mecanum_AGV.Brake(true);
+	Mecanum_AGV.Brake(false);
+}
+
+void Gcode_M72(Gcode_Class * command)
+{
+}
+
+void Gcode_M132(Gcode_Class * command)
+{
+}
+
+void Gcode_M133(Gcode_Class * command)
+{
+}
+
+void Gcode_M134(Gcode_Class * command)
+{
 }
 
 void Gcode_I0(void)
@@ -870,6 +967,16 @@ void Gcode_I0(void)
 
 void Gcode_I30(void)
 {
+}
+
+inline void Gcode_I17(void)
+{
+	Gcode_M17();
+}
+
+inline void Gcode_I18(void)
+{
+	Gcode_M18();
 }
 
 void Gcode_I114(void)
@@ -887,10 +994,15 @@ void Gcode_I114(const Coordinate_Class & Coor)
 	My_Serial << " " << Coor.x_coor << " " << Coor.y_coor << " " << Coor.angle_coor;
 }
 
-void Gcode_I114(const Velocity_Class & Velocity)
+void Gcode_I115(void)
+{
+}
+
+void Gcode_I115(const Velocity_Class & Velocity)
 {
 	My_Serial << " " << Velocity.velocity_x << " " << Velocity.velocity_y << " " << Velocity.angular_velocity_angle;
 
 }
+
 
 
