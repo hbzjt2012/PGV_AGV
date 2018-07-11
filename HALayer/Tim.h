@@ -22,8 +22,8 @@ public:
 	inline void Stop(void) { TIM_Base_Class::Stop(_TIMx); }	//关闭定时器
 
 	void Write(uint16_t cnt) { _TIMx->CNT = cnt; } //写定时器的计数
-	uint16_t Read(void) { return _TIMx->CNT; }	 //返回定时器的计数
-	void Init_UG(void) { _TIMx->EGR = 1; }		   //通过UG位初始化寄存器
+	uint16_t Read(void) { return _TIMx->CNT; }		//返回定时器的计数
+	void Init_UG(void) { _TIMx->EGR = 1; }		  //通过UG位初始化寄存器
 
 	static void Init(TIM_TypeDef * TIM, uint16_t arr, uint16_t psc, bool Open_Interrupt = false);
 	static inline void Begin(TIM_TypeDef * TIM) { TIM->CR1 |= TIM_CR1_CEN; }//开启定时器

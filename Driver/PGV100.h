@@ -10,7 +10,7 @@
 * PGV传感器发送和接收数据都是以16进制格式收发
 * PGV使用UART5，485通信
 * 使用DMA发送（开启串口发送完成中断TC，用于设置485为接收状态）
-* 使用DMA接收(开启传输完成中断，用于指示一帧数据接收完成)
+* 使用DMA接收(开启串口接收空闲中断，用于指示一帧数据接收完成)
 * 未对警告信息进行处理
 *
 * 统一了色带、位置码带、Tag标签三者的坐标系（矩阵变换）
@@ -24,13 +24,10 @@
 * 若色带、位置码带、Tag标签与世界坐标系之间有相对旋转、平移，需自行增加坐标变换
 */
 
-extern "C" void UART5_IRQHandler(void);
-extern "C" void DMA1_Stream0_IRQHandler(void);
 
 class PGV_Class : private Uart_Base_Class
 {
-	friend void UART5_IRQHandler(void);
-	friend void DMA1_Stream0_IRQHandler(void);
+	friend void PGV_Uart_IRQHandler(void);
 
   public:
 	//PGV传感器的指令
@@ -54,7 +51,7 @@ class PGV_Class : private Uart_Base_Class
 		NO_Target		 //没有识别到码带、色带、Tag标签
 	} PGV_TARGET;		 //指示当前PGV传感器读取到的目标
 
-	PGV_Class() : Uart_Base_Class(UART5), TX_DMA(DMA1_Stream7), RX_DMA(DMA1_Stream0) {}
+	PGV_Class() : Uart_Base_Class(PGV_Uart_Port) {}
 	~PGV_Class() = default;
 	void Init(uint32_t baudrate);
 	void Send(PGV_CMD_Mode _cmd);
@@ -77,8 +74,8 @@ class PGV_Class : private Uart_Base_Class
 	bool data_OK;	//表示坐标可靠
 	Coordinate_Class coor;	//实际坐标
   private:
-	DMA_Base_Class TX_DMA;
-	DMA_Base_Class RX_DMA;
+	static DMA_Base_Class TX_DMA;
+	static DMA_Base_Class RX_DMA;
 	static IO_Class dir;
 
 	/*struct
@@ -100,8 +97,8 @@ class PGV_Class : private Uart_Base_Class
 	static bool rx_flag;				//表明收到了一帧数据
 	static uint16_t tx_cnt;				//发送字节的计数
 	static uint16_t rx_cnt;				//接收字节的计数
-	static uint8_t TX_buf[16];			//发送数据的缓冲区，若缓冲区满，则不会发送
-	static volatile uint8_t RX_buf[32]; //接收数据的缓冲区
+	static uint8_t TX_buf[32];			//发送数据的缓冲区，若缓冲区满，则不会发送
+	static volatile uint8_t RX_buf[64]; //接收数据的缓冲区
 	//解析后获得的只经过正负处理过的偏移值
 	int32_t x_temp;
 	int32_t y_temp;

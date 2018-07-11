@@ -3,24 +3,20 @@
 #include "Accelerometer.h"
 #include "../HALayer/Uart.h"
 #include "../HALayer/DMA.h"
-#include "../HALayer/Tim.h"
 #include "../App/Position.h"
 
 /*
-* 该陀螺转角仪(瑞芬科技的TL740D)使用串口（串口2）和MCU通信
+* 该陀螺转角仪(瑞芬科技的TL740D)使用串口和MCU通信
 * 可以获取角度、角速度、前向加速度
-* 使用DMA发送，使用定时器7超时检测接收数据帧
+* 使用DMA发送、接收
 */
 
-extern "C" void USART2_IRQHandler(void);
-extern "C" void TIM7_IRQHandler(void);
 
 class TL740D_Class : public Gyro_Class, public Accelerometer_Class, protected Uart_Base_Class
 {
-	friend void USART2_IRQHandler(void);
-	friend void TIM7_IRQHandler(void);
+	friend void Gyro_Uart_IRQHandler(void);
 public:
-	TL740D_Class() : Uart_Base_Class(USART2), TX_DMA(DMA1_Stream6) {}
+	TL740D_Class() : Uart_Base_Class(Gyro_Uart_Port) {}
 	~TL740D_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口
@@ -43,14 +39,15 @@ private:
 
 	int32_t BCD2DEC(const uint8_t *source); //将TL740返回的BCD编码的数转换成十进制
 
-	DMA_Base_Class TX_DMA;
+	static DMA_Base_Class TX_DMA;
+	static DMA_Base_Class RX_DMA;
 	static bool rx_flag;				//表明收到了一帧数据
 	static uint16_t tx_cnt;				//发送字节的计数
 	static uint16_t rx_cnt;				//接收字节的计数
-	static uint8_t TX_buf[16];			//发送数据的缓冲区，若缓冲区满，则不会发送
-	static volatile uint8_t RX_buf[32]; //接收数据的缓冲区
+	static uint8_t TX_buf[32];			//发送数据的缓冲区，若缓冲区满，则不会发送
+	static volatile uint8_t RX_buf[64]; //接收数据的缓冲区
 
 	void write(const char c) override;
-	static uint8_t data_Buf[24]; //数据暂存，避免数据遭到破坏
+	static uint8_t data_Buf[64]; //数据暂存，避免数据遭到破坏
 
 };

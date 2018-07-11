@@ -1,4 +1,5 @@
 #include "Serial.h"
+#include "../HALayer/IO.h"
 
 bool Serial_Class::rx_flag = false;
 char Serial_Class::TX_buf[1024] = { 0 };			//发送数据的缓冲区，若缓冲区满，则不会发送
@@ -6,17 +7,20 @@ volatile char Serial_Class::RX_buf[1024] = { 0 }; //接收数据的缓冲区
 uint16_t Serial_Class::tx_cnt = 0;				//发送字节的计数
 uint16_t Serial_Class::rx_cnt = 0;				//接收字节的计数
 
+DMA_Base_Class Serial_Class::TX_DMA = DMA_Base_Class(Serial_TX_DMA_Stream);
+DMA_Base_Class Serial_Class::RX_DMA = DMA_Base_Class(Serial_RX_DMA_Stream);
+
 void Serial_Class::Init(uint32_t baudrate)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 	DMA_InitTypeDef DMA_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
-	uint16_t TIM6_Arr = 0; //TIM6重装值（用于检测串口接收超时）
+	IO_Class TX = IO_Class(Serial_Uart_TX_Port, Serial_Uart_TX_Pin);
+	IO_Class RX = IO_Class(Serial_Uart_RX_Port, Serial_Uart_RX_Pin);
 
 	//配置DMA
 	DMA_InitStructure.DMA_BufferSize = 0;
-	DMA_InitStructure.DMA_Channel = DMA_Channel_4;			//通道4
+	DMA_InitStructure.DMA_Channel = Serial_TX_DMA_Channel;	
 	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral; //内存到外设
 	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;  //直接传输
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
@@ -32,27 +36,21 @@ void Serial_Class::Init(uint32_t baudrate)
 	DMA_InitStructure.DMA_Priority = DMA_Priority_Low;
 	TX_DMA.Init(&DMA_InitStructure);
 
-	//配置TIM6中断时间
-	//定时器6的时钟频率为系统时钟的一半（APB1分配系数2，定时器频率*2）
-	TIM6_Arr = (uint16_t)(SystemCoreClock / 2 / (baudrate / 22) / 10 + 1); //设置静默时间为22个位(定时器分频系数10)
-	TIM_Base_Class::Init(TIM6, TIM6_Arr, 10,true);	//设置定时器6的中断频率，用于设置串口接收超时检测		   
+	//配置接收中断
+	DMA_InitStructure.DMA_BufferSize = 1024;
+	DMA_InitStructure.DMA_Channel = Serial_RX_DMA_Channel;	
+	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
+	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+	RX_DMA.Init(&DMA_InitStructure);
 
-	NVIC_InitStructure.NVIC_IRQChannel = TIM6_DAC_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		  //响应优先级
-	NVIC_Init(&NVIC_InitStructure);
+	RX_DMA.Open();	//开启DMA接收
 
-	//配置串口用的GPIO口
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1; //GPIOA0 与 GPIOA1
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;		   //复用功能
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	  //速度 50MHz
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;		   //推挽复用输出
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;		   //上拉
-	GPIO_Init(GPIOA, &GPIO_InitStructure);				   //初始化 PA0， PA1
+	TX.Init(GPIO_Mode_AF, GPIO_OType_PP, GPIO_PuPd_UP);
+	RX.Init(GPIO_Mode_AF, GPIO_OType_PP, GPIO_PuPd_UP);
 
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4); //PA0 复用为 UART4_TX
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4); //PA1 复用为 UART_RX
+	GPIO_PinAFConfig(Serial_Uart_TX_Port, Serial_Uart_TX_PinSource, Serial_Uart_TX_AF);
+	GPIO_PinAFConfig(Serial_Uart_RX_Port, Serial_Uart_RX_PinSource, Serial_Uart_RX_AF);
 
 	//配置串口
 	USART_InitStructure.USART_BaudRate = baudrate;
@@ -63,35 +61,28 @@ void Serial_Class::Init(uint32_t baudrate)
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;		//字长为8位数据格式;
 	Uart_Base_Class::Init(&USART_InitStructure);
 
-	Uart->CR3 |= USART_DMAReq_Tx; //打开DMA_TX请求
-	Uart->CR1 |= _BV(5);		  //开启RXNE中断
+	enable(); //开启串口
 
 	//配置中断
-	NVIC_InitStructure.NVIC_IRQChannel = UART4_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannel = Serial_Uart_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; //抢占优先级
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;		  //响应优先级
 	NVIC_Init(&NVIC_InitStructure);
 
-	enable(); //开启串口
+	asm("nop");
+
+	Clear_IDLE_Flag();
+
+	Uart->CR3 |= USART_DMAReq_Tx|USART_DMAReq_Rx; //打开DMA_TX、DMA_RX请求
+	//USART_ITConfig(Uart, USART_IT_IDLE, ENABLE);//开启空闲线路中断
+	Uart->CR1 |= _BV(4);	//开启空闲中断
 }
 
 void Serial_Class::flush(void)
 {
 	if (tx_cnt > 0)
 	{
-		TX_DMA.Set_Data_Num(tx_cnt); //设置要发送的数据数量
-		tx_cnt = 0;
-	}
-}
-
-void Serial_Class::flush_demo(float time_s)
-{
-	if (tx_cnt > 0)
-	{
-		print(" S:");
-		print(time_s);
-		print("\r\n");
 		TX_DMA.Set_Data_Num(tx_cnt); //设置要发送的数据数量
 		tx_cnt = 0;
 	}
@@ -106,29 +97,18 @@ void Serial_Class::write(const char c)
 	}
 }
 
-void TIM6_DAC_IRQHandler(void)
+void Serial_Uart_IRQHandler(void)
 {
-	if (TIM6->SR & TIM_IT_Update) //更新中断
+	if (Serial_Uart_Port->SR&USART_FLAG_IDLE)	//接收空闲中断
 	{
-		TIM6->SR = ~TIM_IT_Update;
-		TIM6->CR1 &= ~TIM_CR1_CEN;						//关闭定时器6
-		Serial_Class::rx_flag = true;					//接受到了一帧数据
-		Serial_Class::RX_buf[Serial_Class::rx_cnt] = 0; //结尾0
-	}
-}
-
-void UART4_IRQHandler(void)
-{
-	static uint8_t temp = 0;
-	if (UART4->SR & USART_FLAG_RXNE) //接收中断
-	{
-		TIM6->CNT = 0;			  //计数器清0
-		TIM6->CR1 |= TIM_CR1_CEN; //使能定时器1
-		temp = UART4->DR;
-		if (Serial_Class::rx_cnt < 1023)
-		{
-			Serial_Class::RX_buf[Serial_Class::rx_cnt] = temp;
-			++Serial_Class::rx_cnt;
-		}
+		//软件序列清空中断标志
+		uint16_t temp = Serial_Uart_Port->SR;
+		temp = Serial_Uart_Port->DR;
+		Serial_Class::rx_flag = true;
+		Serial_Class::rx_cnt = 1024 - Serial_Class::RX_DMA.Set_Data_Num(1024);
+		//Serial_RX_DMA_Stream->CR &= ~DMA_SxCR_EN;	//关闭DMA
+		//Serial_Class::rx_cnt = 1024 - Serial_RX_DMA_Stream->NDTR;
+		//Serial_RX_DMA_Stream->NDTR = 1024;
+		//Serial_RX_DMA_Stream->CR |= DMA_SxCR_EN;	//开启DMA
 	}
 }

@@ -4,7 +4,7 @@
   <BspID>com.visualgdb.bsp.in-place</BspID>
   <BspVersion>1.0</BspVersion>
   <McuID>STM32F407VE</McuID>
-  <MCUDefinitionFile>..\stm32f407xx.xml</MCUDefinitionFile>
+  <MCUDefinitionFile>..\..\..\Users\zhang\Documents\SR_PGV_AGV\stm32f407xx.xml</MCUDefinitionFile>
   <MCUProperties>
     <Entries />
   </MCUProperties>
@@ -170,7 +170,7 @@
     <RAMSize>196608</RAMSize>
     <FLASHBase>134217728</FLASHBase>
     <RAMBase>536870912</RAMBase>
-    <MCUDefinitionFile>..\stm32f407xx.xml</MCUDefinitionFile>
+    <MCUDefinitionFile>..\..\..\Users\zhang\Documents\SR_PGV_AGV\stm32f407xx.xml</MCUDefinitionFile>
     <AdditionalSourcesRequiredForTesting>false</AdditionalSourcesRequiredForTesting>
   </InPlaceMCU>
   <MCUMakFile>stm32.mak</MCUMakFile>

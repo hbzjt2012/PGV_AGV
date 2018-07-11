@@ -12,6 +12,7 @@
   <Build xsi:type="com.visualgdb.build.embedded">
     <MakeFilePathRelativeToSourceDir>Makefile</MakeFilePathRelativeToSourceDir>
     <MakeConfigurationName>Debug</MakeConfigurationName>
+    <AdditionalMakeArguments />
     <MakeCommandTemplate>
       <SkipWhenRunningCommandList>false</SkipWhenRunningCommandList>
       <Command>cmd.exe</Command>
@@ -90,7 +91,7 @@
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.extraargs</Key>
-          <Value>-c init -c "reset init" -c "gdb_port 56094" -c "telnet_port 56093"  </Value>
+          <Value>-c init -c "reset init" -c "gdb_port 49871" -c "telnet_port 49870"  </Value>
         </KeyValue>
         <KeyValue>
           <Key>com.sysprogs.arm.openocd.initargs</Key>

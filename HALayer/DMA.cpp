@@ -1,6 +1,6 @@
 #include "DMA.h"
 
-void DMA_Base_Class::Set_Data_Num(uint32_t number)
+uint32_t DMA_Base_Class::Set_Data_Num(uint32_t number)
 {
 	/*
 	* 在stm32f4的手册中，DMA-SR寄存器说明下面有一句话
@@ -14,14 +14,14 @@ void DMA_Base_Class::Set_Data_Num(uint32_t number)
 	uint32_t temp = 0;
 
 	Close();
-	if (dma_channel < DMA2_Stream0)
+	if (dma_stream < DMA2_Stream0)
 	{
-		x = ((uint32_t)dma_channel - (uint32_t)DMA1_Stream0) / 0x18; //获取当前流控制器
+		x = ((uint32_t)dma_stream - (uint32_t)DMA1_Stream0) / 0x18; //获取当前流控制器
 		add_temp = (uint32_t) & (DMA1->LIFCR) + (x & (0x04));		 //保存寄存器地址
 	}
 	else
 	{
-		x = ((uint32_t)dma_channel - (uint32_t)DMA2_Stream0) / 0x18;
+		x = ((uint32_t)dma_stream - (uint32_t)DMA2_Stream0) / 0x18;
 		add_temp = (uint32_t) & (DMA2->LIFCR) + (x & (0x04)); //保存寄存器地址
 	}
 	//temp = x & 0x02;
@@ -31,11 +31,14 @@ void DMA_Base_Class::Set_Data_Num(uint32_t number)
 	temp = (0x3D << (6 * (x & 0x01))) << ((x & 0x02) << 3);
 	*(uint32_t *)add_temp = temp;
 	//*(uint32_t*)add_temp = (0x3D << (6 * (x & 0x01))) << ((x & 0x02) << 3);	//清除所有中断标志
-	dma_channel->NDTR = number;
+
+	uint32_t remaining = dma_stream->NDTR;
+	dma_stream->NDTR = number;
 	Open();
+	return remaining;
 }
 
 void DMA_Base_Class::ITConfig(uint32_t DMA_IT, FunctionalState NewState)
 {
-	DMA_ITConfig(dma_channel, DMA_IT, NewState);
+	DMA_ITConfig(dma_stream, DMA_IT, NewState);
 }

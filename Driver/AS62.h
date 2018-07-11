@@ -5,7 +5,7 @@
 class AS62_Class final :public Wireless_Serial_Class
 {
 public:
-	AS62_Class() :Wireless_Serial_Class(), M0(GPIOA, GPIO_Pin_3), M1(GPIOA, GPIO_Pin_2) {}
+	AS62_Class() :Wireless_Serial_Class(), M0(Wireless_M0_Port, Wireless_M0_Pin), M1(Wireless_M1_Port, Wireless_M1_Pin) {}
 	~AS62_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口,设置M0脚和M1脚

@@ -81,6 +81,9 @@
     <Filter Include="Math\Src">
       <UniqueIdentifier>{5273b809-8d97-429e-9023-d0724eca18be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HardwareDefine">
+      <UniqueIdentifier>{75e68523-a0db-4ce0-a3f8-3f96d3aa200a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c">
@@ -593,6 +596,15 @@
     </ClInclude>
     <ClInclude Include="..\Math\Kalman_Filter_Line.h">
       <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HardwareDefine\Version_2_0.h">
+      <Filter>HardwareDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HardwareDefine\Version_1_0.h">
+      <Filter>HardwareDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HardwareDefine\Version_Boards.h">
+      <Filter>HardwareDefine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

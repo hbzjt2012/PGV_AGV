@@ -1,42 +1,8 @@
 #pragma once
 
-//定义了车轮的默认前进方向
-#define FRONT_LEFTT_DEFAULT_DIR false  //前左轮默认方向
-#define FRONT_RIGHT_DEFAULT_DIR true   //前右轮默认方向
-#define BEHIND_LEFTT_DEFAULT_DIR false //后左轮默认方向
-#define BEHIND_RIGHT_DEFAULT_DIR true  //后右轮默认方向
-
-//定义了电机和编码器的硬件参数
-#define FRONT_LEFT_MOTOR_TIM_CHANNEL 4                        //TIM2_CH4
-#define FRONT_LFET_MOTOR_DIR (IO_Class(GPIOE, GPIO_Pin_13))   //前左轮方向IO
-#define FRONT_LFET_MOTOR_BRAKE (IO_Class(GPIOE, GPIO_Pin_14)) //前左轮刹车IO
-#define FRONT_LFET_MOTOR_STOP (IO_Class(GPIOE, GPIO_Pin_15))  //前左轮启动IO
-#define FRONT_LEFT_MOTOR (FRONT_LFET_MOTOR_DIR, FRONT_LFET_MOTOR_BRAKE, FRONT_LFET_MOTOR_STOP, FRONT_LEFTT_DEFAULT_DIR, TIM2)
-
-#define FRONT_RIGHT_MOTOR_TIM_CHANNEL 3                        //TIM2_CH3
-#define FRONT_RIGHT_MOTOR_DIR (IO_Class(GPIOE, GPIO_Pin_10))   //前右轮方向IO
-#define FRONT_RIGHT_MOTOR_BRAKE (IO_Class(GPIOE, GPIO_Pin_11)) //前右轮刹车IO
-#define FRONT_RIGHT_MOTOR_STOP (IO_Class(GPIOE, GPIO_Pin_12))  //前右轮启动IO
-#define FRONT_RIGHT_MOTOR (FRONT_RIGHT_MOTOR_DIR, FRONT_RIGHT_MOTOR_BRAKE, FRONT_RIGHT_MOTOR_STOP, FRONT_RIGHT_DEFAULT_DIR, TIM2)
-
-#define BEHIND_LEFT_MOTOR_TIM_CHANNEL 2                        //TIM12_CH2
-#define BEHIND_LFET_MOTOR_DIR (IO_Class(GPIOD, GPIO_Pin_11))   //后左轮方向IO
-#define BEHIND_LFET_MOTOR_BRAKE (IO_Class(GPIOD, GPIO_Pin_12)) //后左轮刹车IO
-#define BEHIND_LFET_MOTOR_STOP (IO_Class(GPIOD, GPIO_Pin_13))  //后左轮启动IO
-#define BEHIND_LEFT_MOTOR (BEHIND_LFET_MOTOR_DIR, BEHIND_LFET_MOTOR_BRAKE, BEHIND_LFET_MOTOR_STOP, BEHIND_LEFTT_DEFAULT_DIR, TIM12)
-
-#define BEHIND_RIGHT_MOTOR_TIM_CHANNEL 1                       //TIM12_CH1
-#define BEHIND_RIGHT_MOTOR_DIR (IO_Class(GPIOD, GPIO_Pin_8))   //后右轮方向IO
-#define BEHIND_RIGHT_MOTOR_BRAKE (IO_Class(GPIOD, GPIO_Pin_9)) //后右轮刹车IO
-#define BEHIND_RIGHT_MOTOR_STOP (IO_Class(GPIOD, GPIO_Pin_10)) //后右轮启动IO
-#define BEHIND_RIGHT_MOTOR (BEHIND_RIGHT_MOTOR_DIR, BEHIND_RIGHT_MOTOR_BRAKE, BEHIND_RIGHT_MOTOR_STOP, BEHIND_RIGHT_DEFAULT_DIR, TIM12)
-
-#define FRONT_LEFTT_ENCODER (Encoder_Class(TIM1))  //前左编码器
-#define FRONT_RIGHT_ENCODER (Encoder_Class(TIM8))  //前右编码器
-#define BEHIND_LEFTT_ENCODER (Encoder_Class(TIM3)) //后左编码器
-#define BEHIND_RIGHT_ENCODER (Encoder_Class(TIM4)) //后右编码器
+//硬件版本定义 见Version_Boards.h
+#define BOARD_VERSION BOARD_VERSION_2_0
 
 #define CONTROL_PERIOD	10	//控制周期10ms
 
-#define Gcode_Command_Buf_SIZE	4
-#define Movement_Command_Buf_SIZE	32
+

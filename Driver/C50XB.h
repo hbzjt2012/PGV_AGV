@@ -10,7 +10,7 @@
 class C50XB_Class final : public Wireless_Serial_Class
 {
 public:
-	C50XB_Class() : Wireless_Serial_Class(), CS(GPIOA, GPIO_Pin_3), SET(GPIOA, GPIO_Pin_2) {}
+	C50XB_Class() : Wireless_Serial_Class(), CS(Wireless_M0_Port, Wireless_M0_Pin), SET(Wireless_M1_Port, Wireless_M1_Pin) {}
 	~C50XB_Class() = default;
 
 	void Init(uint32_t baudrate); //根据波特率初始化串口,设置CS脚和SET脚

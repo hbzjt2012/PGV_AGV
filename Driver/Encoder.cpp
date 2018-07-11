@@ -3,7 +3,7 @@
 #include <misc.h>
 #include "../macros.h"
 
-TIM_Base_Class Encoder_Class::Encoder_Fre_Tim = TIM_Base_Class(TIM9);
+TIM_Base_Class Encoder_Class::Encoder_Fre_Tim = TIM_Base_Class(TIM11);
 
 void Encoder_Class::Init(bool dir)
 {
@@ -17,7 +17,7 @@ void Encoder_Class::Init(bool dir)
 
 void Encoder_Class::Init_Period_TIM(void)
 {
-	//设置时基，TIM9的时钟为168Mhz，1680分频，最大计数时间为655.3ms
+	//设置时基，TIM11的时钟为168Mhz，1680分频，最大计数时间为655.3ms
 	Encoder_Fre_Tim.Init((uint16_t)65530, 1680);
 
 	Encoder_Fre_Tim.Begin(); //开始计数

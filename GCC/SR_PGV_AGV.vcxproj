@@ -191,6 +191,9 @@
     <ClInclude Include="..\HALayer\PWM.h" />
     <ClInclude Include="..\HALayer\Tim.h" />
     <ClInclude Include="..\HALayer\Uart.h" />
+    <ClInclude Include="..\HardwareDefine\Version_1_0.h" />
+    <ClInclude Include="..\HardwareDefine\Version_2_0.h" />
+    <ClInclude Include="..\HardwareDefine\Version_Boards.h" />
     <ClInclude Include="..\macros.h" />
     <ClInclude Include="..\main.h" />
     <ClInclude Include="..\Math\Kalman_Filter.h" />

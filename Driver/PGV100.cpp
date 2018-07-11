@@ -1,25 +1,28 @@
 #include "PGV100.h"
-#include <stm32f4xx_gpio.h>
 #include <misc.h>
 
 bool PGV_Class::rx_flag = false;			  //表明收到了一帧数据
 uint16_t PGV_Class::tx_cnt = 0;				  //发送字节的计数
 uint16_t PGV_Class::rx_cnt = 0;				  //接收字节的计数
-uint8_t PGV_Class::TX_buf[16] = { 0 };		  //发送数据的缓冲区，若缓冲区满，则不会发送
-volatile uint8_t PGV_Class::RX_buf[32] = { 0 }; //接收数据的缓冲区
+uint8_t PGV_Class::TX_buf[32] = { 0 };		  //发送数据的缓冲区，若缓冲区满，则不会发送
+volatile uint8_t PGV_Class::RX_buf[64] = { 0 }; //接收数据的缓冲区
+DMA_Base_Class PGV_Class::TX_DMA = DMA_Base_Class(PGV_TX_DMA_Stream);
+DMA_Base_Class PGV_Class::RX_DMA = DMA_Base_Class(PGV_RX_DMA_Stream);
 
-IO_Class PGV_Class::dir = IO_Class(GPIOD, GPIO_Pin_0);
+IO_Class PGV_Class::dir = IO_Class(PGV_Uart_DIR_Port, PGV_Uart_DIR_Pin);
 
 void PGV_Class::Init(uint32_t baudrate)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
 	USART_InitTypeDef USART_InitStructure;
 	DMA_InitTypeDef DMA_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
+	IO_Class TX = IO_Class(PGV_Uart_TX_Port, PGV_Uart_TX_Pin);
+	IO_Class RX = IO_Class(PGV_Uart_RX_Port, PGV_Uart_RX_Pin);
+
 
 	//配置TX_DMA
 	DMA_InitStructure.DMA_BufferSize = 2;
-	DMA_InitStructure.DMA_Channel = DMA_Channel_4;			//通道4
+	DMA_InitStructure.DMA_Channel = PGV_TX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral; //内存到外设
 	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;  //直接传输
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
@@ -32,31 +35,24 @@ void PGV_Class::Init(uint32_t baudrate)
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_High;
 	TX_DMA.Init(&DMA_InitStructure);
 
 	//配置RX_DMA
-	DMA_InitStructure.DMA_BufferSize = 21;
+	DMA_InitStructure.DMA_BufferSize = 64;
+	DMA_InitStructure.DMA_Channel = PGV_RX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
-	DMA_InitStructure.DMA_Priority = DMA_Priority_VeryHigh;
+	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
 	RX_DMA.Init(&DMA_InitStructure);
 
-	RX_DMA.ITConfig(DMA_IT_TC, ENABLE); //接收用DMA的完成中断
+	RX_DMA.Open();
 
-	//配置串口用的GPIO口
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;		  //GPIOC12
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;	  //复用功能
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; //速度 50MHz
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;	//推挽复用输出
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;	  //上拉
-	GPIO_Init(GPIOC, &GPIO_InitStructure);			  //初始化 PA0， PA1
+	TX.Init(GPIO_Mode_AF, GPIO_OType_PP, GPIO_PuPd_UP);
+	RX.Init(GPIO_Mode_AF, GPIO_OType_PP, GPIO_PuPd_UP);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2; //GPIOD2
-	GPIO_Init(GPIOD, &GPIO_InitStructure);	//初始化 PA0， PA1
-
-	GPIO_PinAFConfig(GPIOD, GPIO_PinSource2, GPIO_AF_UART5);  //PD2复用为 UART_RX
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource12, GPIO_AF_UART5); //PC12 复用为 UART_TX
+	GPIO_PinAFConfig(PGV_Uart_TX_Port, PGV_Uart_TX_PinSource, PGV_Uart_TX_AF);
+	GPIO_PinAFConfig(PGV_Uart_RX_Port, PGV_Uart_RX_PinSource, PGV_Uart_RX_AF);
 
 	//配置485用的方向IO
 	dir.Init(GPIO_Mode_OUT);
@@ -70,28 +66,24 @@ void PGV_Class::Init(uint32_t baudrate)
 	USART_InitStructure.USART_WordLength = USART_WordLength_9b;		//字长为9位数据格式;
 	Uart_Base_Class::Init(&USART_InitStructure);
 
-	Uart->CR3 |= (USART_DMAReq_Tx | USART_DMAReq_Rx); //打开DMA_TX、DMA_RX请求
-	//Uart->CR3 |= USART_DMAReq_Tx;
-	Uart->CR1 |= _BV(6); //开启发送完成中断
-
-	//配置中断
-	NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
-	NVIC_Init(&NVIC_InitStructure);
-
-	NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream0_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		  //响应优先级
-	NVIC_Init(&NVIC_InitStructure);
-
-	RX_Dir(); //设置接收
-
 	enable(); //开启串口
 
-	Send(Set_Dir_Best);
+	 //配置中断
+	NVIC_InitStructure.NVIC_IRQChannel = PGV_Uart_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; //抢占优先级
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;		  //响应优先级
+	NVIC_Init(&NVIC_InitStructure);
+
+	asm("nop");
+
+	Clear_IDLE_Flag();
+
+	Uart->CR3 |= (USART_DMAReq_Tx | USART_DMAReq_Rx); //打开DMA_TX、DMA_RX请求
+	//USART_ITConfig(Uart, USART_IT_IDLE, ENABLE);//开启空闲线路中断
+	Uart->CR1 |= _BV(4) | _BV(6);	//开启空闲中断、发送完成中断
+
+	RX_Dir(); //设置接收
 }
 
 void PGV_Class::Send(PGV_CMD_Mode _cmd)
@@ -343,7 +335,7 @@ inline void PGV_Class::RX_Dir(void)
 
 void PGV_Class::write(const char c)
 {
-	if (tx_cnt < 16)
+	if (tx_cnt < 32)
 	{
 		TX_buf[tx_cnt] = c;
 		++tx_cnt;
@@ -352,28 +344,33 @@ void PGV_Class::write(const char c)
 
 void PGV_Class::flush(void)
 {
-	TX_DMA.Set_Data_Num(tx_cnt); //设置要发送的数据数量
-	tx_cnt = 0;
-}
-
-void UART5_IRQHandler(void)
-{
-	if (UART5->SR & (1 << 6)) //发送完成中断
+	if (tx_cnt > 0)
 	{
-		UART5->SR &= ~(1 << 6); //清除TC位
-		PGV_Class::RX_Dir();	//设置方向为接收
-		//清除溢出错误
-		//和TL740的接收方式共同使用会产生接收溢出，未解决，故只好直接清除溢出标志，丢掉该数据包
-		uint32_t temp = UART5->SR;
-		temp = UART5->DR;
+		TX_DMA.Set_Data_Num(tx_cnt); //设置要发送的数据数量
+		tx_cnt = 0;
 	}
 }
 
-void DMA1_Stream0_IRQHandler(void)
+
+
+void PGV_Uart_IRQHandler(void)
 {
-	if (DMA1->LISR & _BV(5)) //传输完成中断
+	if (PGV_Uart_Port->SR & USART_FLAG_TC) //发送完成中断
 	{
-		DMA1->LIFCR = _BV(5); //清除标志位
+		PGV_Uart_Port->SR &= ~USART_FLAG_TC; //清除TC位
+		PGV_Class::RX_Dir();	//设置方向为接收
+		//清除溢出错误
+		//和TL740的接收方式共同使用会产生接收溢出，未解决，故只好直接清除溢出标志，丢掉该数据包
+		//uint32_t temp = UART5->SR;
+		//temp = UART5->DR;
+	}
+
+	if (PGV_Uart_Port->SR&USART_FLAG_IDLE)	//接收空闲中断
+	{
+		//软件序列清空中断标志
+		uint16_t temp = PGV_Uart_Port->SR;
+		temp = PGV_Uart_Port->DR;
 		PGV_Class::rx_flag = true;
+		PGV_Class::rx_cnt = 64 - PGV_Class::RX_DMA.Set_Data_Num(64);
 	}
 }

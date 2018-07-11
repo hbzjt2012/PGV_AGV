@@ -1,4 +1,5 @@
 #pragma once
+#include "../HardwareDefine/Version_Boards.h"
 #include <stm32f4xx_usart.h>
 #include <string>
 
@@ -15,6 +16,12 @@
 * 若要使用串口，必须先执行enable()，打开串口
 */
 
+extern "C" void USART1_IRQHandler(void);
+extern "C" void USART2_IRQHandler(void);
+extern "C" void USART3_IRQHandler(void);
+extern "C" void UART4_IRQHandler(void);
+extern "C" void UART5_IRQHandler(void);
+
 class Uart_Base_Class
 {
 public:
@@ -23,6 +30,11 @@ public:
 
 	inline void enable(void) { Uart->CR1 |= USART_CR1_UE; } //开启串口
 	inline void disable(void) { Uart->CR1 &= ~USART_CR1_UE; }//关闭串口
+	inline void Clear_IDLE_Flag(void) {	//先读入SR，再读入DR清除IDLE中断标志
+		uint16_t temp = Uart->SR;
+		temp = Uart->DR;
+	}
+
 
 	inline void print(const char *str) {
 		while (*str)

@@ -1,9 +1,10 @@
 #include "main.h"
 #include <stdlib.h>
 #include <cstring>
+#include "./HardwareDefine/Version_Boards.h"
 
 Mecanum_Wheel_Class Mecanum_AGV;			//麦克纳姆轮
-IO_Class Led = IO_Class(GPIOA, GPIO_Pin_15);//LED指示灯
+IO_Class Led = IO_Class(LED_GPIO_Port, LED_GPIO_Pin);//LED指示灯
 C50XB_Class My_Serial;						//无线串口
 PGV_Class PGV100;							//PGV传感器
 TL740D_Class TL740;							//陀螺转角仪
@@ -42,21 +43,23 @@ bool virtual_agv_coor_init_flag = false;	//true指示当前虚拟坐标已初始
 
 inline void Gcode_Commond_Over(Gcode_Class *gcode_command);
 
+
 int main(void)
 {
 	Init_System();//配置系统所需的硬件、外设
-	while (!Gcode_G4(1500));	//延时15s
-	TL740.Forward_Accel_Bias_Init();
+	//while (!Gcode_G4(1500));	//延时15s
+	//TL740.Forward_Accel_Bias_Init();
 
 	Encoder_Class::Clear_Time_US();
 	Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder);	//清空编码器的误差
 	//My_Serial.print(TL740.forward_accel_bias, 3);
+
 	while (1)
 	{
 		if (time11_flag)	//表示控制周期到
 		{
 			time11_flag = false;
-			//control_period_flag = true;
+			control_period_flag = true;
 			//My_Serial << "\r\n" << Error_Coor_InAGV.x_coor << " " << Error_Coor_InAGV.y_coor << " " << Error_Coor_InAGV.angle_coor;
 		//Location_AGV();	//AGV定位函数
 		//Process_Movement_Command();	//获取并处理运动指令
@@ -77,7 +80,7 @@ int main(void)
 
 		Process_Gcode_Command(command_buf_state); //获取处理当前指令(已完成)                                                                                          
 
-		//Update_Print_MSG();	//打印信息
+		Update_Print_MSG();	//打印信息
 		My_Serial.flush();	//刷新
 	}
 }
@@ -92,35 +95,35 @@ void Init_System(void)
 	Gcode_Queue.Init();
 	Movement_Queue.Init();
 	Led.Init(GPIO_Mode_OUT);
+	Led.Clear();
 	My_Serial.Init(115200);
 	Mecanum_AGV.Init();
 
 	Parameter_Class::Init_Parameter();	//初始化参数
 	Movement_Class::Init_Parameter();	//初始化参数
 
-	My_Serial.enable();	//使能串口
 	Gcode_M17();	//启动电机
 
 	NVIC_InitTypeDef NVIC_InitStructure;
-	NVIC_InitStructure.NVIC_IRQChannel = TIM1_TRG_COM_TIM11_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannel = TIM8_UP_TIM13_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3; //抢占优先级
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;		  //响应优先级
 	NVIC_Init(&NVIC_InitStructure);
 
-	TIM_Base_Class::Init(TIM11, 2000, 840, true);	//设置定时器11的中断频率为100Hz，时基--10ms	
-	TIM_Base_Class::Begin(TIM11);
+	TIM_Base_Class::Init(TIM13, 1000, 840, true);	//设置定时器11的中断频率为100Hz，时基--10ms	
+	TIM_Base_Class::Begin(TIM13);
 
-	while (!Gcode_G4(1000));	//延时10s
-	Led.Set();
-	PGV100.Init(115200);
-	TL740.Init(115200);
-	while (!Gcode_G4(1000));	//延时10s
+	//while (!Gcode_G4(1000));	//延时10s
+	//Led.Set();
+	//PGV100.Init(115200);
+	//TL740.Init(115200);
+	//while (!Gcode_G4(1000));	//延时10s
 
-	Angle_Kalman.Init();
-	Line_X_Kalman.Init();
-	Line_Y_Kalman.Init();
-	Coor_Kalman.Init();
+	//Angle_Kalman.Init();
+	//Line_X_Kalman.Init();
+	//Line_Y_Kalman.Init();
+	//Coor_Kalman.Init();
 
 }
 
@@ -512,7 +515,7 @@ bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Cl
 	{
 	case Movement_Class::NO_Interpolation: //未插补
 										   //插补
-		if (movement_command->Init(Coor))	//使用虚拟坐标对AGV进行定位
+		if (movement_command->Init(Coor))	//使用虚拟坐标对AGV进行定位                          
 		{
 			movement_command->Interpolation_State = Movement_Class::IS_Interpolating;
 		}
@@ -674,11 +677,11 @@ void Gcode_Commond_Over(Gcode_Class *gcode_command)
 }
 
 extern "C" {
-	void TIM1_TRG_COM_TIM11_IRQHandler()
+	void TIM8_UP_TIM13_IRQHandler()
 	{
-		if (TIM11->SR & TIM_IT_Update) //更新中断
+		if (TIM13->SR & TIM_IT_Update) //更新中断
 		{
-			TIM11->SR = ~TIM_IT_Update;
+			TIM13->SR = ~TIM_IT_Update;
 			time11_flag = true;
 			time11_cnt++;
 		}

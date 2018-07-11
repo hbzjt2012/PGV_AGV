@@ -17,7 +17,7 @@ void Motor_Class::Init(uint32_t fre, uint16_t res, uint8_t channel)
 	_brake.Init(GPIO_Mode_OUT);
 	Brake_Enable(true);
 	_stop.Init(GPIO_Mode_OUT);
-	Run_Enable(true);
+	Run_Enable(false);
 	_speed.Init(fre, res, channel);
 	_speed.Set_duty(0);
 }
@@ -58,12 +58,12 @@ void Motor_Class::Set_Speed(float speed)
 // FullName:  Motor_Class::Run_Enable
 // Access:    public
 // Returns:   void
-// Parameter: bool value	true 电机开始，false 电机停止
+// Parameter: bool value	true 电机使能，false 电机失能
 // Description: 电机运行使能
 //************************************
 void Motor_Class::Run_Enable(bool value)
 {
-	_stop.Write(!value);
+	_stop.Write(value);
 }
 
 //************************************

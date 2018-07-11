@@ -15,35 +15,45 @@
 #include "./Math/Kalman_Filter_Line.h"
 #include "./Math/Kalman_Filter_Coor.h"
 #include "./DSP_Lib/arm_math.h"
+#include "./HardwareDefine/Version_Boards.h"
 
+#define Gcode_Command_Buf_SIZE	16
+#define Movement_Command_Buf_SIZE	64
 
 /*
-* TIM1 编码器FL
-* TIM2 FR、FL轮子转速
-* TIM3 编码器BL
-* TIM4 编码器BR
-* TIM5 用于避障、按键等的扫描（未实现）
-* TIM6 串口4超时检测
-* TIM7 串口2超时检测
-* TIM8 编码器FR
-* TIM9 用于编码器的频率计算
-* TIM10 用于输出执行机构的PWM波
-* TIM11 时基，定时时间10ms
+* TIM1 用于三色指示灯(暂定)
+* TIM2 通道1输出IO口预留
+* TIM3 编码器FR
+* TIM4 编码器BL
+* TIM5 编码器FL
+* TIM6 
+* TIM7 
+* TIM8 编码器BR
+* TIM9 电机FL、FR转速 
+* TIM10
+* TIM11 用于获取编码器计算周期
 * TIM12 BR、BL轮子转速
-* TIM13
-* TIM14
+* TIM13 用于控制周期测量
+* TIM14 用于避障、按键等的扫描(暂定)
 */
 
 /*
 *			中断向量						抢占优先级				响应优先级
-* TIM1_TRG_COM_TIM11_IRQn(用于时基)				3						4
-* TIM6_DAC_IRQHandler(用于通信用串口)			2						2
-* UART4_IRQHandler(用于通信用串口)				2						3
-* UART5_IRQHandler(用于PGV)						1						4
-* DMA1_Stream0_IRQHandler(用于PGV)				1						1
-* USART2_IRQHandler	(用于陀螺仪)				1						3
-* TIM7_IRQHandler(用于陀螺仪)					1						2
+* Serial_Uart_IRQIRQHandler(通信用串口)			3						1
+* PGV_Uart_IRQHandler(用于PGV串口)				2						1
+* Gyrp_Uart_IRQHandler	(用于陀螺仪串口)		1						1
 */
+
+/*
+*	  DMA_Channel				优先级
+* Gyro_TX_DMA_Channel			  低
+* Gyro_RX_DMA_Channel			非常高
+* Serial_TX_DMA_Channel			  低
+* Serial_RX_DMA_Channel			 中等
+* PGV_TX_DMA_Channel			  高
+* PGV_RX_DMA_Channel			  低
+*/
+
 
 //若之后仍出现到达目标点之后，速度突变(目标坐标突变)
 //则修改插补路径中的坐标投影方式，将角度剔除，使用xy计算因子，再计算投影坐标
