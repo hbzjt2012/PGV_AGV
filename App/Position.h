@@ -9,16 +9,23 @@ public:
 
 	float x_coor;	//x坐标(mm)
 	float y_coor;   //y坐标(mm)
-	float angle_coor; //角度坐标(-180°~+180°)
+	float angle_coor; //角度坐标(°)
 	float angle_rad;	//角度坐标(弧度)
 
-	void Clear(void);
-	void Transform_Angle(void);	//将角度转换为-180~+180，也修改弧度
-	static float Transform_Angle(float angle);//将角度转换为-180~+180
-											  //void Truncation_Coor(void);	//将角度变换至-180~+180°，坐标保留0.1精度
+	void Clear(void);	//坐标清零
+	float Rad2Angle(void) { angle_coor = angle_rad / M_PI*180.0f; return angle_coor; }	//弧度转角度
+	float Angle2Rad(void) { angle_rad = angle_coor / 180.0f*M_PI; return angle_rad; }	//角度转弧度
+	void Coor_Trans(const float base_angle);	//转换角度
 
-	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor); //相对坐标转换为绝对坐标
-	static Coordinate_Class& Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor);	//从绝对坐标转换为相对坐标
+	Coordinate_Class &operator+=(const Coordinate_Class &addend);	//被加数坐标系中，相对坐标为加数的  绝对坐标
+	Coordinate_Class &operator-=(const Coordinate_Class &subtrahend);	//减数坐标系中，绝对坐标为被减数的  相对坐标
+
+	//相对坐标转换为绝对坐标
+	static Coordinate_Class &Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor);
+	//从绝对坐标转换为相对坐标
+	static Coordinate_Class& Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor);
+	//将输入角度转换至base角度-180°~+180°范围内
+	static float Angle_Trans(float angle, const float base);
 }; //坐标
 
 class Velocity_Class
@@ -28,8 +35,6 @@ public:
 
 	float velocity_x;	//x方向速度 mm/s
 	float velocity_y;	//y方向速度 mm/s
-	float velocity;			//线速度速度,mm/s
-	float velocity_angle;   //线速度与x轴的夹角 °
 	float angular_velocity_rad; //旋转角速度,rad/s
 	float angular_velocity_angle;	//旋转角速度 °/s
 	float angular_velocity_mm;	//旋转角速度，转化为线速度 mm/s

@@ -148,7 +148,7 @@ bool TL740D_Class::Analyze_Data(void)
 			//z_rate = z_rate / 180 * M_PI;
 
 			z_heading = z_heading - z_heading_bias;
-			z_heading = Coordinate_Class::Transform_Angle(z_heading);
+			//z_heading = Coordinate_Class::Transform_Angle(z_heading);
 
 			//forward_accel = forward_accel*9806.65f;	//单位转化为mm/s2
 			//z_heading_bias = z_heading;	//设置基准

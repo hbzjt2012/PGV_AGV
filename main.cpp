@@ -100,7 +100,7 @@ void Init_System(void)
 	Mecanum_AGV.Init();
 
 	Parameter_Class::Init_Parameter();	//初始化参数
-	Movement_Class::Init_Parameter();	//初始化参数
+	//Movement_Class::Init_Parameter();	//初始化参数
 
 	Gcode_M16();	//使能电机
 	Gcode_M18();	//刹车解除
@@ -161,7 +161,7 @@ void Location_AGV(void)
 	{
 		TL740.data_OK = false;
 		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
-		float z_measurement = Coordinate_Class::Transform_Angle(TL740.z_heading - TL740_angle_previous);
+		//float z_measurement = Coordinate_Class::Transform_Angle(TL740.z_heading - TL740_angle_previous);
 		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
 		if (movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE)//运动缓存区空闲,表示小车停止运动
 		{
@@ -254,7 +254,7 @@ void Location_AGV(void)
 		//AGV_Current_Coor_InWorld.y_coor = Coor_Kalman.state_variable_data[1];
 		//AGV_Current_Coor_InWorld.angle_coor = Coor_Kalman.state_variable_data[2];
 
-		AGV_Current_Coor_InWorld.Transform_Angle();	//角度缩放
+		//AGV_Current_Coor_InWorld.Transform_Angle();	//角度缩放
 
 		//Gcode_I114(Virtual_AGV_Current_Coor_InWorld);	//输出上一周期的期望坐标
 		////Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Target_Velocity_InAGV, AGV_Target_Coor_InWorld);
@@ -379,7 +379,7 @@ void Process_Gcode_Command(AGV_State::Gcode_Command_State & state)
 		My_Serial.Clear_rx_cnt();
 
 		//解析指令，获取解析结果
-		int parse_result = Gcode_Inject.parse(My_Serial.Return_RX_buf(), agv_add_code, gcode_command_line_received + 1);
+		int parse_result = Gcode_Inject.Parse(My_Serial.Return_RX_buf(), agv_add_code, gcode_command_line_received + 1);
 		if (parse_result == 0)																		 //解析成功
 		{
 			if (Gcode_Inject.command_letter == 'I') //判断是否为插入指令
@@ -468,7 +468,7 @@ void Location_AGV_demo(void)
 	{
 		AGV_Current_Coor_InWorld = Mecanum_AGV.Update_Coor_demo(AGV_Current_Coor_InWorld, AGV_Current_Velocity_By_Encoder, time_s);
 	}
-	AGV_Current_Coor_InWorld.Transform_Angle();	//角度缩放
+	//AGV_Current_Coor_InWorld.Transform_Angle();	//角度缩放
 }
 
 //************************************
@@ -697,7 +697,7 @@ Coordinate_Class Get_Command_Coor(Gcode_Class * command, const Coordinate_Class 
 	//		Coor_temp.angle_coor += 360.0f;
 	//	}
 	//}
-	Coor_temp.Transform_Angle();
+	//Coor_temp.Transform_Angle();
 
 	//Coor_temp.Truncation_Coor();
 

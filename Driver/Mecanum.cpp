@@ -210,9 +210,6 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 	AGV_Velocity.angular_velocity_rad = AGV_Velocity.angular_velocity_mm / (Parameter_Class::wheel_lx_ly_distance);
 	AGV_Velocity.angular_velocity_angle = AGV_Velocity.angular_velocity_rad / M_PI * 180;
 
-	float velocity_temp = AGV_Velocity.velocity_x*AGV_Velocity.velocity_x + AGV_Velocity.velocity_y*AGV_Velocity.velocity_y;
-	arm_sqrt_f32(velocity_temp, &(AGV_Velocity.velocity));	//计算速度大小
-	AGV_Velocity.velocity_angle = ArcTan_Lookup(AGV_Velocity.velocity_x, AGV_Velocity.velocity_y) / 10.0f;
 
 	return time_ms;
 }
@@ -264,8 +261,6 @@ void Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & 
 
 	Target_Velocity = Velocity_Class::Absolute_To_Relative(Target_Velocity_InWorld, Target_Velocity, Base);
 
-	Target_Velocity.velocity = sqrtf(Target_Velocity.velocity_x*Target_Velocity.velocity_x + Target_Velocity.velocity_y*Target_Velocity.velocity_y);
-	Target_Velocity.velocity_angle = ArcTan_Lookup(Target_Velocity.velocity_x, Target_Velocity.velocity_y) / 10.0f;
 
 	Target_Velocity.angular_velocity_rad = Target_Velocity.angular_velocity_angle / 180.0f*M_PI;
 	Target_Velocity.angular_velocity_mm = Target_Velocity.angular_velocity_rad*Parameter_Class::wheel_lx_ly_distance;

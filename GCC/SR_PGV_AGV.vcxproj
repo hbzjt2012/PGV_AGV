@@ -64,6 +64,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\App\Gcode.cpp" />
+    <ClCompile Include="..\App\Interpolation.cpp" />
     <ClCompile Include="..\App\Movement.cpp" />
     <ClCompile Include="..\App\Movement_Mecanum.cpp" />
     <ClCompile Include="..\App\Position.cpp" />
@@ -155,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\App\Gcode.h" />
+    <ClInclude Include="..\App\Interpolation.h" />
     <ClInclude Include="..\App\Movement.h" />
     <ClInclude Include="..\App\Movement_Mecanum.h" />
     <ClInclude Include="..\App\Position.h" />

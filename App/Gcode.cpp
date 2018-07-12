@@ -2,8 +2,8 @@
 #include <cctype>
 
 //************************************
-// Method:    parse
-// FullName:  Gcode_Class::parse
+// Method:    Parse
+// FullName:  Gcode_Class::Parse
 // Access:    public
 // Returns:   int
 //					解析正常，返回0;
@@ -14,7 +14,7 @@
 // Parameter: const int command_next_line 期望的下一条行号，若为0，则忽略行号检查
 // Description:	解析Gcode指令
 //************************************
-int Gcode_Class::parse(const char *p, const unsigned int agv_add, const int command_next_line)
+int Gcode_Class::Parse(const char *p, const unsigned int agv_add, const int command_next_line)
 {
 	codenum = 0;
 	char crc_command = 0; //从指令中获取的crc校验

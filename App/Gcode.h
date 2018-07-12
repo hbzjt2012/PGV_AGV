@@ -3,11 +3,11 @@
 //用于接收处理Gcode指令
 class Gcode_Class
 {
-  public:
+public:
 	Gcode_Class() = default;
 	~Gcode_Class() = default;
 
-	int parse(const char *p, const unsigned int agv_add = 1, const int command_next_line = 0); //解析当前指令
+	int Parse(const char *p, const unsigned int agv_add, const int command_next_line = 0); //解析当前指令
 	char *Return_Command(void) { return command; }
 	char command_letter; // 指令码，如G, M, or I（见指令表格）
 	int codenum;		 // 指令号，如123
@@ -19,6 +19,6 @@ class Gcode_Class
 		IS_PARSED   //执行完毕
 	} Parse_State;
 
-  private:
-	char command[60]; //当前指令参数，60个字节足够保存指令
+private:
+	char command[100]; //当前指令参数，100个字节足够保存指令
 };

@@ -317,7 +317,7 @@ Coordinate_Class PGV_Class::Cal_Coor(void)
 	//{
 	//	coor.angle_coor -= 360.0f;	//变换至-180~+180
 	//}
-	coor.Transform_Angle();
+	//coor.Transform_Angle();
 	//coor.Truncation_Coor();	
 
 	data_OK = true;	//数据正确

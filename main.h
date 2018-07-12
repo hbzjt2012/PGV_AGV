@@ -17,8 +17,8 @@
 #include "./DSP_Lib/arm_math.h"
 #include "./HardwareDefine/Version_Boards.h"
 
-#define Gcode_Command_Buf_SIZE	16
-#define Movement_Command_Buf_SIZE	64
+#define Gcode_Command_Buf_SIZE	32
+#define Movement_Command_Buf_SIZE	128
 
 /*
 * TIM1 用于三色指示灯(暂定)
