@@ -3,7 +3,7 @@
 
 Interpolation_Class::Interpolation_Parameter_TypedefStructure Interpolation_Class::Interpolation_Parameter;
 
-enum Interpolation_Class::Interpolation_State_Enum Interpolation_Class::Interpolation_State;
+//enum Interpolation_Class::Interpolation_State_Enum Interpolation_Class::Interpolation_State;
 
 float Interpolation_Class::target_distance = 0.0f;
 float Interpolation_Class::target_velocity = 0.0f;
@@ -99,7 +99,6 @@ bool Interpolation_Class::Init(const float distance, const float threshold)
 
 	slowly_distance = input_distance_abs + slowly_distance_temp - dec_distance - acc_distance - const_distance;	//低速位移
 	slowly_time = slowly_distance / Interpolation_Parameter.min_velocity_abs; //获取总的慢速时间(s)
-
 	return true;
 }
 

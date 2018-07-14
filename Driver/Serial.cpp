@@ -20,7 +20,7 @@ void Serial_Class::Init(uint32_t baudrate)
 
 	//配置DMA
 	DMA_InitStructure.DMA_BufferSize = 0;
-	DMA_InitStructure.DMA_Channel = Serial_TX_DMA_Channel;	
+	DMA_InitStructure.DMA_Channel = Serial_TX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral; //内存到外设
 	DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;  //直接传输
 	DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_Full;
@@ -38,7 +38,7 @@ void Serial_Class::Init(uint32_t baudrate)
 
 	//配置接收中断
 	DMA_InitStructure.DMA_BufferSize = 1024;
-	DMA_InitStructure.DMA_Channel = Serial_RX_DMA_Channel;	
+	DMA_InitStructure.DMA_Channel = Serial_RX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
 	DMA_InitStructure.DMA_Priority = DMA_Priority_Medium;
@@ -74,7 +74,7 @@ void Serial_Class::Init(uint32_t baudrate)
 
 	Clear_IDLE_Flag();
 
-	Uart->CR3 |= USART_DMAReq_Tx|USART_DMAReq_Rx; //打开DMA_TX、DMA_RX请求
+	Uart->CR3 |= USART_DMAReq_Tx | USART_DMAReq_Rx; //打开DMA_TX、DMA_RX请求
 	//USART_ITConfig(Uart, USART_IT_IDLE, ENABLE);//开启空闲线路中断
 	Uart->CR1 |= _BV(4);	//开启空闲中断
 }
@@ -106,6 +106,7 @@ void Serial_Uart_IRQHandler(void)
 		temp = Serial_Uart_Port->DR;
 		Serial_Class::rx_flag = true;
 		Serial_Class::rx_cnt = 1024 - Serial_Class::RX_DMA.Set_Data_Num(1024);
+		Serial_Class::RX_buf[Serial_Class::rx_cnt] = '\0';
 		//Serial_RX_DMA_Stream->CR &= ~DMA_SxCR_EN;	//关闭DMA
 		//Serial_Class::rx_cnt = 1024 - Serial_RX_DMA_Stream->NDTR;
 		//Serial_RX_DMA_Stream->NDTR = 1024;

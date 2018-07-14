@@ -45,6 +45,8 @@ public:
 	Velocity_Class &operator/=(const float divisor);
 
 	void Clear(void);
+	float Rad2Angle(void) { angular_velocity_angle = angular_velocity_rad / M_PI*180.0f; return angular_velocity_angle; }	//弧度转角度
+	float Angle2Rad(void) { angular_velocity_rad = angular_velocity_angle / 180.0f*M_PI; return angular_velocity_angle; }	//角度转弧度
 
 	static Velocity_Class &Relative_To_Absolute(Velocity_Class &Absolute_Velocity, const Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor); //从相对速度转换为绝对速度
 	static Velocity_Class &Absolute_To_Relative(const Velocity_Class &Absolute_Velocity, Velocity_Class &Relative_Velocity, const Coordinate_Class &Base_Coor);	//从绝对速度转换为相对速度

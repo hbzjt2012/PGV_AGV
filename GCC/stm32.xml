@@ -20,6 +20,7 @@
         <string>STM32F40_41xxx</string>
         <string>__FPU_PRESENT</string>
         <string>__FPU_USED</string>
+        <string>DEBUG_DEFAULT_INTERRUPT_HANDLERS</string>
       </PreprocessorMacros>
       <IncludeDirectories>
         <string>.</string>

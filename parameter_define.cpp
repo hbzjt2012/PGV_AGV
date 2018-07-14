@@ -2,19 +2,21 @@
 #include "Configure.h"
 #include "macros.h"
 
-inline float Update_wheel_angular_velocity(float motor_rotationl_velocity)
+
+inline constexpr float Update_wheel_angular_velocity(float motor_rotationl_velocity)
 {
 	return motor_rotationl_velocity / 60 / REDUCTION_RATIO * 2 * M_PI;
 }
 
-inline float Update_wheel_line_velocity(float motor_rotationl_velocity)
+inline constexpr float Update_wheel_line_velocity(float motor_rotationl_velocity)
 {
 	return motor_rotationl_velocity / 60 / REDUCTION_RATIO * MECANUM_WHEEL_DIAMETER * M_PI;
 }
 
 inline float Update_wheel_acceleration_line(float acceleration_time)
 {
-	return (MOTOR_MAX_ROTATIONL_VELOCITY_HARD - MOTOR_MIN_ROTATIONL_VELOCITY_HARD) / 60 / REDUCTION_RATIO * MECANUM_WHEEL_DIAMETER * M_PI / acceleration_time;
+	return (Parameter_Class::wheel_max_line_velocity - Parameter_Class::wheel_min_line_velocity) / acceleration_time;
+	//return (MOTOR_MAX_ROTATIONL_VELOCITY_HARD - MOTOR_MIN_ROTATIONL_VELOCITY_HARD) / 60 / REDUCTION_RATIO * MECANUM_WHEEL_DIAMETER * M_PI / acceleration_time;
 }
 
 //轮子最终分辨率（线数）
@@ -33,9 +35,6 @@ float Parameter_Class::motor_max_rotationl_velocity_soft = 3000.0f;	//软件定�
 float Parameter_Class::motor_min_rotationl_velocity_soft = 100.0f;	//软件定义电机最低转速(100rpm/min)
 
 //定义车轮最大速度、最小速度和最大加减速度
-float Parameter_Class::wheel_max_angular_velocity = Update_wheel_angular_velocity(motor_max_rotationl_velocity_soft);	//轮子最大角速度(rad/s)
-float Parameter_Class::wheel_min_angular_velocity = Update_wheel_angular_velocity(motor_min_rotationl_velocity_soft);	//轮子最小角速度(rad/s)
-
 float Parameter_Class::wheel_max_line_velocity = Update_wheel_line_velocity(motor_max_rotationl_velocity_soft);     //轮子最大线速度(mm/s);
 float Parameter_Class::wheel_min_line_velocity = Update_wheel_line_velocity(motor_min_rotationl_velocity_soft);      //轮子最小线速度(mm/s);
 
@@ -48,6 +47,7 @@ bool Parameter_Class::Is_Absolute_Coor = true; //指示当前坐标是否为绝�
 unsigned int Parameter_Class::AGV_Address_NUM = 1;
 
 float Parameter_Class::movement_threshold = 1.0f;	//运动阈值(mm)
+
 
 //void Parameter_Class::Update_Parameter(int num, float para)
 //{
@@ -77,12 +77,8 @@ float Parameter_Class::movement_threshold = 1.0f;	//运动阈值(mm)
 
 void Parameter_Class::Init_Parameter(void)
 {
-	wheel_max_angular_velocity = Update_wheel_angular_velocity(motor_max_rotationl_velocity_soft);	//轮子最大角速度(rad/s)
-	wheel_min_angular_velocity = Update_wheel_angular_velocity(motor_min_rotationl_velocity_soft);	//轮子最小角速度(rad/s)
-
 	wheel_max_line_velocity = Update_wheel_line_velocity(motor_max_rotationl_velocity_soft);     //轮子最大线速度(mm/s);
 	wheel_min_line_velocity = Update_wheel_line_velocity(motor_min_rotationl_velocity_soft);      //轮子最小线速度(mm/s);
 
 	wheel_acceleration_line_velocity = Update_wheel_acceleration_line(wheel_acceleration_time);
 }
-

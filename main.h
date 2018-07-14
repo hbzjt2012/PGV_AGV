@@ -121,7 +121,7 @@ void Gcode_I0(void);	//急停
 void Gcode_I30(void);	//清除指令队列
 void Gcode_I17(void);	//所有电机刹车，同M17
 void Gcode_I18(void);	//所有电机刹车解除，同M18
-void Gcode_I114(void);	//获取当前坐标
+//void Gcode_I114(void);	//获取当前坐标
 void Gcode_I114(const Coordinate_Class &Coor);
 void Gcode_I115(void);	//获取当前速度
 void Gcode_I115(const Velocity_Class &Velocity);

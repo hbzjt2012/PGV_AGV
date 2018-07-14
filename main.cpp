@@ -3,6 +3,8 @@
 #include <cstring>
 #include "./HardwareDefine/Version_Boards.h"
 
+Interpolation_Class::Interpolation_Parameter_TypedefStructure Interpolation_Parameter;
+
 Mecanum_Wheel_Class Mecanum_AGV;			//麦克纳姆轮
 IO_Class Led = IO_Class(LED_GPIO_Port, LED_GPIO_Pin);//LED指示灯
 C50XB_Class My_Serial;						//无线串口
@@ -50,6 +52,11 @@ int main(void)
 	//while (!Gcode_G4(1500));	//延时15s
 	//TL740.Forward_Accel_Bias_Init();
 
+	Interpolation_Parameter.max_velocity_abs = Parameter_Class::wheel_max_line_velocity;
+	Interpolation_Parameter.min_velocity_abs = Parameter_Class::wheel_min_line_velocity;
+	Interpolation_Parameter.acceleration_abs = Parameter_Class::wheel_acceleration_line_velocity;
+	Interpolation_Parameter.slow_time_abs = Parameter_Class::line_slowest_time;
+
 	Encoder_Class::Clear_Time_US();
 	Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder);	//清空编码器的误差
 	//My_Serial.print(TL740.forward_accel_bias, 3);
@@ -70,19 +77,20 @@ int main(void)
 		{
 			control_period_flag = false;
 			Led.Toggle();
-			Location_AGV();	//AGV定位函数
-			//Location_AGV_demo();
+			//Location_AGV();	//AGV定位函数
+			Location_AGV_demo();
 			Process_Movement_Command();	//获取并处理运动指令
 			Movement_Control();	//运动控制
 		}
 		Check_Avoidance_Buton();	//检查避障和按键动作
 		Parse_Sensor_Data();	//解析传感器数据
 
-		Process_Gcode_Command(command_buf_state); //获取处理当前指令(已完成)                                                                                          
+		Process_Gcode_Command(command_buf_state); //获取处理当前指令(已完成)
 
 		Update_Print_MSG();	//打印信息
 		My_Serial.flush();	//刷新
 	}
+
 }
 
 
@@ -100,7 +108,6 @@ void Init_System(void)
 	Mecanum_AGV.Init();
 
 	Parameter_Class::Init_Parameter();	//初始化参数
-	//Movement_Class::Init_Parameter();	//初始化参数
 
 	Gcode_M16();	//使能电机
 	Gcode_M18();	//刹车解除
@@ -121,10 +128,10 @@ void Init_System(void)
 	TL740.Init(115200);
 	//while (!Gcode_G4(1000));	//延时10s
 
-	//Angle_Kalman.Init();
-	//Line_X_Kalman.Init();
-	//Line_Y_Kalman.Init();
-	//Coor_Kalman.Init();
+	Angle_Kalman.Init();
+	Line_X_Kalman.Init();
+	Line_Y_Kalman.Init();
+	Coor_Kalman.Init();
 
 }
 
@@ -161,7 +168,8 @@ void Location_AGV(void)
 	{
 		TL740.data_OK = false;
 		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
-		//float z_measurement = Coordinate_Class::Transform_Angle(TL740.z_heading - TL740_angle_previous);
+		float z_measurement = Coordinate_Class::Angle_Trans(TL740.z_heading - TL740_angle_previous, 0.0f);
+
 		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
 		if (movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE)//运动缓存区空闲,表示小车停止运动
 		{
@@ -385,7 +393,7 @@ void Process_Gcode_Command(AGV_State::Gcode_Command_State & state)
 			if (Gcode_Inject.command_letter == 'I') //判断是否为插入指令
 			{
 				Is_Parsing_Command = !Run_Gcode_Command(&Gcode_Inject); //处理指令
-				My_Serial.print("\r\nInject OK");
+				My_Serial.print("Inject OK");
 			}
 			else //不为插入指令
 			{
@@ -516,7 +524,7 @@ bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Cl
 	{
 	case Movement_Class::NO_Interpolation: //未插补
 										   //插补
-		if (movement_command->Init(Coor))	//使用虚拟坐标对AGV进行定位                          
+		if (movement_command->Init(Coor, Interpolation_Parameter))	//使用虚拟坐标对AGV进行定位                          
 		{
 			movement_command->Interpolation_State = Movement_Class::IS_Interpolating;
 		}
@@ -530,6 +538,8 @@ bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Cl
 		if (!(movement_command->Cal_Velocity(Current_Coor)))	//插补完成
 		{
 			movement_command->Interpolation_State = Movement_Class::IS_Interpolated;	//插补完成
+			Virtual_AGV_Current_Coor_InWorld = movement_command->Get_Destination();
+			Virtual_AGV_Current_Velocity_InAGV = movement_command->Target_Velocity_InAGV;
 			return true;
 		}
 		else //还在插补，获取虚拟AGV的坐标和速度
@@ -650,10 +660,11 @@ bool Run_Gcode_Command(Gcode_Class * gcode_command)
 			Gcode_I18();	//所有电机解除刹车
 			break;
 		case 114:
-			Gcode_I114();	//获取当前坐标
+			Gcode_I114(AGV_Current_Coor_InWorld);	//获取当前坐标
 			break;
 		case 115:
 			Gcode_I115();	//获取当前速度
+			break;
 		default:
 			break;
 		}
@@ -979,19 +990,19 @@ inline void Gcode_I18(void)
 	Gcode_M18();
 }
 
-void Gcode_I114(void)
-{
-	My_Serial.print("\r\nx:");
-	My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
-	My_Serial.print("  y:");
-	My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
-	My_Serial.print("  angle:");
-	My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
-}
+//void Gcode_I114(void)
+//{
+//	My_Serial.print("\r\nx:");
+//	My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
+//	My_Serial.print("  y:");
+//	My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
+//	My_Serial.print("  angle:");
+//	My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+//}
 
 void Gcode_I114(const Coordinate_Class & Coor)
 {
-	My_Serial << " " << Coor.x_coor << " " << Coor.y_coor << " " << Coor.angle_coor;
+	My_Serial << "\r\nx: " << Coor.x_coor << " y: " << Coor.y_coor << " angle: " << Coor.angle_coor;
 }
 
 void Gcode_I115(void)

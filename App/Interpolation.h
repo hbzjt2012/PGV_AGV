@@ -34,14 +34,14 @@ public:
 		IS_Interpolated   //插补完毕
 	};	//插补状态
 
-	static enum Interpolation_State_Enum Interpolation_State;
+	enum Interpolation_State_Enum Interpolation_State;
 
 	//使用前需更新插补参数和插补阈值
-	static bool Init(const float distance) { return Init(distance, Interpolation_Class::threshold); }	//根据插补参数和插补距离插补路径
-	static bool Init(const float distance, const float threshold);	//根据待插补距离和插补阈值对路径插补
-	static bool Cal_Velocity(float current_distance);	//根据当前移动距离计算期望距离和期望速度，返回计算结果
+	bool Init(const float distance) { return Init(distance, Interpolation_Class::threshold); }	//根据插补参数和插补距离插补路径
+	bool Init(const float distance, const float threshold);	//根据待插补距离和插补阈值对路径插补
+	bool Cal_Velocity(float current_distance);	//根据当前移动距离计算期望距离和期望速度，返回计算结果
 
-	static void Update_Interpolation_Parameter(const Interpolation_Parameter_TypedefStructure& Input_Para) {
+	void Update_Interpolation_Parameter(const Interpolation_Parameter_TypedefStructure& Input_Para) {
 		Interpolation_Parameter = Input_Para;
 	}	//更新插补参数
 

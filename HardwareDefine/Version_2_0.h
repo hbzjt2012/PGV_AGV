@@ -100,7 +100,7 @@
 //定义了车轮的默认前进方向
 #define FRONT_LEFT_DEFAULT_DIR		false  //前左轮默认方向
 #define FRONT_RIGHT_DEFAULT_DIR		true   //前右轮默认方向
-#define BEHIND_LEFT_DEFAULT_DIR	false //后左轮默认方向
+#define BEHIND_LEFT_DEFAULT_DIR		false //后左轮默认方向
 #define BEHIND_RIGHT_DEFAULT_DIR	true  //后右轮默认方向
 
 //定义了电机和编码器的硬件参数
@@ -223,6 +223,21 @@
 #define SPI_Flash_SPI			SPI1
 #define SPI_Flash_CS_GPIO_Port	GPIOD
 #define SPI_Flash_CS_GPIO_Pin	GPIO_Pin_7
+
+//定义车体参数
+#define DISTANCE_OF_WHEEL_X_AXES	600.0f		//左右两轮在X轴上的距离(mm)
+#define DISTANCE_OF_WHEEL_Y_AXES	534.0f		//前后两轮在Y轴上的距离(mm)
+#define MECANUM_WHEEL_DIAMETER		127.0		//定义麦克纳姆轮直径(mm)
+
+//定义了编码器参数
+#define ENCODER_FIX_WHEEL			false	//指示编码器和轮子固连在一起
+#define REDUCTION_RATIO				32		//减速比
+#define ENCODER_RESOLUTION_INIT		2500	//编码器的分辨率（线数）
+
+//定义电机转速
+//当前选用的电机驱动器无法识别出100%占空比，故将100%定义为6000转，50%定义为3000转
+#define MOTOR_MAX_ROTATIONL_VELOCITY_HARD 6000.0f	//硬件定义的电机最高转速
+#define MOTOR_MIN_ROTATIONL_VELOCITY_HARD 0.0f		//硬件定义的电机最低转速
 
 
 //串口1用DMA

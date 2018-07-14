@@ -26,8 +26,6 @@ Motor_Class Mecanum_Wheel_Class::Behind_Left_Wheel = Motor_Class(IO_Class(BEHIND
 	IO_Class(BEHIND_LEFT_MOTOR_BRAKE_Port, BEHIND_LEFT_MOTOR_BRAKE_Pin), IO_Class(BEHIND_LEFT_MOTOR_STOP_Port, BEHIND_LEFT_MOTOR_STOP_Pin), \
 	BEHIND_LEFT_DEFAULT_DIR, BEHIND_LEFT_MOTOR_TIM);	//后左轮
 
-
-
 Encoder_Class Mecanum_Wheel_Class::Front_Left_Encoder = Encoder_Class FRONT_LEFT_ENCODER_TIM;	//前左编码器
 Encoder_Class Mecanum_Wheel_Class::Front_Right_Encoder = Encoder_Class FRONT_RIGHT_ENCODER_TIM;  //前右编码器
 Encoder_Class Mecanum_Wheel_Class::Behind_Left_Encoder = Encoder_Class BEHIND_LEFT_ENCODER_TIM;  //后左编码器
@@ -63,7 +61,7 @@ void Mecanum_Wheel_Class::Init(void)
 	GPIO_Init(BEHIND_LEFT_MOTOR_SPEED_Port, &GPIO_InitStructure);
 	GPIO_PinAFConfig(BEHIND_LEFT_MOTOR_SPEED_Port, BEHIND_LEFT_MOTOR_SPEED_PinSource, BEHIND_LEFT_MOTOR_SPEED_AF);
 
-	GPIO_InitStructure.GPIO_Pin = FRONT_RIGHT_MOTOR_SPEED_Pin;
+	GPIO_InitStructure.GPIO_Pin = BEHIND_RIGHT_MOTOR_SPEED_Pin;
 	GPIO_Init(BEHIND_RIGHT_MOTOR_SPEED_Port, &GPIO_InitStructure);
 	GPIO_PinAFConfig(BEHIND_RIGHT_MOTOR_SPEED_Port, BEHIND_RIGHT_MOTOR_SPEED_PinSource, BEHIND_RIGHT_MOTOR_SPEED_AF);
 
@@ -103,10 +101,10 @@ void Mecanum_Wheel_Class::Init(void)
 	GPIO_PinAFConfig(BEHIND_LEFT_ENCODER_B_Port, BEHIND_LEFT_ENCODER_B_PinSource, BEHIND_LEFT_ENCODER_B_AF);
 
 
-	Front_Left_Encoder.Init(!FRONT_LEFT_DEFAULT_DIR);
-	Front_Right_Encoder.Init(!FRONT_RIGHT_DEFAULT_DIR);
-	Behind_Left_Encoder.Init(!BEHIND_LEFT_DEFAULT_DIR);
-	Behind_Right_Encoder.Init(!BEHIND_RIGHT_DEFAULT_DIR);
+	Front_Left_Encoder.Init(FRONT_LEFT_DEFAULT_DIR);
+	Front_Right_Encoder.Init(FRONT_RIGHT_DEFAULT_DIR);
+	Behind_Left_Encoder.Init(BEHIND_LEFT_DEFAULT_DIR);
+	Behind_Right_Encoder.Init(BEHIND_RIGHT_DEFAULT_DIR);
 
 	//AGV_Velocity_InAGV.velocity = 0.0f;
 	//AGV_Velocity_InAGV.velocity_angle = 0.0f;
