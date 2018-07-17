@@ -45,7 +45,8 @@ Coordinate_Class & Coordinate_Class::Relative_To_Absolute(Coordinate_Class & Abs
 	Absolute_Coor.y_coor = sin_Angle * (Relative_Coor.x_coor) + cos_Angle * (Relative_Coor.y_coor) + y_temp;
 	Absolute_Coor.angle_coor = Relative_Coor.angle_coor + angle_temp;
 
-	Absolute_Coor.Coor_Trans(angle_temp);	//转换角度
+	Absolute_Coor.Angle2Rad();
+	//Absolute_Coor.Coor_Trans(angle_temp);	//转换角度
 
 	return Absolute_Coor;
 }
@@ -63,7 +64,8 @@ Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class
 	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - y_temp);
 	Relative_Coor.angle_coor = Absolute_Coor.angle_coor - angle_temp;
 
-	Relative_Coor.Coor_Trans(angle_temp);
+	Relative_Coor.Angle2Rad();
+	//Relative_Coor.Coor_Trans(angle_temp);
 
 	return Relative_Coor;
 }
@@ -194,7 +196,7 @@ Velocity_Class operator-(const Velocity_Class & minuend, const Velocity_Class & 
 //不符合交换律
 Coordinate_Class operator+(const Coordinate_Class & summand, const Coordinate_Class & addend)
 {
-	Coordinate_Class temp=summand;
+	Coordinate_Class temp = summand;
 	temp += addend;
 	return temp;
 }

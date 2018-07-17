@@ -103,7 +103,7 @@ class PGV_Class : private Uart_Base_Class
 	int32_t x_temp;
 	int32_t y_temp;
 	int32_t angle_temp;
-	bool rx_xor_flag;	  //校验标志
+
 	PGV_CMD_Mode cmd_mode; //发送的指令
 
 	static void TX_Dir(void); //设置485方向为发送

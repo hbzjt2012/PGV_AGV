@@ -125,12 +125,12 @@ bool Interpolation_Class::Cal_Velocity(float current_distance)
 	{
 		target_velocity = sqrtf(Interpolation_Parameter.max_velocity_abs * Interpolation_Parameter.max_velocity_abs - 2 * (current_distance - acc_distance - const_distance) * Interpolation_Parameter.acceleration_abs) * Distance_Symbols;
 	}
-	else if (current_distance < (acc_distance + const_distance + dec_distance + slowly_distance - threshold))//在慢速区
+	else if (current_distance < (acc_distance + const_distance + dec_distance + slowly_distance - threshold / 2.0f))//在慢速区
 	{
 		target_velocity = Interpolation_Parameter.min_velocity_abs * Distance_Symbols;
 		//Target_Coor_InOrigin = Destination_Coor_InOrigin;
 	}
-	else if (current_distance > (acc_distance + const_distance + dec_distance + slowly_distance + threshold))//在慢速区
+	else if (current_distance > (acc_distance + const_distance + dec_distance + slowly_distance + threshold / 2.0f))//在慢速区
 	{
 		target_velocity = -Interpolation_Parameter.min_velocity_abs * Distance_Symbols;
 	}

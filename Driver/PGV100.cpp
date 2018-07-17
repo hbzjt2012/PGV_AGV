@@ -169,6 +169,7 @@ bool PGV_Class::Analyze_Data(void)
 	uint8_t xor_temp = 0;
 	uint8_t _target = 0;
 	uint32_t data_temp = 0;
+	bool rx_xor_flag = false;
 	switch (cmd_mode)
 	{
 	case Read_PGV_Data: //读取数据
@@ -204,9 +205,9 @@ bool PGV_Class::Analyze_Data(void)
 			target = NO_Target;
 			break;
 		default:
+			target = NO_Target;
 			break;
 		}
-
 		break;
 	case Set_Color_B: //设置色带颜色蓝色
 		if ((RX_buf[0] == RX_buf[1]) && (RX_buf[0] == 0x01))
@@ -283,19 +284,19 @@ bool PGV_Class::Analyze_Data(void)
 	switch (target)
 	{
 	case Colored_Tape:
-		x_deviation = y_temp / 10.0;
-		y_deviation = 0.0;
-		angle_deviation = ((-angle_temp) + 900) / 10.0;
+		x_deviation = y_temp / 10.0f;
+		y_deviation = 0.0f;
+		angle_deviation = ((-angle_temp) + 900) / 10.0f;
 		break;
 	case Code_Tape:
-		x_deviation = (-y_temp) / 10.0;
-		y_deviation = x_temp / 10.0;
-		angle_deviation = ((-angle_temp) + 900) / 10.0;
+		x_deviation = (-y_temp) / 10.0f;
+		y_deviation = x_temp / 10.0f;
+		angle_deviation = ((-angle_temp) + 900) / 10.0f;
 		break;
 	case Data_Matrix_Tag:
-		x_deviation = x_temp / 10.0;
-		y_deviation = y_temp / 10.0;
-		angle_deviation = (-angle_temp) / 10.0;
+		x_deviation = x_temp / 10.0f;
+		y_deviation = y_temp / 10.0f;
+		angle_deviation = (-angle_temp) / 10.0f;
 		break;
 	default:
 		break;

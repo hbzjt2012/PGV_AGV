@@ -208,7 +208,6 @@ float Mecanum_Wheel_Class::Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity
 	AGV_Velocity.angular_velocity_rad = AGV_Velocity.angular_velocity_mm / (Parameter_Class::wheel_lx_ly_distance);
 	AGV_Velocity.angular_velocity_angle = AGV_Velocity.angular_velocity_rad / M_PI * 180;
 
-
 	return time_ms;
 }
 

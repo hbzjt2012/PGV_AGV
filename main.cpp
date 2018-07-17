@@ -122,11 +122,11 @@ void Init_System(void)
 	TIM_Base_Class::Init(TIM13, 1000, 840, true);	//设置定时器11的中断频率为100Hz，时基--10ms	
 	TIM_Base_Class::Begin(TIM13);
 
-	//while (!Gcode_G4(1000));	//延时10s
-	//Led.Set();
+	while (!Gcode_G5(1000));	//延时10s
+	Led.Set();
 	PGV100.Init(115200);
 	TL740.Init(115200);
-	//while (!Gcode_G4(1000));	//延时10s
+	//while (!Gcode_G5(1000));	//延时10s
 
 	Angle_Kalman.Init();
 	Line_X_Kalman.Init();
