@@ -84,6 +84,8 @@ void PGV_Class::Init(uint32_t baudrate)
 	Uart->CR1 |= _BV(4) | _BV(6);	//开启空闲中断、发送完成中断
 
 	RX_Dir(); //设置接收
+
+	Send(Set_Dir_Best);
 }
 
 void PGV_Class::Send(PGV_CMD_Mode _cmd)
