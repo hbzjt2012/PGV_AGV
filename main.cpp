@@ -990,15 +990,16 @@ inline void Gcode_I18(void)
 	Gcode_M18();
 }
 
-//void Gcode_I114(void)
-//{
-//	My_Serial.print("\r\nx:");
-//	My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
-//	My_Serial.print("  y:");
-//	My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
-//	My_Serial.print("  angle:");
-//	My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
-//}
+void Gcode_I114(void)
+{
+	Gcode_I114(AGV_Current_Coor_InWorld);
+	//My_Serial.print("\r\nx:");
+	//My_Serial.print(AGV_Current_Coor_InWorld.x_coor);
+	//My_Serial.print("  y:");
+	//My_Serial.print(AGV_Current_Coor_InWorld.y_coor);
+	//My_Serial.print("  angle:");
+	//My_Serial.print(AGV_Current_Coor_InWorld.angle_coor);
+}
 
 void Gcode_I114(const Coordinate_Class & Coor)
 {
