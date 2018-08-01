@@ -5,7 +5,7 @@
 
 Interpolation_Class::Interpolation_Parameter_TypedefStructure Interpolation_Parameter;
 
-Mecanum_Wheel_Class Mecanum_AGV;			//麦克纳姆轮
+Mecanum_Wheel_Class Mecanum_AGV;			//麦克纳姆轮 
 IO_Class Led = IO_Class(LED_GPIO_Port, LED_GPIO_Pin);//LED指示灯
 C50XB_Class My_Serial;						//无线串口
 PGV_Class PGV100;							//PGV传感器
@@ -49,8 +49,10 @@ inline void Gcode_Commond_Over(Gcode_Class *gcode_command);
 int main(void)
 {
 	Init_System();//配置系统所需的硬件、外设
-	//while (!Gcode_G4(1500));	//延时15s
-	//TL740.Forward_Accel_Bias_Init();
+	Led.Set();
+	while (!Gcode_G5(1500));	//延时15s
+	TL740.Forward_Accel_Bias_Init();
+	Led.Clear();
 
 	Interpolation_Parameter.max_velocity_abs = Parameter_Class::wheel_max_line_velocity;
 	Interpolation_Parameter.min_velocity_abs = Parameter_Class::wheel_min_line_velocity;
@@ -77,8 +79,8 @@ int main(void)
 		{
 			control_period_flag = false;
 			Led.Toggle();
-			//Location_AGV();	//AGV定位函数
-			Location_AGV_demo();
+			Location_AGV();	//AGV定位函数
+			//Location_AGV_demo();
 			Process_Movement_Command();	//获取并处理运动指令
 			Movement_Control();	//运动控制
 		}
@@ -126,7 +128,7 @@ void Init_System(void)
 	Led.Set();
 	PGV100.Init(115200);
 	TL740.Init(115200);
-	//while (!Gcode_G5(1000));	//延时10s
+	while (!Gcode_G5(1000));	//延时10s
 
 	Angle_Kalman.Init();
 	Line_X_Kalman.Init();
@@ -167,8 +169,8 @@ void Location_AGV(void)
 	if (TL740.data_OK)	//以陀螺仪数据更新作为定位控制周期的判断点
 	{
 		TL740.data_OK = false;
-		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
 		float z_measurement = Coordinate_Class::Angle_Trans(TL740.z_heading - TL740_angle_previous, 0.0f);
+		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
 
 		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
 		if (movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE)//运动缓存区空闲,表示小车停止运动
@@ -352,6 +354,7 @@ void Parse_Sensor_Data(void)
 		if (PGV100.Analyze_Data() && (PGV100.target == PGV_Class::Data_Matrix_Tag))
 		{
 			PGV100.Cal_Coor();	//处理数据
+			PGV100.coor.Coor_Trans(AGV_Current_Coor_InWorld.angle_coor);	//坐标周期变换
 			if (!virtual_agv_coor_init_flag)	//表示虚拟坐标还未确认
 			{
 				virtual_agv_coor_init_flag = true;	//表示虚拟坐标已由外部地标确认
@@ -364,9 +367,9 @@ void Parse_Sensor_Data(void)
 		PGV100.Send(PGV_Class::Read_PGV_Data);	//读取PGV传感器数据
 	}
 
-	if (TL740.Return_rx_flag())
+	if (TL740.Return_data_flag())
 	{
-		TL740.Clear_rx_flag();
+		TL740.Clear_data_flag();
 		if (TL740.Analyze_Data())
 		{
 			TL740.data_OK = true;	//表示接收到了新的陀螺仪数据
@@ -990,7 +993,7 @@ inline void Gcode_I18(void)
 	Gcode_M18();
 }
 
-void Gcode_I114(void)
+inline void Gcode_I114(void)
 {
 	Gcode_I114(AGV_Current_Coor_InWorld);
 	//My_Serial.print("\r\nx:");

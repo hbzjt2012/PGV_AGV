@@ -27,8 +27,8 @@ public:
 	float Return_Forward_Accel(void) { return (forward_accel - forward_accel_bias)*9806.65f; }	//单位转化为mm/s2
 
 	static char *Return_RX_buf(void) { return (char *)RX_buf; }
-	static bool Return_rx_flag(void) { return rx_flag; }
-	static void Clear_rx_flag(void) { rx_flag = false; }
+	static bool Return_data_flag(void) { return data_flag; }
+	static void Clear_data_flag(void) { data_flag = false; }
 	static void Clear_rx_cnt(void) { rx_cnt = 0; }
 
 	bool data_OK;
@@ -42,12 +42,13 @@ private:
 	static DMA_Base_Class TX_DMA;
 	static DMA_Base_Class RX_DMA;
 	static bool rx_flag;				//表明收到了一帧数据
+	static bool data_flag;				//表明一帧数据已经准备好
 	static uint16_t tx_cnt;				//发送字节的计数
 	static uint16_t rx_cnt;				//接收字节的计数
-	static uint8_t TX_buf[32];			//发送数据的缓冲区，若缓冲区满，则不会发送
-	static volatile uint8_t RX_buf[64]; //接收数据的缓冲区
+	static uint8_t TX_buf[16];			//发送数据的缓冲区，若缓冲区满，则不会发送
+	static uint8_t RX_buf[32]; //接收数据的缓冲区
 
 	void write(const char c) override;
-	static uint8_t data_Buf[64]; //数据暂存，避免数据遭到破坏
+	static uint8_t data_Buf[32]; //数据暂存，避免数据遭到破坏
 
 };

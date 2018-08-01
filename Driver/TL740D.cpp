@@ -6,15 +6,16 @@
 #include "../Math/My_Math.h"
 
 bool TL740D_Class::rx_flag = false;
+bool TL740D_Class::data_flag = false;
 uint16_t TL740D_Class::tx_cnt = 0;			   //发送字节的计数
 uint16_t TL740D_Class::rx_cnt = 0;			   //接收字节的计数
-uint8_t TL740D_Class::TX_buf[32] = { 0 };		   //发送数据的缓冲区，若缓冲区满，则不会发送
-volatile uint8_t TL740D_Class::RX_buf[64] = { 0 }; //接收数据的缓冲区
+uint8_t TL740D_Class::TX_buf[16] = { 0 };		   //发送数据的缓冲区，若缓冲区满，则不会发送
+uint8_t TL740D_Class::RX_buf[32] = { 0 }; //接收数据的缓冲区
 
 DMA_Base_Class TL740D_Class::TX_DMA = DMA_Base_Class(Gyro_TX_DMA_Stream);
 DMA_Base_Class TL740D_Class::RX_DMA = DMA_Base_Class(Gyro_RX_DMA_Stream);
 
-uint8_t TL740D_Class::data_Buf[64] = { 0 };
+uint8_t TL740D_Class::data_Buf[32] = { 0 };
 
 void TL740D_Class::Init(uint32_t baudrate)
 {
@@ -43,7 +44,7 @@ void TL740D_Class::Init(uint32_t baudrate)
 	TX_DMA.Init(&DMA_InitStructure);
 
 	//配置接收中断
-	DMA_InitStructure.DMA_BufferSize = 64;
+	DMA_InitStructure.DMA_BufferSize = 32;
 	DMA_InitStructure.DMA_Channel = Gyro_RX_DMA_Channel;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory; //外设到内存
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t)&RX_buf;
@@ -163,7 +164,7 @@ bool TL740D_Class::Analyze_Data(void)
 void TL740D_Class::Read_Data(void)
 {
 	print((uint8_t *)"\x68\x04\x00\x04\x08", 5);
-	if (tx_cnt>0)
+	if (tx_cnt > 0)
 	{
 		TX_DMA.Set_Data_Num(tx_cnt); //设置要发送的数据数量
 		tx_cnt = 0;
@@ -205,6 +206,11 @@ void Gyro_Uart_IRQHandler(void)
 		uint16_t temp = Gyro_Uart_Port->SR;
 		temp = Gyro_Uart_Port->DR;
 		TL740D_Class::rx_flag = true;
-		TL740D_Class::rx_cnt = 64 - TL740D_Class::RX_DMA.Set_Data_Num(64);
+		TL740D_Class::rx_cnt = 32 - TL740D_Class::RX_DMA.Set_Data_Num(32);
+		if (!TL740D_Class::data_flag)
+		{
+			memcpy(TL740D_Class::data_Buf, TL740D_Class::RX_buf, TL740D_Class::rx_cnt);
+			TL740D_Class::data_flag = true;
+		}
 	}
 }

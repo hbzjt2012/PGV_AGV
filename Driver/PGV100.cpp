@@ -312,8 +312,8 @@ bool PGV_Class::Analyze_Data(void)
 
 Coordinate_Class PGV_Class::Cal_Coor(void)
 {
-	coor.x_coor = (tag_control_num % 4) * 600.0f + x_deviation;	//测试用间隔为60cm
-	coor.y_coor = (tag_control_num / 4) * 600.0f + y_deviation;	//测试用间隔为60cm
+	coor.x_coor = (tag_control_num % 5) * 1000.0f + x_deviation;	//测试用间隔为100cm
+	coor.y_coor = (tag_control_num / 5) * 1000.0f + y_deviation;	//测试用间隔为100cm
 	coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
 
 	//if (coor.angle_coor>180.0f)
