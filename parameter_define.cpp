@@ -38,15 +38,15 @@ float Parameter_Class::motor_min_rotationl_velocity_soft = 100.0f;	//软件定�
 float Parameter_Class::wheel_max_line_velocity = Update_wheel_line_velocity(motor_max_rotationl_velocity_soft);     //轮子最大线速度(mm/s);
 float Parameter_Class::wheel_min_line_velocity = Update_wheel_line_velocity(motor_min_rotationl_velocity_soft);      //轮子最小线速度(mm/s);
 
-float Parameter_Class::wheel_acceleration_time = 5.0f;//车轮最大加减速所需时间(从最低速到最高速)(单位s)
+float Parameter_Class::wheel_acceleration_time = 3.0f;//车轮最大加减速所需时间(从最低速到最高速)(单位s)
 float Parameter_Class::wheel_acceleration_line_velocity = Update_wheel_acceleration_line(wheel_acceleration_time);		//车轮最大线加减速度(mm/s2)
 
-float Parameter_Class::line_slowest_time = 2.0f;	//最低速移动的时间
+float Parameter_Class::line_slowest_time = 3.0f;	//最低速移动的时间
 
 bool Parameter_Class::Is_Absolute_Coor = true; //指示当前坐标是否为绝对坐标
 unsigned int Parameter_Class::AGV_Address_NUM = 1;
 
-float Parameter_Class::movement_threshold = 2.0f;	//运动阈值(mm)
+float Parameter_Class::movement_threshold = 3.0f;	//运动阈值(mm)
 
 
 //void Parameter_Class::Update_Parameter(int num, float para)

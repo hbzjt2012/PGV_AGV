@@ -233,30 +233,29 @@ float Mecanum_Wheel_Class::Get_Time_ms(void)
 
 void Mecanum_Wheel_Class::Update_Velocity_By_ErrorCoor(const Coordinate_Class & Error_Coor_InAGV, Velocity_Class& Target_Velocity, const Coordinate_Class& Base)
 {
-#define C1 2.0f	
+#define C1 3.0f	
 #define C2 C1
 #define C3 5.0f
 
-	Velocity_Class Target_Velocity_InWorld;
-
-	//使用绝对坐标容易计算
-	Target_Velocity_InWorld = Velocity_Class::Relative_To_Absolute(Target_Velocity_InWorld, Target_Velocity, Base);
+	//Velocity_Class Target_Velocity_InWorld;
+	////使用绝对坐标容易计算
+	//Target_Velocity_InWorld = Velocity_Class::Relative_To_Absolute(Target_Velocity_InWorld, Target_Velocity, Base);
 
 	//此处算法应改进，修改为和打滑系数相关的C1 C2 C3
-	if (ABS(Error_Coor_InAGV.x_coor) > 0.1f)
+	if (ABS(Error_Coor_InAGV.x_coor) > 0.5f)
 	{
-		Target_Velocity_InWorld.velocity_x += C1*Error_Coor_InAGV.x_coor;
+		Target_Velocity.velocity_x += C1*Error_Coor_InAGV.x_coor;
 	}
-	if (ABS(Error_Coor_InAGV.y_coor) > 0.1f)
+	if (ABS(Error_Coor_InAGV.y_coor) > 0.5f)
 	{
-		Target_Velocity_InWorld.velocity_y += C2*Error_Coor_InAGV.y_coor;
+		Target_Velocity.velocity_y += C2*Error_Coor_InAGV.y_coor;
 	}
-	if (ABS(Error_Coor_InAGV.angle_coor) > 0.1f)
+	if (ABS(Error_Coor_InAGV.angle_coor) > 0.5f)
 	{
-		Target_Velocity_InWorld.angular_velocity_angle += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
+		Target_Velocity.angular_velocity_angle += C3*Sin_Lookup(Error_Coor_InAGV.angle_coor);
 	}
 
-	Target_Velocity = Velocity_Class::Absolute_To_Relative(Target_Velocity_InWorld, Target_Velocity, Base);
+	//Target_Velocity = Velocity_Class::Absolute_To_Relative(Target_Velocity_InWorld, Target_Velocity, Base);
 
 
 	Target_Velocity.angular_velocity_rad = Target_Velocity.angular_velocity_angle / 180.0f*M_PI;

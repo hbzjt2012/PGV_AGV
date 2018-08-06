@@ -54,6 +54,9 @@ int main(void)
 	TL740.Forward_Accel_Bias_Init();
 	Led.Clear();
 
+	Gcode_M16();	//使能电机
+	Gcode_M18();	//刹车解除
+
 	Interpolation_Parameter.max_velocity_abs = Parameter_Class::wheel_max_line_velocity;
 	Interpolation_Parameter.min_velocity_abs = Parameter_Class::wheel_min_line_velocity;
 	Interpolation_Parameter.acceleration_abs = Parameter_Class::wheel_acceleration_line_velocity;
@@ -61,7 +64,6 @@ int main(void)
 
 	Encoder_Class::Clear_Time_US();
 	Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder);	//清空编码器的误差
-	//My_Serial.print(TL740.forward_accel_bias, 3);
 
 	while (1)
 	{
@@ -69,12 +71,7 @@ int main(void)
 		{
 			time11_flag = false;
 			control_period_flag = true;
-			//My_Serial << "\r\n" << Error_Coor_InAGV.x_coor << " " << Error_Coor_InAGV.y_coor << " " << Error_Coor_InAGV.angle_coor;
-		//Location_AGV();	//AGV定位函数
-		//Process_Movement_Command();	//获取并处理运动指令
-		//Movement_Control();	//运动控制
 		}
-
 		if (control_period_flag)
 		{
 			control_period_flag = false;
@@ -110,9 +107,6 @@ void Init_System(void)
 	Mecanum_AGV.Init();
 
 	Parameter_Class::Init_Parameter();	//初始化参数
-
-	Gcode_M16();	//使能电机
-	Gcode_M18();	//刹车解除
 
 	NVIC_InitTypeDef NVIC_InitStructure;
 	NVIC_InitStructure.NVIC_IRQChannel = TIM8_UP_TIM13_IRQn;
@@ -173,7 +167,8 @@ void Location_AGV(void)
 		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
 
 		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
-		if (movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE)//运动缓存区空闲,表示小车停止运动
+
+		if ((movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE) || (Movement_Index_r->Interpolation_State == Movement_Class::IS_Interpolated))//运动缓存区空闲,表示小车停止运动
 		{
 			TL740_angle_previous = TL740.z_heading;
 			Angle_Kalman.Init_Data();	//AGV静止，故重置状态量和协方差
@@ -248,6 +243,10 @@ void Location_AGV(void)
 
 			AGV_Current_Coor_InWorld = PGV100.coor;
 
+			//Angle_Kalman.Init_Data();	//重置状态量和协方差
+			//Line_X_Kalman.Init_Data();
+			//Line_Y_Kalman.Init_Data();  //重置状态量和协方差
+
 			//Coor_Kalman.measurement_data[0] = PGV100.coor.x_coor;
 			//Coor_Kalman.measurement_data[1] = PGV100.coor.y_coor;
 			//Coor_Kalman.measurement_data[2] = PGV100.coor.angle_coor;
@@ -310,30 +309,16 @@ void Process_Movement_Command(void)
 //运动控制
 void Movement_Control(void)
 {
-	if (movement_buf_state != AGV_State::Movement_Command_State::Movement_Command_IDLE)	//指令缓存区存在数据
+	if ((movement_buf_state != AGV_State::Movement_Command_State::Movement_Command_IDLE) && (Movement_Index_r->Interpolation_State == Movement_Class::IS_Interpolating))	//指令缓存区存在数据且当前正在插补
 	{
 		AGV_Target_Coor_InWorld = Virtual_AGV_Current_Coor_InWorld;	//获取期望坐标
 		AGV_Target_Velocity_InAGV = Virtual_AGV_Current_Velocity_InAGV;	//获取期望速度
-		//static float x_temp = AGV_Target_Coor_InWorld.x_coor;
-		//if (ABS(AGV_Target_Coor_InWorld.x_coor-x_temp)>500.0f)
-		//{
-		//	Gcode_M18();
-		//	asm("nop");
-		//}
-		//else
-		//{
-		//	x_temp = AGV_Target_Coor_InWorld.x_coor;
-		//}
-		//My_Serial.print("\r\n");
-		//Gcode_I114(AGV_Target_Coor_InWorld);
-
 	}
 	else    //当前无运动指令
 	{
 		AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;	//期望坐标是当前坐标
 		AGV_Target_Velocity_InAGV *= 0.0f;	//速度清空
 	}
-
 
 	//控制小车
 	Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
@@ -700,21 +685,8 @@ Coordinate_Class Get_Command_Coor(Gcode_Class * command, const Coordinate_Class 
 	{
 		Coor_temp = Base_Coor_InWorld + Coor_temp;
 	}
-	//else   //当前为绝对坐标
-	//{
-	//	if (Coor_temp.angle_coor - Base_Coor_InWorld.angle_coor > 180.0f)
-	//	{
-	//		Coor_temp.angle_coor -= 360.0f;
-	//	}
-	//	else if (Coor_temp.angle_coor - Base_Coor_InWorld.angle_coor < -180.0f)
-	//	{
-	//		Coor_temp.angle_coor += 360.0f;
-	//	}
-	//}
-	//Coor_temp.Transform_Angle();
 
-	//Coor_temp.Truncation_Coor();
-
+	Coor_temp.Angle2Rad();
 
 	return Coor_temp;
 }

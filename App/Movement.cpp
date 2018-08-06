@@ -10,6 +10,7 @@ bool Movement_Class::Init(const Coordinate_Class & Origin_Coor, const Interpolat
 	Destination_Coor_InOrigin = Destination_Coor_InWorld - Origin_Coor_InWorld;	//计算终点在起点坐标系上的相对坐标
 	float input_distance_abs = Cal_Destination_Displacement(Destination_Coor_InOrigin);	//计算待插补的距离
 	Update_Interpolation_Parameter(Input_Para);	//更新插补参数
+	//此处可以修改插补阈值
 	return Interpolation_Class::Init(input_distance_abs);	//返回插补结果
 }
 
@@ -31,7 +32,7 @@ bool Movement_Class::Cal_Velocity(const Coordinate_Class Current_Coor_InWorld)
 
 	Velocity_Class Target_Velocity_InOrigin;	//期望坐标坐标系中的速度
 
-	Target_Velocity_InOrigin = Assign_Velocity(Current_Coor_InOrigin, target_velocity);	//将速度分配给各个轴
+	Target_Velocity_InOrigin = Assign_Velocity(Target_Coor_InOrigin, target_velocity);	//将速度分配给各个轴
 
 	//将起点坐标系中的速度旋转至AGV坐标系
 	Target_Velocity_InAGV = Velocity_Class::Absolute_To_Relative(Target_Velocity_InOrigin, Target_Velocity_InAGV, Target_Coor_InOrigin);
