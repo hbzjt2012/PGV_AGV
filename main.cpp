@@ -86,7 +86,7 @@ int main(void)
 
 		Process_Gcode_Command(command_buf_state); //获取处理当前指令(已完成)
 
-		Update_Print_MSG();	//打印信息
+		//Update_Print_MSG();	//打印信息
 		My_Serial.flush();	//刷新
 	}
 
@@ -242,6 +242,8 @@ void Location_AGV(void)
 			PGV100.data_OK = false;
 
 			AGV_Current_Coor_InWorld = PGV100.coor;
+
+			My_Serial << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor << "\r\n";
 
 			//Angle_Kalman.Init_Data();	//重置状态量和协方差
 			//Line_X_Kalman.Init_Data();
