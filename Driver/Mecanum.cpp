@@ -106,9 +106,10 @@ void Mecanum_Wheel_Class::Init(void)
 	Behind_Left_Encoder.Init(BEHIND_LEFT_DEFAULT_DIR);
 	Behind_Right_Encoder.Init(BEHIND_RIGHT_DEFAULT_DIR);
 
-	//AGV_Velocity_InAGV.velocity = 0.0f;
-	//AGV_Velocity_InAGV.velocity_angle = 0.0f;
-	//AGV_Velocity_InAGV.angular_velocity = 0.0f;
+	AGV_Coor_InWorld.x_coor = 0.0f;
+	AGV_Coor_InWorld.y_coor = 0.0f;
+	AGV_Coor_InWorld.angle_coor = 0.0f;
+
 	AGV_Velocity_InAGV.velocity_x = 0.0f;
 	AGV_Velocity_InAGV.velocity_y = 0.0f;
 	AGV_Velocity_InAGV.angular_velocity_mm = 0.0f;
@@ -219,6 +220,8 @@ Coordinate_Class & Mecanum_Wheel_Class::Update_Coor_demo(Coordinate_Class & Coor
 	Coor_Delta.angle_coor = Velocity.angular_velocity_angle*time_s;
 
 	Coor_Current = Coor_Current + Coor_Delta;
+
+	AGV_Coor_InWorld += Coor_Delta;
 
 	return Coor_Current;
 }

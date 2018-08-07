@@ -6,7 +6,7 @@ class Kalman_Angle_Class :public Kalman_Class
 {
 public:
 	//噪声需由实验测量获取
-	Kalman_Angle_Class() :noise_process_omega(0.001f), noise_measurement_omega(0.31f) {}
+	Kalman_Angle_Class() :noise_process_omega(0.031f), noise_measurement_omega(0.01f) {}
 	~Kalman_Angle_Class() = default;
 
 	union
