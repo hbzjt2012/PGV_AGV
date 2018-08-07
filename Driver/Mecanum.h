@@ -25,7 +25,7 @@ public:
 
 
 	//根据物理约束限幅速度,将车体速度转换为轮速，控制电机
-	void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV) override;
+	void Write_Velocity(Velocity_Class &AGV_Velocity_InAGV);
 	//由编码器计算AGV车体速度
 	float Cal_Velocity_By_Encoder(Velocity_Class & AGV_Velocity) override;
 

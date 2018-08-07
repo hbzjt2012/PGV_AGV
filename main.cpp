@@ -45,7 +45,6 @@ bool virtual_agv_coor_init_flag = false;	//true指示当前虚拟坐标已初始
 
 inline void Gcode_Commond_Over(Gcode_Class *gcode_command);
 
-
 int main(void)
 {
 	Init_System();//配置系统所需的硬件、外设
@@ -160,20 +159,16 @@ void Location_AGV(void)
 	static float TL740_angle_previous = 0.0f;
 	static float TL740_forward_accel_previous = 0.0f;
 
-	if (TL740.data_OK)	//以陀螺仪数据更新作为定位控制周期的判断点
+	if (TL740.data_OK)	//如果收到了陀螺仪的数据
 	{
 		TL740.data_OK = false;
 		float z_measurement = Coordinate_Class::Angle_Trans(TL740.z_heading - TL740_angle_previous, 0.0f);
 		float time_s = Mecanum_AGV.Cal_Velocity_By_Encoder(AGV_Current_Velocity_By_Encoder) / 1000.0f;	//获取由编码器计算得到的速度，两次运行间隔时间
 
-		float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
-
 		if ((movement_buf_state == AGV_State::Movement_Command_State::Movement_Command_IDLE) || (Movement_Index_r->Interpolation_State == Movement_Class::IS_Interpolated))//运动缓存区空闲,表示小车停止运动
 		{
 			TL740_angle_previous = TL740.z_heading;
 			Angle_Kalman.Init_Data();	//AGV静止，故重置状态量和协方差
-
-			TL740_forward_accel_previous = accel_temp;
 			Line_X_Kalman.Init_Data();
 			Line_Y_Kalman.Init_Data();//AGV静止，故重置状态量和协方差
 		}
@@ -183,28 +178,24 @@ void Location_AGV(void)
 			Angle_Kalman.process_data = AGV_Current_Velocity_By_Encoder.angular_velocity_angle;
 			Angle_Kalman.measurement_data[0] = z_measurement;
 			Angle_Kalman.measurement_data[1] = TL740.z_rate;
-			TL740_angle_previous = TL740.z_heading;
 			Angle_Kalman.Set_Noise(time_s);
 			Angle_Kalman.Kalman_Filter();
 
-			//依次输出编码器测量角速度，陀螺仪角度增量，陀螺仪角速度，陀螺仪原始角度,计算后角度增量,角速度
-			//My_Serial << "\r\n" << Angle_Kalman.process_data << " " << Angle_Kalman.measurement_data[0] << " " << Angle_Kalman.measurement_data[1];
-			//My_Serial << " " << TL740.z_heading << " " << Angle_Kalman.theta_delta << " " << Angle_Kalman.omega;
+			TL740_angle_previous = TL740.z_heading;
 
-			//滑移程度的度量
-			float angle_delta = Angle_Kalman.theta_delta - AGV_Current_Velocity_By_Encoder.angular_velocity_angle*time_s;
-			angle_delta *= Parameter_Class::wheel_lx_ly_distance / 180.0f*M_PI;
+			////滑移程度的度量
+			//float angle_delta = Angle_Kalman.theta_delta - AGV_Current_Velocity_By_Encoder.angular_velocity_angle*time_s;
+			//angle_delta *= Parameter_Class::wheel_lx_ly_distance / 180.0f*M_PI;
 
-			//计算x轴位移增量，线速度
-			Line_X_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_x*time_s;
-			Line_X_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_x;
-			Line_X_Kalman.Update_Stae_Variable_No_Process(Line_X_Kalman.measurement_matrix, time_s);
+			////计算x轴位移增量，线速度
+			//Line_X_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_x*time_s;
+			//Line_X_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_x;
+			//Line_X_Kalman.Update_Stae_Variable_No_Process(Line_X_Kalman.measurement_matrix, time_s);
 
-			//计算y轴位移增量，线速度
-			Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
-			Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
-			Line_Y_Kalman.Update_Stae_Variable_No_Process(Line_Y_Kalman.measurement_matrix, time_s);
-
+			////计算y轴位移增量，线速度
+			//Line_Y_Kalman.measurement_data[0] = AGV_Current_Velocity_By_Encoder.velocity_y*time_s;
+			//Line_Y_Kalman.measurement_data[1] = AGV_Current_Velocity_By_Encoder.velocity_y;
+			//Line_Y_Kalman.Update_Stae_Variable_No_Process(Line_Y_Kalman.measurement_matrix, time_s);
 
 			////计算y轴位移增量，线速度
 			//float accel_temp = TL740.Return_Forward_Accel();	//保存当前的加速度值
@@ -216,34 +207,44 @@ void Location_AGV(void)
 			//Line_Y_Kalman.Set_Noise(time_s, angle_delta / time_s);
 			//Line_Y_Kalman.Kalman_Filter();
 		}
-		AGV_Current_Velocity_InAGV.velocity_x = Line_X_Kalman.state_variable_data[1];
-		AGV_Current_Velocity_InAGV.velocity_y = Line_Y_Kalman.state_variable_data[1];
+		AGV_Current_Velocity_InAGV.velocity_x = AGV_Current_Velocity_By_Encoder.velocity_x;
+		AGV_Current_Velocity_InAGV.velocity_y = AGV_Current_Velocity_By_Encoder.velocity_y;
 		AGV_Current_Velocity_InAGV.angular_velocity_angle = Angle_Kalman.state_variable_data[1];
 
-		//计算坐标
-		//保存控制量
-		Coor_Kalman.process_data[0] = Line_X_Kalman.distance_delta;
-		Coor_Kalman.process_data[1] = Line_Y_Kalman.distance_delta;
-		Coor_Kalman.process_data[2] = Angle_Kalman.theta_delta;
+#define ANGLE_TEST
+#ifdef ANGLE_TEST
+		static float Last_Coor_InWorld, Previous_Coor_InWorld;
+		Previous_Coor_InWorld = Last_Coor_InWorld;
+		Last_Coor_InWorld = AGV_Current_Coor_InWorld.angle_coor;
 
-		arm_matrix_instance_f32 coor_noise;
-		float coor_noise_data[9];
-		for (int i = 0; i < 9; i++) coor_noise_data[i] = 0;
-		arm_mat_init_f32(&coor_noise, 3, 3, coor_noise_data);
+		//更新坐标
+		AGV_Current_Coor_InWorld = Mecanum_AGV.Update_Coor_demo(AGV_Current_Coor_InWorld, AGV_Current_Velocity_InAGV, time_s);
 
-		coor_noise_data[0] = Line_X_Kalman.vcovariance_data[0];
-		coor_noise_data[4] = Line_Y_Kalman.vcovariance_data[0];
-		coor_noise_data[8] = Angle_Kalman.vcovariance_data[0];
+		if (PGV100.data_OK)
+		{
+			PGV100.data_OK = false;
 
-		Coor_Kalman.Update_Process_Noise(coor_noise);	//更新执行噪声
+			//AGV_Current_Coor_InWorld.x_coor = PGV100.coor.x_coor;
+			//AGV_Current_Coor_InWorld.y_coor = PGV100.coor.y_coor;
 
+			float Gyro_angle = Coordinate_Class::Angle_Trans(TL740.z_heading, Last_Coor_InWorld);
+
+			//输出PGV的测量角度和编码器、陀螺仪得到的计算角度
+			My_Serial << PGV100.coor.angle_coor << " " << Previous_Coor_InWorld << " ";
+			//输出编码器计算得到的角度，陀螺仪得到的角度
+			My_Serial << Mecanum_AGV.AGV_Coor_InWorld.angle_coor << " " << Gyro_angle << "\r\n";
+			//My_Serial << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor;
+			//输出卡尔曼滤波后得到的坐标
+			//My_Serial << AGV_Current_Coor_InWorld.x_coor << " " << AGV_Current_Coor_InWorld.y_coor << " " << AGV_Current_Coor_InWorld.angle_coor << "\r\n";
+		}
+#else
 		if (PGV100.data_OK)	//读取到了地标
 		{
 			PGV100.data_OK = false;
 
 			AGV_Current_Coor_InWorld = PGV100.coor;
 
-			My_Serial << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor << "\r\n";
+			//My_Serial << PGV100.coor.x_coor << " " << PGV100.coor.y_coor << " " << PGV100.coor.angle_coor << "\r\n";
 
 			//Angle_Kalman.Init_Data();	//重置状态量和协方差
 			//Line_X_Kalman.Init_Data();
@@ -261,24 +262,7 @@ void Location_AGV(void)
 			//Coor_Kalman.Update_Stae_Variable_No_Measurement(Coor_Kalman.process_matrix);
 		}
 
-		//AGV_Current_Coor_InWorld.x_coor = Coor_Kalman.state_variable_data[0];
-		//AGV_Current_Coor_InWorld.y_coor = Coor_Kalman.state_variable_data[1];
-		//AGV_Current_Coor_InWorld.angle_coor = Coor_Kalman.state_variable_data[2];
-
-		//AGV_Current_Coor_InWorld.Transform_Angle();	//角度缩放
-
-		//Gcode_I114(Virtual_AGV_Current_Coor_InWorld);	//输出上一周期的期望坐标
-		////Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Target_Velocity_InAGV, AGV_Target_Coor_InWorld);
-		////Gcode_I114(AGV_Velocity);	//输出上一周期的期望速度
-
-		//My_Serial << "\r\n";
-		//Gcode_I114(Movement_Class::Target_Coor_InWorld);	//输出当前坐标
-
-		////Gcode_I114(AGV_Current_Coor_InWorld);	//输出当前坐标
-		//Velocity_Class AGV_Velocity = Velocity_Class::Relative_To_Absolute(AGV_Velocity, AGV_Current_Velocity_InAGV, AGV_Current_Coor_InWorld);
-		//Gcode_I114(AGV_Velocity);	//输出当前速度
-
-		//My_Serial << " " << Coor_Kalman.process_data[0] << " " << Coor_Kalman.process_data[1] << " " << Coor_Kalman.process_data[2];
+#endif // ANGLE_TEST
 
 	}
 }
@@ -301,12 +285,12 @@ void Process_Movement_Command(void)
 			Movement_Queue.Init();	//初始化缓存区
 			movement_buf_state = AGV_State::Movement_Command_State::Movement_Command_IDLE;
 		}
-	}
+		}
 	else
 	{
 		Is_Parsing_Movement = !Run_Movement_Command(Movement_Index_r, AGV_Current_Coor_InWorld);	//执行运动指令并返回结果
 	}
-}
+	}
 
 //运动控制
 void Movement_Control(void)
@@ -321,7 +305,6 @@ void Movement_Control(void)
 		AGV_Target_Coor_InWorld = AGV_Current_Coor_InWorld;	//期望坐标是当前坐标
 		AGV_Target_Velocity_InAGV *= 0.0f;	//速度清空
 	}
-
 	//控制小车
 	Mecanum_AGV.AGV_Control_Class::Write_Velocity(AGV_Current_Coor_InWorld, AGV_Target_Coor_InWorld, AGV_Target_Velocity_InAGV);
 	//Mecanum_AGV.Write_Velocity(AGV_Target_Velocity_InAGV);
@@ -349,7 +332,7 @@ void Parse_Sensor_Data(void)
 			}
 		}
 	}
-	if (!(time11_cnt % 6))	//60ms时间到
+	if (!(time11_cnt % 5))	//50ms时间到
 	{
 		PGV100.Send(PGV_Class::Read_PGV_Data);	//读取PGV传感器数据
 	}
@@ -509,7 +492,8 @@ AGV_State::Movement_Command_State Add_Movement_Command(const Coordinate_Class & 
 //************************************
 bool Run_Movement_Command(Movement_Class * movement_command, const Coordinate_Class & Current_Coor)
 {
-	const Coordinate_Class &Coor = virtual_agv_coor_init_flag ? Virtual_AGV_Current_Coor_InWorld : Current_Coor;
+	const Coordinate_Class &Coor = Current_Coor;
+	//const Coordinate_Class &Coor = virtual_agv_coor_init_flag ? Virtual_AGV_Current_Coor_InWorld : Current_Coor;
 	switch (movement_command->Interpolation_State)
 	{
 	case Movement_Class::NO_Interpolation: //未插补
