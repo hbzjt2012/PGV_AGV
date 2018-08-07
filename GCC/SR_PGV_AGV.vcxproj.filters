@@ -81,6 +81,9 @@
     <Filter Include="Math\Src">
       <UniqueIdentifier>{5273b809-8d97-429e-9023-d0724eca18be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="HardwareDefine">
+      <UniqueIdentifier>{75e68523-a0db-4ce0-a3f8-3f96d3aa200a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c">
@@ -251,9 +254,6 @@
     <ClCompile Include="..\Driver\FM24CL64B.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Driver\Gyro.cpp">
-      <Filter>Driver\Src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Driver\Key_Scan.cpp">
       <Filter>Driver\Src</Filter>
     </ClCompile>
@@ -281,9 +281,6 @@
     <ClCompile Include="..\App\Gcode.cpp">
       <Filter>App\Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\App\Interpolation.cpp">
-      <Filter>App\Src</Filter>
-    </ClCompile>
     <ClCompile Include="..\App\Position.cpp">
       <Filter>App\Src</Filter>
     </ClCompile>
@@ -293,11 +290,32 @@
     <ClCompile Include="..\Math\Trigonometric.c">
       <Filter>Math\Src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Math\MyMath.cpp">
-      <Filter>Math\Src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Driver\AGV_Control.cpp">
       <Filter>Driver\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\parameter_define.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Movement.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Movement_Mecanum.cpp">
+      <Filter>App\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\My_Math.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Kalman_Filter_Angle.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Kalman_Filter_Coor.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Math\Kalman_Filter_Line.cpp">
+      <Filter>Math\Src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\App\Interpolation.cpp">
+      <Filter>App\Src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -546,20 +564,53 @@
     <ClInclude Include="..\App\Gcode.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\App\Interpolation.h">
-      <Filter>App\Inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\App\Position.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
     <ClInclude Include="..\App\Queue.h">
       <Filter>App\Inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\Math\MyMath.h">
-      <Filter>Math\Inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\Math\Trigonometric.h">
       <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\parameter_define.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Movement.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Movement_Mecanum.h">
+      <Filter>App\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Driver\Accelerometer.h">
+      <Filter>Driver\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\My_Math.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter_Angle.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter_Coor.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Math\Kalman_Filter_Line.h">
+      <Filter>Math\Inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HardwareDefine\Version_2_0.h">
+      <Filter>HardwareDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HardwareDefine\Version_1_0.h">
+      <Filter>HardwareDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HardwareDefine\Version_Boards.h">
+      <Filter>HardwareDefine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\App\Interpolation.h">
+      <Filter>App\Inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,9 @@
 	It is needed for IntelliSense to parse other header files correctly.
 */
 #if defined(_MSC_VER) || defined (__SYSPROGS_CODESENSE__)
+#ifndef __FPU_USED
+#define __FPU_USED 1
+#endif
 #ifndef __DBL_MIN_EXP__
 #define __DBL_MIN_EXP__ (-1021)
 #endif
@@ -885,6 +888,9 @@
 #ifndef __SIZE_WIDTH__
 #define __SIZE_WIDTH__ 32
 #endif
+#ifndef __FPU_PRESENT
+#define __FPU_PRESENT 1
+#endif
 #ifndef __INT_LEAST16_MAX__
 #define __INT_LEAST16_MAX__ 0x7fff
 #endif
@@ -1386,7 +1392,6 @@
 //../CMSIS_StdPeriph
 //../DSP_Lib
 //../STM32F4xx_StdPeriph_Driver/inc
-//../Eigen
 // --- Include directories end --- //
 
 

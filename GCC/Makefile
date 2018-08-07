@@ -35,7 +35,7 @@ error:
 	$(error Invalid configuration, please check your inputs)
 endif
 
-SOURCEFILES := ../App/Gcode.cpp ../App/Interpolation.cpp ../App/Position.cpp ../App/Queue.cpp ../delay.c ../Driver/AGV_Control.cpp ../Driver/AS62.cpp ../Driver/C50XB.cpp ../Driver/EEPROM.cpp ../Driver/Encoder.cpp ../Driver/FM24CL64B.cpp ../Driver/Gyro.cpp ../Driver/Key_Scan.cpp ../Driver/Mecanum.cpp ../Driver/Motor.cpp ../Driver/PGV100.cpp ../Driver/Serial.cpp ../Driver/TL740D.cpp ../Driver/Wireless_Serial.cpp ../HALayer/DMA.cpp ../HALayer/IIC.cpp ../HALayer/IO.cpp ../HALayer/PWM.cpp ../HALayer/Tim.cpp ../HALayer/Uart.cpp ../main.cpp ../Math/MyMath.cpp ../Math/Trigonometric.c ../StartupFiles/startup_stm32f407xx.c ../STM32F4xx_StdPeriph_Driver/src/misc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cec.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_crc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_aes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_des.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_tdes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dac.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dcmi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dfsdm.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma2d.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dsi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash_ramfunc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fmpi2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fsmc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_md5.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_sha1.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_lptim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_ltdc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_qspi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rtc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sai.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sdio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spdifrx.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_wwdg.c ../system_stm32f4xx.c
+SOURCEFILES := ../App/Gcode.cpp ../App/Interpolation.cpp ../App/Movement.cpp ../App/Movement_Mecanum.cpp ../App/Position.cpp ../App/Queue.cpp ../delay.c ../Driver/AGV_Control.cpp ../Driver/AS62.cpp ../Driver/C50XB.cpp ../Driver/EEPROM.cpp ../Driver/Encoder.cpp ../Driver/FM24CL64B.cpp ../Driver/Key_Scan.cpp ../Driver/Mecanum.cpp ../Driver/Motor.cpp ../Driver/PGV100.cpp ../Driver/Serial.cpp ../Driver/TL740D.cpp ../Driver/Wireless_Serial.cpp ../HALayer/DMA.cpp ../HALayer/IIC.cpp ../HALayer/IO.cpp ../HALayer/PWM.cpp ../HALayer/Tim.cpp ../HALayer/Uart.cpp ../main.cpp ../Math/Kalman_Filter_Angle.cpp ../Math/Kalman_Filter_Coor.cpp ../Math/Kalman_Filter_Line.cpp ../Math/My_Math.cpp ../Math/Trigonometric.c ../parameter_define.cpp ../StartupFiles/startup_stm32f407xx.c ../STM32F4xx_StdPeriph_Driver/src/misc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_adc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_can.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cec.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_crc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_aes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_des.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_cryp_tdes.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dac.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dbgmcu.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dcmi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dfsdm.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dma2d.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_dsi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_exti.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_flash_ramfunc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fmpi2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_fsmc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_gpio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_md5.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_hash_sha1.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_i2c.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_iwdg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_lptim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_ltdc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_pwr.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_qspi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rcc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rng.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_rtc.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sai.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_sdio.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spdifrx.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_spi.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_syscfg.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_tim.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_usart.c ../STM32F4xx_StdPeriph_Driver/src/stm32f4xx_wwdg.c ../system_stm32f4xx.c
 EXTERNAL_LIBS := ../DSP_Lib/libarm_cortexM4lf_math.a
 EXTERNAL_LIBS_COPIED := $(foreach lib, $(EXTERNAL_LIBS),$(BINARYDIR)/$(notdir $(lib)))
 
@@ -189,6 +189,14 @@ $(BINARYDIR)/Interpolation.o : ../App/Interpolation.cpp $(all_make_files) |$(BIN
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
+$(BINARYDIR)/Movement.o : ../App/Movement.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Movement_Mecanum.o : ../App/Movement_Mecanum.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
 $(BINARYDIR)/Position.o : ../App/Position.cpp $(all_make_files) |$(BINARYDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
@@ -222,10 +230,6 @@ $(BINARYDIR)/Encoder.o : ../Driver/Encoder.cpp $(all_make_files) |$(BINARYDIR)
 
 
 $(BINARYDIR)/FM24CL64B.o : ../Driver/FM24CL64B.cpp $(all_make_files) |$(BINARYDIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
-
-
-$(BINARYDIR)/Gyro.o : ../Driver/Gyro.cpp $(all_make_files) |$(BINARYDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
@@ -285,12 +289,28 @@ $(BINARYDIR)/main.o : ../main.cpp $(all_make_files) |$(BINARYDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
-$(BINARYDIR)/MyMath.o : ../Math/MyMath.cpp $(all_make_files) |$(BINARYDIR)
+$(BINARYDIR)/Kalman_Filter_Angle.o : ../Math/Kalman_Filter_Angle.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Kalman_Filter_Coor.o : ../Math/Kalman_Filter_Coor.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/Kalman_Filter_Line.o : ../Math/Kalman_Filter_Line.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/My_Math.o : ../Math/My_Math.cpp $(all_make_files) |$(BINARYDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
 $(BINARYDIR)/Trigonometric.o : ../Math/Trigonometric.c $(all_make_files) |$(BINARYDIR)
 	$(CC) $(CFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
+
+
+$(BINARYDIR)/parameter_define.o : ../parameter_define.cpp $(all_make_files) |$(BINARYDIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ -MD -MF $(@:.o=.dep)
 
 
 $(BINARYDIR)/startup_stm32f407xx.o : ../StartupFiles/startup_stm32f407xx.c $(all_make_files) |$(BINARYDIR)

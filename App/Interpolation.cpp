@@ -1,191 +1,146 @@
-#include "interpolation.h"
-#include "math.h"
+#include "Interpolation.h"
+#include "../DSP_Lib/arm_math.h"
 
-#define DISATNCE_DELTA 0.3f		//å½“å®é™…æ€»ä½ç§»ä¸ç†è®ºæ€»ä½ç§»å·®è·0.3fæ—¶ï¼Œè®¤ä¸ºæ’è¡¥å·²å®Œæˆ
-#define INTER_FLOAT_DELTA 0.001 //æ’è¡¥ç”¨çš„æµ®ç‚¹é‚»åŸŸï¼Œè‹¥ä¸¤æµ®ç‚¹æ•°å·®å€¼çš„ç»å¯¹å€¼å°äºè¯¥æ•°ï¼Œåˆ™è®¤ä¸ºä¸¤æµ®ç‚¹æ•°ä¸€è‡´
+Interpolation_Class::Interpolation_Parameter_TypedefStructure Interpolation_Class::Interpolation_Parameter;
 
-typedef struct
+//enum Interpolation_Class::Interpolation_State_Enum Interpolation_Class::Interpolation_State;
+
+float Interpolation_Class::target_distance = 0.0f;
+float Interpolation_Class::target_velocity = 0.0f;
+float Interpolation_Class::distance = 0.0f;
+
+float Interpolation_Class::threshold = 0.0f;	//²å²¹ãĞÖµ
+
+//ÒòÎªÍ¬Ò»Ê±¼äÖ»»áÖ´ĞĞÒ»ÌõÔË¶¯Ö¸Áî£¬¹ÊÎª¾²Ì¬±äÁ¿
+int Interpolation_Class::Distance_Symbols = 1; //Ö¸Ê¾´ı²å²¹¾àÀëµÄ·ûºÅ
+
+float Interpolation_Class::acc_distance = 0.0f;	//¼ÓËÙ¶Î¾àÀë(mm)
+float Interpolation_Class::const_distance = 0.0f;  //ÔÈËÙ¶Î¾àÀë(mm)
+float Interpolation_Class::dec_distance = 0.0f;	//¼õËÙ¶Î¾àÀë(mm)
+float Interpolation_Class::slowly_distance = 0.0f; //ÂıËÙ¶Î¾àÀë(mm)
+
+float Interpolation_Class::acceleration_time = 0.0f; //¼ÓËÙ¶ÎÊ±¼ä(s)
+float Interpolation_Class::const_time = 0.0f;		 //ÔÈËÙ¶ÎÊ±¼ä(s)
+float Interpolation_Class::deceleration_time = 0.0f; //¼õËÙ¶ÎÊ±¼ä(s)
+float Interpolation_Class::slowly_time = 0.0f;		 //ÂıËÙ¶ÎÊ±¼ä(s)
+
+
+bool Interpolation_Class::Init(const float distance, const float threshold)
 {
-	float acceleration_time; //åŠ é€Ÿæ®µæ—¶é—´(ms)
-	float const_time;		 //åŒ€é€Ÿæ®µæ—¶é—´(ms)
-	float deceleration_time; //å‡é€Ÿæ®µæ—¶é—´(ms)
-	float slowly_time;		 //æ…¢é€Ÿæ®µæ—¶é—´(ms)
-} Interpolation_Result_TypedefStructure;
-
-//typedef enum
-//{
-//	Interpolation_Running,	//æ’è¡¥ä¸­
-//	Interpolation_Over	//æ’è¡¥å®Œæ¯•
-//}Interpolation_State_TypedefEnum;
-
-Interpolation::Actual_INPUT_TypedefStructure Input_Para; //æ’è¡¥çš„è¿è¡Œå‚æ•°
-Interpolation_Result_TypedefStructure Result;			 //æ’è¡¥ç»“æœ
-//Interpolation_State_TypedefEnum State = Interpolation_State_TypedefEnum::Interpolation_Running;	//æ’è¡¥çŠ¶æ€
-
-//static float expectation_output;	//æ’è¡¥è¾“å‡ºç»“æœ
-static int Distance_Symbols; //æŒ‡ç¤ºå¾…æ’è¡¥æ•°æ®çš„ç¬¦å·
-
-static float acc_distance = 0.0f;	//åŠ é€Ÿæ®µè·ç¦»(mm)
-static float const_distance = 0.0f;  //åŒ€é€Ÿæ®µè·ç¦»(mm)
-static float dec_distance = 0.0f;	//å‡é€Ÿæ®µè·ç¦»(mm)
-static float slowly_distance = 0.0f; //æ…¢é€Ÿæ®µè·ç¦»(mm)
-
-//************************************
-// Method:    Init
-// FullName:  Interpolation::Init
-// Access:    public
-// Returns:   void
-// Parameter: Actual_INPUT_TypedefStructure & Input
-// Description: å¯¹è¾“å…¥çš„ä½ç§»è¿›è¡Œæ’è¡¥ï¼Œè§„åˆ’ç†æƒ³è·¯å¾„
-//************************************
-void Interpolation::Init(Actual_INPUT_TypedefStructure &Input)
-{
-	//è‹¥å­˜åœ¨åŒ€é€Ÿæ®µæœ€å°ä½ç§»,æœ€å°ä½ç§»çš„è·ç¦»
-	float distance_temp = (Input.max_velocity_abs * Input.max_velocity_abs - Input.min_velocity_abs * Input.min_velocity_abs) / Input.acceleration_abs;
-
-	if (Input.min_velocity_abs < INTER_FLOAT_DELTA) //æœ€å°é€Ÿåº¦ä¸ä¸º0
+	if (ABS(distance) < threshold)
 	{
-		Input.slow_distance_abs = 0.0f;
+		return false;	//´ı²å²¹¾àÀëĞ¡ÓÚãĞÖµ£¬²å²¹Ö±½Ó½áÊø
 	}
 
-	Distance_Symbols = (Input.displacement > 0.0f ? 1 : -1); //å¾…æ’è¡¥çš„å€¼çš„ç¬¦å·
-	Input.displacement *= Distance_Symbols;
-	Input_Para = Input;
+	Interpolation_Class::threshold = threshold;
 
-	Result.acceleration_time = 0.0f;
-	Result.const_time = 0.0f;
-	Result.deceleration_time = 0.0f;
-	Result.slowly_time = 0.0f;
+	float slowly_distance_temp = \
+		Interpolation_Parameter.min_velocity_abs*Interpolation_Parameter.slow_time_abs;	//¼ÆËã×îµÍËÙÒÆ¶¯¾àÀë
+	//¼Ó¼õËÙ¶ÎµÄ×î´óÎ»ÒÆ£¬ÓÃÓÚÅĞ¶ÏÊÇ·ñ´æÔÚÔÈËÙ¶Î
+	float distance_acc_dec_temp = \
+		(Interpolation_Parameter.max_velocity_abs * Interpolation_Parameter.max_velocity_abs \
+			- Interpolation_Parameter.min_velocity_abs * Interpolation_Parameter.min_velocity_abs) \
+		/ Interpolation_Parameter.acceleration_abs;
 
-	acc_distance = 0.0f;
-	const_distance = 0.0f;
-	dec_distance = 0.0f;
-	slowly_distance = 0.0f;
+	Distance_Symbols = (distance > 0.0f ? 1 : -1); //´ı²å²¹µÄÖµµÄ·ûºÅ
+	Interpolation_Class::distance = distance;
+	float input_distance_abs = distance;
+	input_distance_abs *= Distance_Symbols;	//ÒÆ¶¯¾àÀëµÄ¾ø¶ÔÖµ
 
-	Input.displacement -= Input.slow_distance_abs; //å‡å»ä¼˜å…ˆæ»¡è¶³åŒ€ä½é€Ÿæ®µçš„è·ç¦»
+	//¸´Î»Ä¿±ê¾àÀëºÍËÙ¶È
+	target_velocity = target_distance = 0.0f;
 
-	if (Input.displacement < 0)	//åªæœ‰æœ€ä½é€Ÿä½ç§»
+	//¸´Î»²ÎÊıÖµ
+	acceleration_time = const_time = deceleration_time = slowly_time = 0.0f;
+	acc_distance = const_distance = dec_distance = slowly_distance = 0.0f;
+
+	input_distance_abs -= slowly_distance_temp;	//ÏÈ¼õÈ¥ÂıËÙ¶ÎµÄ¾àÀë
+
+	if (input_distance_abs < 0)	//ÎŞ·¨Âú×ãÂıËÙ¶ÎµÄ¾àÀë£¨¼´Ö»ÓĞÂıËÙ¶Î£©
 	{
-		Result.slowly_time = Input_Para.slow_distance_abs / Input_Para.min_velocity_abs;	//è®¡ç®—æœ€ä½é€Ÿæ—¶é—´
-		Input_Para.max_velocity_abs = Input.min_velocity_abs;	//æœ€å¤§é€Ÿåº¦ä¸ºæœ€å°é€Ÿåº¦
+		slowly_distance = input_distance_abs + slowly_distance_temp;	//ÂıËÙ¶ÎÒÆ¶¯¾àÀë(mm)
+		slowly_time = slowly_distance / Interpolation_Parameter.min_velocity_abs;	//ÂıËÙ¶ÎÊ±¼ä(s)
+		Interpolation_Parameter.max_velocity_abs = Interpolation_Parameter.min_velocity_abs;	//Ö»ÓĞ×îµÍËÙ
+		return true;
 	}
-	else if (Input.displacement < distance_temp)	//ä¸å­˜åœ¨åŒ€é€Ÿæ®µ
+	else if (input_distance_abs < distance_acc_dec_temp)	//²»´æÔÚÔÈËÙ¶Î
 	{
-		Input_Para.max_velocity_abs = sqrtf(Input.displacement * Input.acceleration_abs + Input.min_velocity_abs * Input.min_velocity_abs);
-		Result.acceleration_time = (Input_Para.max_velocity_abs - Input_Para.min_velocity_abs) / Input_Para.acceleration_abs;
-		Result.deceleration_time = Result.acceleration_time;
+		//¼ÆËã¼Ó¼õËÙÊ±¼ä(s)
+		Interpolation_Parameter.max_velocity_abs = \
+			sqrtf(input_distance_abs * Interpolation_Parameter.acceleration_abs \
+				+ Interpolation_Parameter.min_velocity_abs *Interpolation_Parameter.min_velocity_abs);	//¸üĞÂ×î´óËÙ¶È(mm/s)
+		acceleration_time = (Interpolation_Parameter.max_velocity_abs - Interpolation_Parameter.min_velocity_abs)\
+			/ Interpolation_Parameter.acceleration_abs;	//¼ÆËã¼Ó¼õËÙÊ±¼ä(s)
+		deceleration_time = acceleration_time;
 	}
-	else//å­˜åœ¨åŒ€é€Ÿæ®µ
+	else//´æÔÚÔÈËÙ¶Î
 	{
-		Result.acceleration_time = Result.deceleration_time = (Input.max_velocity_abs - Input.min_velocity_abs) / Input.acceleration_abs;
-		Result.const_time = (Input.displacement - distance_temp) / Input.max_velocity_abs;
+		acceleration_time = deceleration_time = \
+			(Interpolation_Parameter.max_velocity_abs - Interpolation_Parameter.min_velocity_abs) \
+			/ Interpolation_Parameter.acceleration_abs;	//¼ÆËã¼Ó¼õËÙÊ±¼ä(s)
+		const_time = (input_distance_abs - distance_acc_dec_temp) / Interpolation_Parameter.max_velocity_abs;//ÔÈËÙ¶ÎÊ±¼ä(s)
 	}
 
-	Result.deceleration_time = Result.acceleration_time = (long)((Input_Para.max_velocity_abs - Input_Para.min_velocity_abs) / Input_Para.acceleration_abs * 100.0f) / 100.0f; //è·å–åŠ å‡é€Ÿæ—¶é—´(ms)ï¼Œåœ†æ•´
-	Input_Para.max_velocity_abs = Input_Para.min_velocity_abs + Result.acceleration_time * Input_Para.acceleration_abs;	//æ›´æ–°æœ€å¤§é€Ÿåº¦
-	Result.const_time = (long)(Result.const_time*100.0f) / 100.0f;		//åœ†æ•´åŒ€é€Ÿæ—¶é—´
+	//¸ù¾İÉÏÊö²å²¹½á¹û£¬Ô²Õû¼Ó¼õËÙ¡¢ÔÈËÙÊ±¼ä£¬¼ÆËãÏàÓ¦½×¶ÎÎ»ÒÆ
 
-	dec_distance = acc_distance = (Input_Para.max_velocity_abs + Input_Para.min_velocity_abs) * Result.acceleration_time / 2.0f;	//è®¡ç®—åŠ å‡é€Ÿæ®µä½ç§»
-	const_distance = Input_Para.max_velocity_abs * Result.const_time;	//è®¡ç®—åŒ€é€Ÿæ®µä½ç§»
-	slowly_distance = Input_Para.displacement - dec_distance * 2 - const_distance;	//ä½é€Ÿä½ç§»
-	//slowly_distance = Input_Para.min_velocity_abs * Result.slowly_time + Input.slow_distance_abs;
-	Result.slowly_time = (long)(slowly_distance / Input_Para.min_velocity_abs * 100.0f) / 100.0f; //è·å–æ€»çš„æ…¢é€Ÿæ—¶é—´ï¼Œåœ†æ•´
+	deceleration_time = acceleration_time = \
+		(unsigned long)((Interpolation_Parameter.max_velocity_abs - Interpolation_Parameter.min_velocity_abs)\
+			/ Interpolation_Parameter.acceleration_abs * 1000.0f) / 1000.0f; //»ñÈ¡¼Ó¼õËÙÊ±¼ä(s)£¬Ô²Õû
 
+	Interpolation_Parameter.max_velocity_abs = \
+		Interpolation_Parameter.min_velocity_abs + acceleration_time * Interpolation_Parameter.acceleration_abs;	//¸üĞÂ×î´óËÙ¶È(mm/s)
+
+	const_time = (unsigned long)(const_time*1000.0f) / 1000.0f;		//Ô²ÕûÔÈËÙÊ±¼ä(s)
+
+	dec_distance = acc_distance = \
+		(Interpolation_Parameter.max_velocity_abs + Interpolation_Parameter.min_velocity_abs) * acceleration_time / 2.0f;	//¼ÆËã¼Ó¼õËÙ¶ÎÎ»ÒÆ
+
+	const_distance = Interpolation_Parameter.max_velocity_abs * const_time;	//¼ÆËãÔÈËÙ¶ÎÎ»ÒÆ
+
+	slowly_distance = input_distance_abs + slowly_distance_temp - dec_distance - acc_distance - const_distance;	//µÍËÙÎ»ÒÆ
+	slowly_time = slowly_distance / Interpolation_Parameter.min_velocity_abs; //»ñÈ¡×ÜµÄÂıËÙÊ±¼ä(s)
+	return true;
 }
 
-//************************************
-// Method:    Get_Expectation
-// FullName:  Interpolation::Get_Expectation
-// Access:    public
-// Returns:   bool è‹¥æ’è¡¥å®Œæˆï¼Œåˆ™è¿”å›flase
-// Parameter: float & output_velocity æ’è¡¥å¾—å‡ºçš„ç†è®ºé€Ÿåº¦ mm/ms
-// Parameter: float current_coor è®¡ç®—ç†è®ºé€Ÿåº¦å’Œä½ç§»æ‰€éœ€çš„å½“å‰ä½ç§» mm
-// Parameter: float &target_coor ä¸‹ä¸€ä¸ªç›®æ ‡ä½ç§» mm
-// Description: æ ¹æ®å½“å‰ä½ç§»ï¼Œè®¡ç®—ç†è®ºé€Ÿåº¦å’Œä½ç§»,å½“å®é™…æ€»ä½ç§»å’Œç†è®ºä½ç§»å·®è·å°äºé˜ˆå€¼æ—¶ï¼Œè®¤ä¸ºæ’è¡¥å®Œæˆ
-//************************************
-bool Interpolation::Get_Expectation(float &output_velocity, float current_coor, float &target_coor)
+bool Interpolation_Class::Cal_Velocity(float current_distance)
 {
-	target_coor = current_coor;
-	current_coor *= Distance_Symbols;
+	Interpolation_State = IS_Interpolating;	//ÕıÔÚ²å²¹
 
-	if (current_coor < 0.0f)	//åœ¨åæ–¹å‘
+	current_distance *= Distance_Symbols;
+	//»ñÈ¡²å²¹ËÙ¶È
+	if (current_distance < 0.0f)	//ÔÚ·´·½Ïò
 	{
-		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
-		target_coor = 0.0f;
+		target_velocity = Interpolation_Parameter.min_velocity_abs * Distance_Symbols;
+		//Target_Coor_InOrigin.Clear();
 	}
-	else if (current_coor < acc_distance)//åœ¨åŠ é€ŸåŒºå†…
+	else if (current_distance < acc_distance)//ÔÚ¼ÓËÙÇøÄÚ
 	{
-		output_velocity = sqrtf(2 * ABS(current_coor) * Input_Para.acceleration_abs + Input_Para.min_velocity_abs * Input_Para.min_velocity_abs) * Distance_Symbols;
-		//target_coor = (current_coor)* Distance_Symbols;
+		target_velocity = sqrtf(2 * current_distance * Interpolation_Parameter.acceleration_abs + Interpolation_Parameter.min_velocity_abs * Interpolation_Parameter.min_velocity_abs) * Distance_Symbols;
 	}
-	else if (current_coor < (acc_distance + const_distance))//åœ¨åŒ€é€ŸåŒº
+	else if (current_distance < (acc_distance + const_distance))//ÔÚÔÈËÙÇø
 	{
-		output_velocity = Input_Para.max_velocity_abs * Distance_Symbols;
-		//target_coor = (current_coor )* Distance_Symbols;
+		target_velocity = Interpolation_Parameter.max_velocity_abs * Distance_Symbols;
 	}
-	else if (current_coor < (acc_distance + const_distance + dec_distance))//åœ¨å‡é€ŸåŒº
+	else if (current_distance < (acc_distance + const_distance + dec_distance))//ÔÚ¼õËÙÇø
 	{
-		output_velocity = sqrtf(Input_Para.max_velocity_abs * Input_Para.max_velocity_abs - 2 * ABS(current_coor - acc_distance - const_distance) * Input_Para.acceleration_abs) * Distance_Symbols;
-		//target_coor = (current_coor )* Distance_Symbols;
+		target_velocity = sqrtf(Interpolation_Parameter.max_velocity_abs * Interpolation_Parameter.max_velocity_abs - 2 * (current_distance - acc_distance - const_distance) * Interpolation_Parameter.acceleration_abs) * Distance_Symbols;
 	}
-	else if (current_coor < (acc_distance + const_distance + dec_distance + slowly_distance - DISATNCE_DELTA))//åœ¨æ…¢é€ŸåŒº
+	else if (current_distance < (acc_distance + const_distance + dec_distance + slowly_distance - threshold / 2.0f))//ÔÚÂıËÙÇø
 	{
-		output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
-		//target_coor = (current_coor)* Distance_Symbols;
+		target_velocity = Interpolation_Parameter.min_velocity_abs * Distance_Symbols;
+		//Target_Coor_InOrigin = Destination_Coor_InOrigin;
 	}
-	else
+	else if (current_distance > (acc_distance + const_distance + dec_distance + slowly_distance + threshold / 2.0f))//ÔÚÂıËÙÇø
 	{
-		output_velocity = 0.0f;
-		//target_coor = (current_coor)* Distance_Symbols;
-		return false;
+		target_velocity = -Interpolation_Parameter.min_velocity_abs * Distance_Symbols;
 	}
-	return true;
+	else    //ÔÚÎó²î·¶Î§ÄÚ
+	{
+		float temp = ABS(acc_distance + const_distance + dec_distance + slowly_distance - current_distance);
+		target_velocity = 0.0f;
+		target_distance = Interpolation_Class::distance;
+		Interpolation_State = IS_Interpolated;
+	}
 
-
-	//if (current_coor < 0.0f)	//åœ¨åæ–¹å‘
-	//{
-	//	output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
-	//	target_coor = 0.0f;
-	//	return true;
-	//}
-
-	//if (current_coor < acc_distance) //åœ¨åŠ é€ŸåŒºå†…
-	//{
-	//	output_velocity = sqrtf(2 * ABS(current_coor) * Input_Para.acceleration_abs + Input_Para.min_velocity_abs * Input_Para.min_velocity_abs) * Distance_Symbols;
-	//	target_coor = (current_coor)* Distance_Symbols;
-	//	return true;
-	//}
-	//else
-	//	current_coor -= acc_distance;
-
-	//if (current_coor < const_distance) //åœ¨åŒ€é€ŸåŒº
-	//{
-	//	output_velocity = Input_Para.max_velocity_abs * Distance_Symbols;
-	//	target_coor = (current_coor)* Distance_Symbols;
-	//	return true;
-	//}
-	//else
-	//	current_coor -= const_distance;
-
-	//if (current_coor < dec_distance) //åœ¨å‡é€ŸåŒº
-	//{
-	//	output_velocity = sqrtf(Input_Para.max_velocity_abs * Input_Para.max_velocity_abs - 2 * ABS(current_coor) * Input_Para.acceleration_abs) * Distance_Symbols;
-	//	target_coor = (current_coor)* Distance_Symbols;
-	//	return true;
-	//}
-	//else
-	//	current_coor -= dec_distance;
-
-	//if (current_coor < (slowly_distance - DISATNCE_DELTA)) //åœ¨æ…¢é€ŸåŒº
-	//{
-	//	output_velocity = Input_Para.min_velocity_abs * Distance_Symbols;
-	//	target_coor = current_coor* Distance_Symbols;
-	//	return true;
-	//}
-	//else
-	//{
-	//	output_velocity = 0.0f;
-	//	target_coor = current_coor* Distance_Symbols;
-	//	return false; //æ’è¡¥å®Œæˆ
-	//}
+	return (Interpolation_State != IS_Interpolated);	//·µ»Ø²å²¹½á¹û£¬Èô²å²¹Íê³É£¬·µ»Øfalse
 }

@@ -1,26 +1,68 @@
 #pragma once
+
 /*
-* é€Ÿåº¦æ’è¡¥
-* é‡‡ç”¨æ¢¯å½¢æ’è¡¥
-* åˆ†ä¸ºå››æ®µï¼ˆè€ƒè™‘åˆ°ç”µæœºå­˜åœ¨æœ€å°é€Ÿåº¦ï¼‰
-*	åŒ€åŠ é€Ÿæ®µta
-*	åŒ€é€Ÿæ®µtc
-*	åŒ€å‡é€Ÿæ®µtd
-*	åŒ€ä½é€Ÿæ®µts ä¼˜å…ˆæ»¡è¶³åŒ€ä½é€Ÿæ®µè·ç¦»>=20mm
+* Â·¾¶²å²¹Ëã·¨
+* ²ÉÓÃÌİĞÎ²å²¹
+* ·ÖÎªËÄ¶Î£¨¿¼ÂÇµ½µç»ú´æÔÚ×îĞ¡ËÙ¶ÈËÀÇø£©
+*	ÔÈ¼ÓËÙ¶Îta
+*	ÔÈËÙ¶Îtc
+*	ÔÈ¼õËÙ¶Îtd
+*	ÔÈµÍËÙ¶Îts
 */
+
+//²å²¹Ê±»áÏÈ¼ÇÂ¼´ı²å²¹¾àÀëµÄ·ûºÅ
 #include "../macros.h"
 
-namespace Interpolation
+class Interpolation_Class
 {
+public:
+	Interpolation_Class() = default;
+	~Interpolation_Class() = default;
+
 	typedef struct
 	{
-		float displacement;		//ä½ç§»(mmæˆ–Â°)
-		float max_velocity_abs; //æœ€å¤§é€Ÿåº¦(mm/msæˆ–Â°/ms)
-		float min_velocity_abs; //æœ€å°é€Ÿåº¦(mm/msæˆ–Â°/ms)
-		float acceleration_abs; //åŠ é€Ÿåº¦(mm/ms2æˆ–Â°/ms2)
-		float slow_distance_abs;	//æœ€å°é€Ÿåº¦ç§»åŠ¨çš„ä½ç§»(mmæˆ–Â°)
-	} Actual_INPUT_TypedefStructure;
+		float max_velocity_abs; //×î´óËÙ¶È(mm/s)
+		float min_velocity_abs; //×îĞ¡ËÙ¶È(mm/s)
+		float acceleration_abs; //¼ÓËÙ¶È(mm/s2)
+		float slow_time_abs;	//×îĞ¡ËÙ¶ÈÒÆ¶¯Ê±¼ä(s)
+	} Interpolation_Parameter_TypedefStructure;	//²å²¹²ÎÊı½á¹¹Ìå¶¨Òå
 
-	void Init(Actual_INPUT_TypedefStructure &Input);
-	bool Get_Expectation(float &output_velocity, float current_coor,float &target_coor);
-}
+	enum Interpolation_State_Enum
+	{
+		NO_Interpolation,  //Î´²å²¹
+		IS_Interpolating, //ÕıÔÚ²å²¹
+		IS_Interpolated   //²å²¹Íê±Ï
+	};	//²å²¹×´Ì¬
+
+	enum Interpolation_State_Enum Interpolation_State;
+
+	//Ê¹ÓÃÇ°Ğè¸üĞÂ²å²¹²ÎÊıºÍ²å²¹ãĞÖµ
+	bool Init(const float distance) { return Init(distance, Interpolation_Class::threshold); }	//¸ù¾İ²å²¹²ÎÊıºÍ²å²¹¾àÀë²å²¹Â·¾¶
+	bool Init(const float distance, const float threshold);	//¸ù¾İ´ı²å²¹¾àÀëºÍ²å²¹ãĞÖµ¶ÔÂ·¾¶²å²¹
+	bool Cal_Velocity(float current_distance);	//¸ù¾İµ±Ç°ÒÆ¶¯¾àÀë¼ÆËãÆÚÍû¾àÀëºÍÆÚÍûËÙ¶È£¬·µ»Ø¼ÆËã½á¹û
+
+	void Update_Interpolation_Parameter(const Interpolation_Parameter_TypedefStructure& Input_Para) {
+		Interpolation_Parameter = Input_Para;
+	}	//¸üĞÂ²å²¹²ÎÊı
+
+	static float target_distance;
+	static float target_velocity;
+
+	static Interpolation_Parameter_TypedefStructure Interpolation_Parameter;	//²å²¹²ÎÊı¡¢²ÎÊıÔİ´æ
+	static float threshold;	//²å²¹ãĞÖµ
+
+private:
+	static float distance;
+	//ÒòÎªÍ¬Ò»Ê±¼äÖ»»áÖ´ĞĞÒ»ÌõÔË¶¯Ö¸Áî£¬¹ÊÎª¾²Ì¬±äÁ¿
+	static int Distance_Symbols; //Ö¸Ê¾´ı²å²¹¾àÀëµÄ·ûºÅ
+
+	static float acc_distance;	//¼ÓËÙ¶Î¾àÀë(mm)
+	static float const_distance;  //ÔÈËÙ¶Î¾àÀë(mm)
+	static float dec_distance;	//¼õËÙ¶Î¾àÀë(mm)
+	static float slowly_distance; //ÂıËÙ¶Î¾àÀë(mm)
+
+	static float acceleration_time; //¼ÓËÙ¶ÎÊ±¼ä(s)
+	static float const_time;		 //ÔÈËÙ¶ÎÊ±¼ä(s)
+	static float deceleration_time; //¼õËÙ¶ÎÊ±¼ä(s)
+	static float slowly_time;		 //ÂıËÙ¶ÎÊ±¼ä(s)
+};

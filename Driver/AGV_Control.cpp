@@ -1,26 +1,20 @@
 #include "AGV_Control.h"
 #include "../macros.h"
 
-unsigned short AGV_Control_Class::Cal_Cycle(void)
+
+void AGV_Control_Class::Write_Velocity(const Coordinate_Class&AGV_Current_Coor_InWorld, const Coordinate_Class&AGV_Target_Coor_InWorld, Velocity_Class &AGV_Target_Velocity_InAGV)
 {
-	unsigned short time = 0;	//控制周期(10us)
-	if (velocity > FLOAT_DELTA)	//AGV移动速度不为0
-	{
-		time = (unsigned short)(1 / velocity * 100000UL);	//精度为1mm,1°
-		time++;
-	}
-	return time;
-}
+	Coordinate_Class Error_Coor_InAGV;	//跟踪误差
+	
 
-void AGV_Control_Class::Write_Velocity(const Position_Class::Coordinate_Class&AGV_Current_Coor_InWorld, const Position_Class::Coordinate_Class&AGV_Target_Coor_InWorld, Position_Class::Velocity_Class &AGV_Target_Velocity_InAGV)
-{
-	//Position_Class::Coordinate_Class Error_Coor_InWorld = AGV_Target_Coor_InWorld - AGV_Current_Coor_InWorld;	//获取世界坐标系中的误差
-	Position_Class::Coordinate_Class Error_Coor_InAGV;
-	//Error_Coor_InAGV = Position_Class::Absolute_To_Relative(Error_Coor_InWorld, Error_Coor_InAGV, AGV_Current_Coor_InWorld);	//获取在当前AGV坐标系中的误差
+	//跟踪误差应该是目标坐标在当前坐标系的坐标
+	Error_Coor_InAGV = AGV_Target_Coor_InWorld - AGV_Current_Coor_InWorld;	//获取跟踪误差
 
-	Error_Coor_InAGV = Position_Class::Absolute_To_Relative(AGV_Target_Coor_InWorld, Error_Coor_InAGV, AGV_Current_Coor_InWorld);	//获取在当前AGV坐标系中的误差
+	////绝对坐标差方便计算
+	//Error_Coor_InAGV.x_coor = AGV_Target_Coor_InWorld.x_coor - AGV_Current_Coor_InWorld.x_coor;
+	//Error_Coor_InAGV.y_coor = AGV_Target_Coor_InWorld.y_coor - AGV_Current_Coor_InWorld.y_coor;
+	//Error_Coor_InAGV.angle_coor = AGV_Target_Coor_InWorld.angle_coor - AGV_Current_Coor_InWorld.angle_coor;
 
-	AGV_Target_Velocity_InAGV = Update_Velocity_By_ErrorCoor(Error_Coor_InAGV, AGV_Target_Velocity_InAGV);	//根据误差更新速度
-	AGV_Target_Velocity_InAGV = Update_Velocity_By_Limit(AGV_Target_Velocity_InAGV);	//对速度限幅
-	Write_Velocity(AGV_Target_Velocity_InAGV);	//更新速度
+	Update_Velocity_By_ErrorCoor(Error_Coor_InAGV, AGV_Target_Velocity_InAGV, AGV_Current_Coor_InWorld);	//根据跟踪误差更新期望速度
+	Write_Velocity(AGV_Target_Velocity_InAGV);	//根据速度控制电机运动
 }

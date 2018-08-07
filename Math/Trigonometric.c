@@ -313,19 +313,19 @@ int ArcTan_Lookup(float x, float y)
 	if (!k)
 		index = 900 - index;
 
-	if ((x > 0.0f) && (y > 0.0f)) //第一象限
+	if ((x >= 0.0f) && (y >= 0.0f)) //第一象限
 	{
 		return index;
 	}
-	if ((x < 0.0f) && (y > 0.0f)) //第二象限
+	if ((x <= 0.0f) && (y >= 0.0f)) //第二象限
 	{
 		return 1800 - index;
 	}
-	if ((x < 0.0f) && (y < 0.0f)) //第三象限
+	if ((x <= 0.0f) && (y <= 0.0f)) //第三象限
 	{
 		return 1800 + index;
 	}
-	if ((x > 0.0f) && (y < 0.0f)) //第四象限
+	if ((x >= 0.0f) && (y <= 0.0f)) //第四象限
 	{
 		return 3600 - index;
 	}

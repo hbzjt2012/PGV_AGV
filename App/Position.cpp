@@ -1,201 +1,219 @@
 #include "Position.h"
 
-Position_Class::Velocity_Class &Position_Class::Velocity_Class::operator+=(const Velocity_Class &addend)
+void Coordinate_Class::Clear(void)
 {
-	x_velocity += addend.x_velocity;
-	y_velocity += addend.y_velocity;
-	angle_velocity += addend.angle_velocity;
+	x_coor = 0.0f;
+	y_coor = 0.0f;
+	angle_coor = 0.0f;
+	angle_rad = 0.0f;
+}
+
+//将角度转换至base的同一个周期内(+180~-180)
+void Coordinate_Class::Coor_Trans(const float base_angle)
+{
+	angle_coor = Angle_Trans(angle_coor, base_angle);
+	Angle2Rad();
+}
+
+//基坐标为*this,相对坐标为addend，求绝对坐标
+Coordinate_Class & Coordinate_Class::operator+=(const Coordinate_Class & addend)
+{
+	Coordinate_Class temp;
+	Coordinate_Class::Relative_To_Absolute(temp, addend, *this);
+	*this = temp;
 	return *this;
 }
 
-Position_Class::Velocity_Class &Position_Class::Velocity_Class::operator-=(const Velocity_Class &subtrahend)
+//基坐标为subtrahend，绝对坐标为*this，求相对坐标
+Coordinate_Class & Coordinate_Class::operator-=(const Coordinate_Class & subtrahend)
 {
-	x_velocity -= subtrahend.x_velocity;
-	y_velocity -= subtrahend.y_velocity;
-	angle_velocity -= subtrahend.angle_velocity;
+	Coordinate_Class temp;
+	Coordinate_Class::Absolute_To_Relative(*this, temp, subtrahend);
+	*this = temp;
 	return *this;
 }
 
-Position_Class::Velocity_Class Position_Class::Velocity_Class::operator*=(float factor)
+Coordinate_Class & Coordinate_Class::Relative_To_Absolute(Coordinate_Class & Absolute_Coor, const Coordinate_Class & Relative_Coor, const Coordinate_Class & Base_Coor)
 {
-	x_velocity *= factor;
-	y_velocity *= factor;
-	angle_velocity *= factor;
-	return *this;
+	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
+	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
+	const float x_temp = Base_Coor.x_coor;
+	const float y_temp = Base_Coor.y_coor;
+	const float angle_temp = Base_Coor.angle_coor;
+
+	Absolute_Coor.x_coor = cos_Angle * (Relative_Coor.x_coor) - sin_Angle * (Relative_Coor.y_coor) + x_temp;
+	Absolute_Coor.y_coor = sin_Angle * (Relative_Coor.x_coor) + cos_Angle * (Relative_Coor.y_coor) + y_temp;
+	Absolute_Coor.angle_coor = Relative_Coor.angle_coor + angle_temp;
+
+	Absolute_Coor.Angle2Rad();
+	//Absolute_Coor.Coor_Trans(angle_temp);	//转换角度
+
+	return Absolute_Coor;
 }
 
-Position_Class::Coordinate_Class &Position_Class::Coordinate_Class::operator+=(const Coordinate_Class &addend)
-{
-	x_coor += addend.x_coor;
-	y_coor += addend.y_coor;
-	angle_coor += addend.angle_coor;
-	return *this;
-}
-
-Position_Class::Coordinate_Class &Position_Class::Coordinate_Class::operator-=(const Coordinate_Class &subtrahend)
-{
-	x_coor -= subtrahend.x_coor;
-	y_coor -= subtrahend.y_coor;
-	angle_coor -= subtrahend.angle_coor;
-	return *this;
-}
-
-Position_Class &Position_Class::operator+=(const Position_Class &addend)
-{
-	Velocity += addend.Velocity;
-	Coordinate += addend.Coordinate;
-	return *this;
-}
-
-Position_Class &Position_Class::operator-=(const Position_Class &subtrahend)
-{
-	Velocity -= subtrahend.Velocity;
-	Coordinate -= subtrahend.Coordinate;
-	return *this;
-}
-
-
-
-Position_Class::Velocity_Class & Position_Class::Absolute_To_Relative(const Velocity_Class & Absolute_Velocity, Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
+Coordinate_Class & Coordinate_Class::Absolute_To_Relative(const Coordinate_Class & Absolute_Coor, Coordinate_Class & Relative_Coor, const Coordinate_Class & Base_Coor)
 {
 	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
 	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
 
-	Relative_Velocity.x_velocity = cos_Angle * (Absolute_Velocity.x_velocity) + sin_Angle * (Absolute_Velocity.y_velocity);
-	Relative_Velocity.y_velocity = (-sin_Angle) * (Absolute_Velocity.x_velocity) + cos_Angle * (Absolute_Velocity.y_velocity);
-	Relative_Velocity.angle_velocity = (Absolute_Velocity.angle_velocity);
+	const float x_temp = Base_Coor.x_coor;
+	const float y_temp = Base_Coor.y_coor;
+	const float angle_temp = Base_Coor.angle_coor;
 
-	return Relative_Velocity;
-}
+	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - x_temp) + sin_Angle * (Absolute_Coor.y_coor - y_temp);
+	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - x_temp) + cos_Angle * (Absolute_Coor.y_coor - y_temp);
+	Relative_Coor.angle_coor = Absolute_Coor.angle_coor - angle_temp;
 
-//************************************
-// Method:    Absolute_To_Relative
-// FullName:  Position_Class::Absolute_To_Relative
-// Access:    public static
-// Returns:   Position_Class::Coordinate_StructTypedef &
-// Parameter: const Coordinate_StructTypedef & Absolute_Coor
-// Parameter: Coordinate_StructTypedef & Relative_Coor
-// Parameter: const Coordinate_StructTypedef & Base_Coor 相对坐标系在绝对坐标系中的坐标
-// Description: 从绝对坐标变化为相对坐标
-//************************************
-Position_Class::Coordinate_Class &Position_Class::Absolute_To_Relative(const Coordinate_Class &Absolute_Coor, Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor)
-{
-	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
-	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
-
-	Relative_Coor.x_coor = cos_Angle * (Absolute_Coor.x_coor - Base_Coor.x_coor) + sin_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
-	Relative_Coor.y_coor = (-sin_Angle) * (Absolute_Coor.x_coor - Base_Coor.x_coor) + cos_Angle * (Absolute_Coor.y_coor - Base_Coor.y_coor);
-	Relative_Coor.angle_coor = (Absolute_Coor.angle_coor - Base_Coor.angle_coor);
+	Relative_Coor.Angle2Rad();
+	//Relative_Coor.Coor_Trans(angle_temp);
 
 	return Relative_Coor;
-	// TODO: 在此处插入 return 语句
 }
 
-Position_Class & Position_Class::Absolute_To_Relative(const Position_Class & Absolute_Position, Position_Class & Relative_Position, const Coordinate_Class & Base_Coor)
+//************************************
+// Method:    Angle_Trans
+// FullName:  Coordinate_Class::Angle_Trans
+// Access:    public static 
+// Returns:   float
+// Parameter: float angle
+// Parameter: const float base
+// Description: 将angle缩放至base同一周期内(+180°~-180°)
+//************************************
+float Coordinate_Class::Angle_Trans(float angle, const float base)
 {
-	Relative_Position.Coordinate = Absolute_To_Relative(Absolute_Position.Coordinate, Relative_Position.Coordinate, Base_Coor);
-	Relative_Position.Velocity = Absolute_To_Relative(Absolute_Position.Velocity, Relative_Position.Velocity, Base_Coor);
-	return Relative_Position;
-	// TODO: 在此处插入 return 语句
+	int k = (int)((angle - base) / 360.0f);
+	angle -= k * 360;
+	if (angle - base >= 180.0f)
+	{
+		angle -= 360.0f;
+	}
+	else if (angle - base < -180.0f)
+	{
+		angle += 360.0f;
+	}
+	return angle;
 }
 
-Position_Class::Velocity_Class & Position_Class::Relative_To_Absolute(Velocity_Class & Absolute_Velocity, const Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
+//************************************
+// Method:    operator+=
+// FullName:  Velocity_Class::operator+=
+// Access:    public 
+// Returns:   Velocity_Class &
+// Parameter: const Velocity_Class & addend
+// Description: 求两个速度合
+//************************************
+Velocity_Class &Velocity_Class::operator+=(const Velocity_Class &addend)
+{
+	velocity_x += addend.velocity_x;
+	velocity_y += addend.velocity_y;
+	angular_velocity_rad += addend.angular_velocity_rad;
+	angular_velocity_angle += addend.angular_velocity_angle;
+	angular_velocity_mm += addend.angular_velocity_mm;
+
+	return *this;
+}
+
+//求两速度差
+Velocity_Class & Velocity_Class::operator-=(const Velocity_Class & subtrahend)
+{
+	velocity_x -= subtrahend.velocity_x;
+	velocity_y -= subtrahend.velocity_y;
+	angular_velocity_rad -= subtrahend.angular_velocity_rad;
+	angular_velocity_angle -= subtrahend.angular_velocity_angle;
+	angular_velocity_mm -= subtrahend.angular_velocity_mm;
+
+	return *this;
+}
+
+Velocity_Class & Velocity_Class::operator*=(const float factor)
+{
+	//线速度、角速度乘因子
+	velocity_x *= factor;
+	velocity_y *= factor;
+	angular_velocity_rad *= factor;
+	angular_velocity_angle *= factor;
+	angular_velocity_mm *= factor;
+	return *this;
+}
+
+Velocity_Class & Velocity_Class::operator/=(const float divisor)
+{
+	this->operator*=(1.0f / divisor);
+	return *this;
+}
+
+void Velocity_Class::Clear(void)
+{
+	velocity_x = 0.0f;
+	velocity_y = 0.0f;
+	angular_velocity_angle = 0.0f;
+	angular_velocity_mm = 0.0f;
+	angular_velocity_rad = 0.0f;
+}
+
+Velocity_Class & Velocity_Class::Relative_To_Absolute(Velocity_Class & Absolute_Velocity, const Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
 {
 	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
 	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
+	const float x_temp = Base_Coor.x_coor;
+	const float y_temp = Base_Coor.y_coor;
 
-	Absolute_Velocity.x_velocity = cos_Angle * (Relative_Velocity.x_velocity) - sin_Angle * (Relative_Velocity.y_velocity);
-	Absolute_Velocity.y_velocity = sin_Angle * (Relative_Velocity.x_velocity) + cos_Angle * (Relative_Velocity.y_velocity);
-	Absolute_Velocity.angle_velocity = (Relative_Velocity.angle_velocity);
+	Absolute_Velocity.velocity_x = cos_Angle * (Relative_Velocity.velocity_x) - sin_Angle * (Relative_Velocity.velocity_y);
+	Absolute_Velocity.velocity_y = sin_Angle * (Relative_Velocity.velocity_x) + cos_Angle * (Relative_Velocity.velocity_y);
+	Absolute_Velocity.angular_velocity_angle = Relative_Velocity.angular_velocity_angle;
+	Absolute_Velocity.angular_velocity_rad = Relative_Velocity.angular_velocity_rad;
+	Absolute_Velocity.angular_velocity_mm = Relative_Velocity.angular_velocity_mm;
 
 	return Absolute_Velocity;
 }
 
-//************************************
-// Method:    Relative_To_Absolute
-// FullName:  Position_Class::Relative_To_Absolute
-// Access:    public static
-// Returns:   Position_Class::Coordinate_StructTypedef &
-// Parameter: Coordinate_StructTypedef & Absolute_Coor
-// Parameter: const Coordinate_StructTypedef & Relative_Coor
-// Parameter: const Coordinate_StructTypedef & Base_Coor
-// Description: 从相对坐标变化为绝对坐标
-//************************************
-Position_Class::Coordinate_Class &Position_Class::Relative_To_Absolute(Coordinate_Class &Absolute_Coor, const Coordinate_Class &Relative_Coor, const Coordinate_Class &Base_Coor)
+Velocity_Class & Velocity_Class::Absolute_To_Relative(const Velocity_Class & Absolute_Velocity, Velocity_Class & Relative_Velocity, const Coordinate_Class & Base_Coor)
 {
 	float cos_Angle = Cos_Lookup(Base_Coor.angle_coor);
 	float sin_Angle = Sin_Lookup(Base_Coor.angle_coor);
 
-	Absolute_Coor.x_coor = cos_Angle * (Relative_Coor.x_coor) - sin_Angle * (Relative_Coor.y_coor);
-	Absolute_Coor.y_coor = sin_Angle * (Relative_Coor.x_coor) + cos_Angle * (Relative_Coor.y_coor);
-	Absolute_Coor.angle_coor = Relative_Coor.angle_coor;
-	Absolute_Coor += Base_Coor;
-
-	return Absolute_Coor;
-	// TODO: 在此处插入 return 语句
+	Relative_Velocity.velocity_x = cos_Angle * (Absolute_Velocity.velocity_x) + sin_Angle * (Absolute_Velocity.velocity_y);
+	Relative_Velocity.velocity_y = (-sin_Angle) * (Absolute_Velocity.velocity_x) + cos_Angle * (Absolute_Velocity.velocity_y);
+	Relative_Velocity.angular_velocity_angle = (Absolute_Velocity.angular_velocity_angle);
+	Relative_Velocity.angular_velocity_rad = (Absolute_Velocity.angular_velocity_rad);
+	Relative_Velocity.angular_velocity_mm = (Absolute_Velocity.angular_velocity_mm);
 }
 
-Position_Class & Position_Class::Relative_To_Absolute(Position_Class & Absolute_Position, const Position_Class & Relative_Position, const Coordinate_Class & Base_Coor)
+Velocity_Class operator+(const Velocity_Class & summand, const Velocity_Class & addend)
 {
-	Absolute_Position.Coordinate = Relative_To_Absolute(Absolute_Position.Coordinate, Relative_Position.Coordinate, Base_Coor);
-	Absolute_Position.Velocity = Relative_To_Absolute(Absolute_Position.Velocity, Relative_Position.Velocity, Base_Coor);
-	return Absolute_Position;
-	// TODO: 在此处插入 return 语句
-}
-
-
-//保留0.1的精度
-//角度缩小至360°内
-Position_Class::Coordinate_Class &Position_Class::Truncation_Coor(Coordinate_Class &Source_Coor)
-{
-	long angle_temp = ((long)(Source_Coor.angle_coor * 10.0f) % 3600);
-	Source_Coor.x_coor = (long)(Source_Coor.x_coor * 10.0f) / 10.0f;
-	Source_Coor.y_coor = (long)(Source_Coor.y_coor * 10.0f) / 10.0f;
-	Source_Coor.angle_coor = ((angle_temp + 3600) % 3600) / 10.0f;
-	//Source_Coor.angle_coor = ((long)(Source_Coor.angle_coor * 10.0f) % 3600) / 10.0f;
-
-	return Source_Coor;
-	// TODO: 在此处插入 return 语句
-}
-
-Position_Class::Velocity_Class operator+(const Position_Class::Velocity_Class &summand, const Position_Class::Velocity_Class &addend)
-{
-	Position_Class::Velocity_Class temp = summand;
+	Velocity_Class temp = summand;
 	temp += addend;
 	return temp;
 }
 
-Position_Class::Velocity_Class operator-(const Position_Class::Velocity_Class &minuend, const Position_Class::Velocity_Class &subtrahend)
+Velocity_Class operator-(const Velocity_Class & minuend, const Velocity_Class & subtrahend)
 {
-	Position_Class::Velocity_Class temp = minuend;
+	Velocity_Class temp = minuend;
 	temp -= subtrahend;
 	return temp;
 }
 
-Position_Class::Coordinate_Class operator+(const Position_Class::Coordinate_Class &summand, const Position_Class::Coordinate_Class &addend)
+//不符合交换律
+Coordinate_Class operator+(const Coordinate_Class & summand, const Coordinate_Class & addend)
 {
-	Position_Class::Coordinate_Class temp = summand;
+	Coordinate_Class temp = summand;
 	temp += addend;
 	return temp;
 }
 
-Position_Class::Coordinate_Class operator-(const Position_Class::Coordinate_Class &minuend, const Position_Class::Coordinate_Class &subtrahend)
+Coordinate_Class operator-(const Coordinate_Class & minuend, const Coordinate_Class & subtrahend)
 {
-	Position_Class::Coordinate_Class temp = minuend;
+	Coordinate_Class temp = minuend;
 	temp -= subtrahend;
 	return temp;
 }
 
-Position_Class operator+(const Position_Class &summand, const Position_Class &addend)
+Coordinate_Class operator*(const Coordinate_Class & source, const float factor)
 {
-	Position_Class temp = summand;
-	temp += addend;
-	return temp;
-}
-
-Position_Class operator-(const Position_Class &minuend, const Position_Class &subtrahend)
-{
-	Position_Class temp = minuend;
-	temp -= subtrahend;
+	Coordinate_Class temp;
+	temp.x_coor = source.x_coor*factor;
+	temp.y_coor = source.y_coor*factor;
+	temp.angle_coor = source.angle_coor*factor;
+	temp.angle_rad = source.angle_rad*factor;
 	return temp;
 }

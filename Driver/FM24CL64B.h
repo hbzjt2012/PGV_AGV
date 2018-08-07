@@ -1,10 +1,11 @@
 #pragma once
 #include "EEPROM.h"
+#include "../HardwareDefine/Version_Boards.h"
 
 class FM24CL64B_Class : public EEPROM_Class
 {
   public:
-	FM24CL64B_Class() : EEPROM_Class(IO_Class(GPIOB, GPIO_Pin_1), IO_Class(GPIOB, GPIO_Pin_0), 0xA0) {}
+	FM24CL64B_Class() : EEPROM_Class(IO_Class(IIC_SDA_GPIO_Port, IIC_SDA_GPIO_Pin), IO_Class(IIC_SCL_GPIO_Port, IIC_SCL_GPIO_Pin), 0xA0) {}
 	~FM24CL64B_Class() = default;
 
   private:

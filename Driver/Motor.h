@@ -24,12 +24,6 @@ class Motor_Class
 	bool dir_init;	//定义电机初始转向
 	PWM_Class _speed; //控制电机转速用的pwm
 	IO_Class _dir;	//定义电机转向
-
-	/*
-	* _stop 0	_brake 0	正常运行
-	* _stop	0	_brake 1	急停
-	* _stop 1	_brake 0	电机及负载时自然停车
-	*/
 	IO_Class _brake; //运行/刹车控制IO
 	IO_Class _stop;  //开始/停止控制IO
 };

@@ -65,6 +65,8 @@
   <ItemGroup>
     <ClCompile Include="..\App\Gcode.cpp" />
     <ClCompile Include="..\App\Interpolation.cpp" />
+    <ClCompile Include="..\App\Movement.cpp" />
+    <ClCompile Include="..\App\Movement_Mecanum.cpp" />
     <ClCompile Include="..\App\Position.cpp" />
     <ClCompile Include="..\App\Queue.cpp" />
     <ClCompile Include="..\delay.c" />
@@ -74,7 +76,6 @@
     <ClCompile Include="..\Driver\EEPROM.cpp" />
     <ClCompile Include="..\Driver\Encoder.cpp" />
     <ClCompile Include="..\Driver\FM24CL64B.cpp" />
-    <ClCompile Include="..\Driver\Gyro.cpp" />
     <ClCompile Include="..\Driver\Key_Scan.cpp" />
     <ClCompile Include="..\Driver\Mecanum.cpp" />
     <ClCompile Include="..\Driver\Motor.cpp" />
@@ -89,8 +90,12 @@
     <ClCompile Include="..\HALayer\Tim.cpp" />
     <ClCompile Include="..\HALayer\Uart.cpp" />
     <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\Math\MyMath.cpp" />
+    <ClCompile Include="..\Math\Kalman_Filter_Angle.cpp" />
+    <ClCompile Include="..\Math\Kalman_Filter_Coor.cpp" />
+    <ClCompile Include="..\Math\Kalman_Filter_Line.cpp" />
+    <ClCompile Include="..\Math\My_Math.cpp" />
     <ClCompile Include="..\Math\Trigonometric.c" />
+    <ClCompile Include="..\parameter_define.cpp" />
     <ClCompile Include="..\StartupFiles\startup_stm32f407xx.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\misc.c" />
     <ClCompile Include="..\STM32F4xx_StdPeriph_Driver\src\stm32f4xx_adc.c" />
@@ -152,6 +157,8 @@
   <ItemGroup>
     <ClInclude Include="..\App\Gcode.h" />
     <ClInclude Include="..\App\Interpolation.h" />
+    <ClInclude Include="..\App\Movement.h" />
+    <ClInclude Include="..\App\Movement_Mecanum.h" />
     <ClInclude Include="..\App\Position.h" />
     <ClInclude Include="..\App\Queue.h" />
     <ClInclude Include="..\CMSIS_StdPeriph\core_cm4.h" />
@@ -162,6 +169,7 @@
     <ClInclude Include="..\CMSIS_StdPeriph\system_stm32f4xx.h" />
     <ClInclude Include="..\Configure.h" />
     <ClInclude Include="..\delay.h" />
+    <ClInclude Include="..\Driver\Accelerometer.h" />
     <ClInclude Include="..\Driver\AGV_Control.h" />
     <ClInclude Include="..\Driver\AS62.h" />
     <ClInclude Include="..\Driver\C50XB.h" />
@@ -185,10 +193,18 @@
     <ClInclude Include="..\HALayer\PWM.h" />
     <ClInclude Include="..\HALayer\Tim.h" />
     <ClInclude Include="..\HALayer\Uart.h" />
+    <ClInclude Include="..\HardwareDefine\Version_1_0.h" />
+    <ClInclude Include="..\HardwareDefine\Version_2_0.h" />
+    <ClInclude Include="..\HardwareDefine\Version_Boards.h" />
     <ClInclude Include="..\macros.h" />
     <ClInclude Include="..\main.h" />
-    <ClInclude Include="..\Math\MyMath.h" />
+    <ClInclude Include="..\Math\Kalman_Filter.h" />
+    <ClInclude Include="..\Math\Kalman_Filter_Angle.h" />
+    <ClInclude Include="..\Math\Kalman_Filter_Coor.h" />
+    <ClInclude Include="..\Math\Kalman_Filter_Line.h" />
+    <ClInclude Include="..\Math\My_Math.h" />
     <ClInclude Include="..\Math\Trigonometric.h" />
+    <ClInclude Include="..\parameter_define.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\misc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_adc.h" />
     <ClInclude Include="..\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_can.h" />
