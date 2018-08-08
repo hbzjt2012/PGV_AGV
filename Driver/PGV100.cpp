@@ -312,18 +312,23 @@ bool PGV_Class::Analyze_Data(void)
 
 Coordinate_Class PGV_Class::Cal_Coor(void)
 {
-	coor.x_coor = (tag_control_num % 5) * 1000.0f + x_deviation;	//测试用间隔为100cm
-	coor.y_coor = (tag_control_num / 5) * 1000.0f + y_deviation;	//测试用间隔为100cm
-	coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
+	switch (target)
+	{
+	case Data_Matrix_Tag:
+		coor.x_coor = (tag_control_num % 5) * 1000.0f + x_deviation;	//测试用间隔为100cm
+		coor.y_coor = (tag_control_num / 5) * 1000.0f + y_deviation;	//测试用间隔为100cm
+		coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
+		break;
+	case Code_Tape:
+		coor.x_coor = x_deviation;	//测试用间隔为100cm
+		coor.y_coor = y_deviation;	//测试用间隔为100cm
+		coor.angle_coor = angle_deviation;	//标签的角度和世界坐标系的角度重合，故直接赋值
+		break;
+	default:
+		break;
+	}
 
-	//if (coor.angle_coor>180.0f)
-	//{
-	//	coor.angle_coor -= 360.0f;	//变换至-180~+180
-	//}
-	//coor.Transform_Angle();
-	//coor.Truncation_Coor();	
 
-	data_OK = true;	//数据正确
 }
 
 inline void PGV_Class::TX_Dir(void)
